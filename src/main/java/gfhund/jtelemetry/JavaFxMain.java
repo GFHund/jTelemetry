@@ -223,6 +223,7 @@ public class JavaFxMain extends Application{
                 parseThread.addParseResultEvent(new F1Y2018ParseResultEvent() {
                     @Override
                     public void resultEvent(AbstractPacket packet) {
+                        System.out.println("Recived packages");
                         if(m_liveViewDialog == null){
                             return;
                         }
@@ -254,6 +255,7 @@ public class JavaFxMain extends Application{
                 m_networkThread.addReciveEvent(new ReceiveEvent(){
                     @Override
                     public void onReceive(byte[] data){
+                        System.out.println("Übergebe einem Consumer Thread");
                         parseThread.addRaw(data);
                     }
                 });

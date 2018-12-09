@@ -41,7 +41,9 @@ public class GameNetworkConnection extends Thread {
                     for(ReceiveEvent e:this.m_events){
                         e.onReceive(packet.getData());
                     }
+                    this.m_lock.lock();
                     cond.signalAll();
+                    this.m_lock.unlock();
                 }
                 catch(SocketTimeoutException e){
                     System.out.println("recived timeout");

@@ -20,7 +20,7 @@ import java.util.ArrayList;
 public class F1Y2018ParseThread implements Runnable{
 
     private final ReentrantLock m_lock;
-    private ConcurrentLinkedQueue<byte[]> m_inputQueue;
+    private ConcurrentLinkedQueue<byte[]> m_inputQueue = new ConcurrentLinkedQueue<>();
     private ArrayList<F1Y2018ParseResultEvent> m_events = new ArrayList<>();
     public F1Y2018ParseThread(ReentrantLock lock){
         this.m_lock = lock;
@@ -55,6 +55,14 @@ public class F1Y2018ParseThread implements Runnable{
         }
     }
     public void addRaw(byte[] raw){
+        System.out.println("Recived Raw Bytes");
+        if(this.m_inputQueue == null){
+            this.m_inputQueue = new ConcurrentLinkedQueue<>();
+        }
+        if(raw == null){
+            System.out.println("recived Null");
+            return;
+        }
         this.m_inputQueue.add(raw);
     }
     public void addParseResultEvent(F1Y2018ParseResultEvent event){
