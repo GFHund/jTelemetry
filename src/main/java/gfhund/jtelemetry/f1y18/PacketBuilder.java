@@ -128,7 +128,7 @@ public class PacketBuilder{
         PacketLapData packet = new PacketLapData();//21
         packet.setHeader(head);
         for(int i=0;i<20;i++){
-            LapData lapData = getCarLapData(rawData, Header.getSize()+i*40);
+            LapData lapData = getCarLapData(rawData, Header.getSize()+i*LapData.getSize());
             packet.setLapData(i, lapData);
         }
         return packet;

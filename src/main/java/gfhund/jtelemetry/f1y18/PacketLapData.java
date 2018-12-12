@@ -1,5 +1,6 @@
 package gfhund.jtelemetry.f1y18;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 public class PacketLapData extends AbstractPacket{
     private Header m_header;
     private LapData[] m_lapData = new LapData[20];
@@ -20,6 +21,7 @@ public class PacketLapData extends AbstractPacket{
     
     public byte[] getBytes(){
         ByteBuffer ret = ByteBuffer.allocate(841);
+        ret.order(ByteOrder.LITTLE_ENDIAN);
         byte[] headerData = this.m_header.getBytes();
         for(int i =0;i<headerData.length;i++){
             ret.put(i,headerData[i]);

@@ -1,6 +1,7 @@
 package gfhund.jtelemetry.f1y18;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class LapData {
     private float m_lastLapTime;//0
@@ -99,6 +100,7 @@ public class LapData {
     }
     public byte[] getBytes(){
         ByteBuffer lapDataBuffer = ByteBuffer.allocate(41);
+        lapDataBuffer.order(ByteOrder.LITTLE_ENDIAN);
         lapDataBuffer.putFloat(0, m_lastLapTime);
         lapDataBuffer.putFloat(4, m_currentLapTime);
         lapDataBuffer.putFloat(8, m_bestLapTime);

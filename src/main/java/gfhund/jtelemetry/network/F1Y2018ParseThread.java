@@ -20,19 +20,20 @@ import java.util.ArrayList;
 public class F1Y2018ParseThread implements Runnable{
 
     private final ReentrantLock m_lock;
+    private Condition m_cond;
     private ConcurrentLinkedQueue<byte[]> m_inputQueue = new ConcurrentLinkedQueue<>();
     private ArrayList<F1Y2018ParseResultEvent> m_events = new ArrayList<>();
-    public F1Y2018ParseThread(ReentrantLock lock){
+    public F1Y2018ParseThread(ReentrantLock lock,Condition cond){
         this.m_lock = lock;
+        this.m_cond = cond;
     }
     
     @Override
     public void run() {
         while(!Thread.currentThread().isInterrupted()){
-            Condition cond = this.m_lock.newCondition();
             this.m_lock.lock();
             try{
-                cond.await();
+                m_cond.await();
             }catch(InterruptedException e){
                 Thread.currentThread().interrupt();
                 break;

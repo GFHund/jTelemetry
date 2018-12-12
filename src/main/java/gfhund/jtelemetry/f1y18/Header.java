@@ -1,6 +1,7 @@
 package gfhund.jtelemetry.f1y18;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class Header{
     private short m_packetFormat;//2  0
@@ -61,6 +62,7 @@ public class Header{
     
     public byte[] getBytes(){
         ByteBuffer headerBuffer = ByteBuffer.allocate(21);
+        headerBuffer.order(ByteOrder.LITTLE_ENDIAN);
         headerBuffer.putShort(this.m_packetFormat);
         headerBuffer.put(2, this.m_packetVersion);
         headerBuffer.put(3, this.m_packetId);

@@ -20,29 +20,30 @@ import java.util.ArrayList;
 public class GameNetworkConnection extends Thread {
 
     private final ReentrantLock m_lock;
+    private Condition m_cond;
     private int m_port;
     private int m_maxLength;
     private ArrayList<ReceiveEvent> m_events = new ArrayList<>();
-    public GameNetworkConnection(ReentrantLock lock,int port,int maxLength){
+    public GameNetworkConnection(ReentrantLock lock,Condition cond,int port,int maxLength){
         m_lock = lock;
         this.m_port = port;
         this.m_maxLength = maxLength;
+        this.m_cond = cond;
     }
     @Override
     public void run() {
         try(DatagramSocket socket = new DatagramSocket(this.m_port)){
             socket.setSoTimeout(1000);//I use this tolet the thread regulary over the interupt signal
             while(!Thread.currentThread().isInterrupted()){
-                Condition cond = this.m_lock.newCondition();
                 DatagramPacket packet = new DatagramPacket(new byte[this.m_maxLength],this.m_maxLength);
                 try{
                     socket.receive(packet);
-                    System.out.println("recived Package");
+                    //System.out.println("recived Package");
                     for(ReceiveEvent e:this.m_events){
                         e.onReceive(packet.getData());
                     }
                     this.m_lock.lock();
-                    cond.signalAll();
+                    m_cond.signalAll();
                     this.m_lock.unlock();
                 }
                 catch(SocketTimeoutException e){

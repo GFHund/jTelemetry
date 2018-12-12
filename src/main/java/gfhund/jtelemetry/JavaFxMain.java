@@ -51,7 +51,7 @@ public class JavaFxMain extends Application{
     private TableView<TimingFx> table = new TableView<>();
     private Thread m_f1y18Thread;
     private GameNetworkConnection m_networkThread;
-    private LiveViewDialog m_liveViewDialog;
+    private static LiveViewDialog m_liveViewDialog;
     private MenuItem m_startRecordMenuItem;
     private MenuItem m_stopRecordMenuItem;
     
@@ -127,6 +127,17 @@ public class JavaFxMain extends Application{
         //layout.a
         //ObservableList<Timing> 
         primaryStage.setScene(scene);
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                if(m_networkThread.isAlive()){
+                    m_networkThread.interrupt();
+                }
+                if(m_f1y18Thread.isAlive()){
+                    m_f1y18Thread.interrupt();
+                }
+            }
+        });
         primaryStage.show();
     }
     public void fileOpenAction(Stage stage){
@@ -204,9 +215,10 @@ public class JavaFxMain extends Application{
         if(result.isPresent()){
             String resultValue = result.get();
             ReentrantLock lock = new ReentrantLock();
-            m_networkThread = new GameNetworkConnection(lock,20777,1341);
+            java.util.concurrent.locks.Condition cond = lock.newCondition();
+            m_networkThread = new GameNetworkConnection(lock,cond,20777,1341);
             if(resultValue.equals(f1y18)){
-                F1Y2018ParseThread parseThread = new F1Y2018ParseThread(lock);
+                F1Y2018ParseThread parseThread = new F1Y2018ParseThread(lock,cond);
                 if(m_f1y18Thread == null){
                     m_f1y18Thread = new Thread(parseThread);
                 }
@@ -223,7 +235,7 @@ public class JavaFxMain extends Application{
                 parseThread.addParseResultEvent(new F1Y2018ParseResultEvent() {
                     @Override
                     public void resultEvent(AbstractPacket packet) {
-                        System.out.println("Recived packages");
+                        //System.out.println("Recived packages");
                         if(m_liveViewDialog == null){
                             return;
                         }
@@ -255,7 +267,7 @@ public class JavaFxMain extends Application{
                 m_networkThread.addReciveEvent(new ReceiveEvent(){
                     @Override
                     public void onReceive(byte[] data){
-                        System.out.println("Übergebe einem Consumer Thread");
+                        //System.out.println("Übergebe einem Consumer Thread");
                         parseThread.addRaw(data);
                     }
                 });

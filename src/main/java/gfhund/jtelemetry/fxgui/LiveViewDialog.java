@@ -30,12 +30,12 @@ public class LiveViewDialog extends DialogFx{
         public byte m_position;
     }
     
-    private PlayerObj[] m_plyObj = new PlayerObj[20];
-    private Rectangle[] m_wheel = new Rectangle[4];
-    private Text[] m_wheelWear =  new Text[4];
-    private Text[] m_playerName = new Text[20];
-    private Text[] m_playerTime = new Text[20];
-    private Text[] m_playerPosition = new Text[20];
+    private PlayerObj[] m_plyObj;
+    private Rectangle[] m_wheel;
+    private Text[] m_wheelWear;
+    private Text[] m_playerName;
+    private Text[] m_playerTime;
+    private Text[] m_playerPosition;
     
     private byte m_frontRightTyreWear=0;
     private byte m_frontLeftTyreWear=0;
@@ -183,35 +183,44 @@ public class LiveViewDialog extends DialogFx{
     2 Front Left
     4 Front Right
     */
-    public void setRLTyreWear(byte rlTyreWear){
+    public synchronized void setRLTyreWear(byte rlTyreWear){
         this.m_rearLeftTyreWear = rlTyreWear;
         this.m_wheelWear[0].setText(""+rlTyreWear+"%");
     }
-    public void setRRTyreWear(byte rrTyreWear){
+    public synchronized void setRRTyreWear(byte rrTyreWear){
         this.m_rearRightTyreWear = rrTyreWear;
         this.m_wheelWear[1].setText(""+rrTyreWear+"%");
     }
-    public void setFLTyreWear(byte flTyreWear){
+    public synchronized void setFLTyreWear(byte flTyreWear){
         this.m_frontLeftTyreWear = flTyreWear;
         this.m_wheelWear[2].setText(""+flTyreWear+"%");
     }
-    public void setFRTyreWear(byte frTyreWear){
+    public synchronized void setFRTyreWear(byte frTyreWear){
         this.m_frontRightTyreWear = frTyreWear;
         this.m_wheelWear[3].setText(""+frTyreWear+"%");
     }
     
-    public void setPlayerName(int index,String name){
+    public synchronized void setPlayerName(int index,String name){
         this.m_plyObj[index].m_name = name;
         byte playerPos = this.m_plyObj[index].m_position;
         this.m_playerName[playerPos].setText(name);
     }
-    public void setPlayerTime(int index,float time){
+    public synchronized void setPlayerTime(int index,float time){
+        if(this.m_plyObj == null){
+            this.m_plyObj = new PlayerObj[20];
+        }
+        if(this.m_plyObj[index] == null){
+            this.m_plyObj[index] = new PlayerObj();
+            this.m_plyObj[index].m_position = (byte)index;
+        }
         this.m_plyObj[index].m_time = time;
         byte playerPos = this.m_plyObj[index].m_position;
-        this.m_playerTime[playerPos].setText(""+time);
+        if(playerPos > 20 || playerPos <= 0){
+            return;
+        }
+        this.m_playerTime[playerPos-1].setText("" + time);
     }
-    public void setPlayerPosition(int index,byte pos){
+    public synchronized void setPlayerPosition(int index,byte pos){
         this.m_plyObj[index].m_position = pos;
     }
-    
 }
