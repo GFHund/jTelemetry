@@ -130,10 +130,10 @@ public class JavaFxMain extends Application{
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
-                if(m_networkThread.isAlive()){
+                if(m_networkThread != null && m_networkThread.isAlive()){
                     m_networkThread.interrupt();
                 }
-                if(m_f1y18Thread.isAlive()){
+                if(m_f1y18Thread != null && m_f1y18Thread.isAlive()){
                     m_f1y18Thread.interrupt();
                 }
             }
@@ -250,6 +250,7 @@ public class JavaFxMain extends Application{
                                 LapData data = ((PacketLapData) packet).getLapData(i);
                                 m_liveViewDialog.setPlayerTime(i, data.getLastLapTime());
                                 m_liveViewDialog.setPlayerPosition(i, data.getCarPosition());
+                                
                             }
                         }
                         else if(packet instanceof PacketCarStatusData){
