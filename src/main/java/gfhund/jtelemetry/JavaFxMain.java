@@ -251,6 +251,7 @@ public class JavaFxMain extends Application{
                                 m_liveViewDialog.setPlayerTime(i, data.getLastLapTime());
                                 m_liveViewDialog.setPlayerPosition(i, data.getCarPosition());
                                 
+                                
                             }
                         }
                         else if(packet instanceof PacketCarStatusData){
@@ -260,6 +261,7 @@ public class JavaFxMain extends Application{
                             m_liveViewDialog.setRRTyreWear(tyreWear[1]);
                             m_liveViewDialog.setFLTyreWear(tyreWear[2]);
                             m_liveViewDialog.setFRTyreWear(tyreWear[3]);
+                            m_liveViewDialog.setFuel(((PacketCarStatusData) packet).getCarStatusData(playerCarIndex).getFuelInTank());
                         }
                     }
                 });
