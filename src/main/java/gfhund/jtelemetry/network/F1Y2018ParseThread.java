@@ -56,7 +56,7 @@ public class F1Y2018ParseThread implements Runnable{
         }
     }
     public void addRaw(byte[] raw){
-        System.out.println("Recived Raw Bytes");
+        //System.out.println("Recived Raw Bytes");
         if(this.m_inputQueue == null){
             this.m_inputQueue = new ConcurrentLinkedQueue<>();
         }

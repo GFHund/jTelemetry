@@ -19,6 +19,8 @@ import gfhund.jtelemetry.network.GameNetworkConnection;
 import gfhund.jtelemetry.network.ReceiveEvent;
 import gfhund.jtelemetry.f1y18.PacketLapData;
 import gfhund.jtelemetry.f1y18.PacketCarStatusData;
+import gfhund.jtelemetry.f1y18.PacketParticipantsData;
+import gfhund.jtelemetry.f1y18.PacketSessionData;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -246,6 +248,7 @@ public class JavaFxMain extends Application{
                         4 Front Right
                         */
                         if(packet instanceof PacketLapData){
+                            //System.out.println("recived Packet Lap Data");
                             for(int i=0;i<20;i++){
                                 LapData data = ((PacketLapData) packet).getLapData(i);
                                 m_liveViewDialog.setPlayerTime(i, data.getLastLapTime());
@@ -253,15 +256,29 @@ public class JavaFxMain extends Application{
                                 
                                 
                             }
+                            int playerCarIndex = ((PacketLapData) packet).getHeader().getPlayerCarIndex();
+                            m_liveViewDialog.setLapNum(((PacketLapData) packet).getLapData(playerCarIndex).getCurrentLapNum());
                         }
                         else if(packet instanceof PacketCarStatusData){
+                            //System.out.println("Recived Car Status");
                             int playerCarIndex = ((PacketCarStatusData) packet).getHeader().getPlayerCarIndex();
                             byte[] tyreWear = ((PacketCarStatusData) packet).getCarStatusData(playerCarIndex).getTyresWear();
+                            
                             m_liveViewDialog.setRLTyreWear(tyreWear[0]);
                             m_liveViewDialog.setRRTyreWear(tyreWear[1]);
                             m_liveViewDialog.setFLTyreWear(tyreWear[2]);
                             m_liveViewDialog.setFRTyreWear(tyreWear[3]);
                             m_liveViewDialog.setFuel(((PacketCarStatusData) packet).getCarStatusData(playerCarIndex).getFuelInTank());
+                        }
+                        else if(packet instanceof PacketParticipantsData){
+                            //System.out.println("recived Packet Participants Data");
+                            for(int i=0 ;i<20;i++){
+                                m_liveViewDialog.setPlayerName(i, ((PacketParticipantsData) packet).getParticipant(i).getName());
+                            }
+                            
+                        }
+                        else if(packet instanceof PacketSessionData){
+                            m_liveViewDialog.setMaxLapNum(((PacketSessionData) packet).getTotalLaps());
                         }
                     }
                 });

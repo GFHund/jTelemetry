@@ -98,6 +98,9 @@ public class LapData {
     public byte getCarPosition(){
         return this.m_carPosition;
     }
+    public byte getCurrentLapNum(){
+        return this.m_currentLapNum;
+    }
     public byte[] getBytes(){
         ByteBuffer lapDataBuffer = ByteBuffer.allocate(41);
         lapDataBuffer.order(ByteOrder.LITTLE_ENDIAN);

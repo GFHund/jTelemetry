@@ -43,7 +43,7 @@ public class LiveViewDialog extends DialogFx{
     private byte m_rearRightTyreWear=0;
     private byte m_rearLeftTyreWear=0;
     
-    private byte m_currentLapNum;
+    
     private boolean m_updateDeltaFrontRightTyre = false;
     private boolean m_updateDeltaFrontLeftTyre = false;
     private boolean m_updateDeltaRearRightTyre = false;
@@ -64,7 +64,12 @@ public class LiveViewDialog extends DialogFx{
     private float m_deltaFuel;
     private boolean m_updateFuel = false;
     private float m_fuelInTankLastRound = -1;
+    private Text m_textfuelInTank;
     private Text m_lapsRemainingFuel;
+    
+    private Text m_textCurrentLap;
+    private byte m_currentLapNum;
+    private byte m_maxLaps = -1;
     
     
     public LiveViewDialog(Stage parent){
@@ -118,10 +123,10 @@ public class LiveViewDialog extends DialogFx{
         if(this.m_wheelWear == null){
             this.m_wheelWear = new Text[4];
         }
-        this.m_wheelWear[0] = new Text(-3.0*scaleFactor,2.00*scaleFactor,"0%");
-        this.m_wheelWear[1] = new Text(-3.0*scaleFactor,-2.60*scaleFactor,"0%");
-        this.m_wheelWear[2] = new Text(2.5*scaleFactor,2.00*scaleFactor,"0%");
-        this.m_wheelWear[3] = new Text(2.5*scaleFactor, -2.60*scaleFactor, "0%");
+        this.m_wheelWear[0] = new Text(-3.0*scaleFactor,2.00*scaleFactor,"RL");//rear Left
+        this.m_wheelWear[1] = new Text(2.5*scaleFactor,2.00*scaleFactor,"RR");//rear Right
+        this.m_wheelWear[2] = new Text(-3.0*scaleFactor,-2.60*scaleFactor,"FL");//Front Left
+        this.m_wheelWear[3] = new Text(2.5*scaleFactor, -2.60*scaleFactor, "FR");//Front Right
         
         this.m_wheelWear[0].setFont(new Font(30));
         this.m_wheelWear[1].setFont(new Font(30));
@@ -207,10 +212,18 @@ public class LiveViewDialog extends DialogFx{
         m_lapsRemainingFuel = new Text(850,650,"-");
         m_lapsRemainingFuel.setFont(new Font(30));
         
+        m_textfuelInTank = new Text(850,600,"-");
+        m_textfuelInTank.setFont(new Font(30));
+        
+        m_textCurrentLap= new Text(850,100,"-");
+        m_textCurrentLap.setFont(new Font(30));
+        
         Group grp = new Group();
         grp.getChildren().add(carGrp);
         grp.getChildren().add(playerGroup);
         grp.getChildren().add(m_lapsRemainingFuel);
+        grp.getChildren().add(m_textfuelInTank);
+        grp.getChildren().add(m_textCurrentLap);
         
         Scene scene = new Scene(grp,1024,768);
         return scene;
@@ -226,7 +239,7 @@ public class LiveViewDialog extends DialogFx{
         this.m_wheelWear[0].setText(""+rlTyreWear+"%");
         if(this.m_updateDeltaRearLeftTyre == true){
             this.m_updateDeltaRearLeftTyre = false;
-            if(this.m_rearLeftTyreLastRound != -1){
+            if(this.m_rearLeftTyreLastRound != -1 && this.m_rearLeftTyreLastRound != 0){
                 this.m_deltaRearLeftTyre = (byte)(rlTyreWear - this.m_rearLeftTyreLastRound);
                 float lapsToDriveTo70 = ((70 - rlTyreWear) / this.m_deltaRearLeftTyre);
                 this.m_wheelLapsTo70[0].setText("" + lapsToDriveTo70);
@@ -240,9 +253,9 @@ public class LiveViewDialog extends DialogFx{
         this.m_wheelWear[1].setText(""+rrTyreWear+"%");
         if(this.m_updateDeltaRearRightTyre == true){
             this.m_updateDeltaRearRightTyre = false;
-            if(this.m_rearRightTyreLastRound != -1){
+            if(this.m_rearRightTyreLastRound != -1 && this.m_rearRightTyreLastRound != 0){
                 this.m_deltaRearRightTyre = (byte)(rrTyreWear - this.m_rearRightTyreLastRound);
-                float lapsToDriveTo70 = ((70 - rrTyreWear) / this.m_rearRightTyreLastRound);
+                float lapsToDriveTo70 = ((70 - rrTyreWear) / this.m_deltaRearRightTyre);
                 this.m_wheelLapsTo70[1].setText("" + lapsToDriveTo70);
             }
             this.m_rearRightTyreLastRound = rrTyreWear;
@@ -253,9 +266,9 @@ public class LiveViewDialog extends DialogFx{
         this.m_wheelWear[2].setText(""+flTyreWear+"%");
         if(this.m_updateDeltaFrontLeftTyre == true){
             this.m_updateDeltaFrontLeftTyre = false;
-            if(this.m_frontLeftTyreLastRound != -1){
+            if(this.m_frontLeftTyreLastRound != -1 && this.m_frontLeftTyreLastRound != 0){
                 this.m_deltaFrontLeftTyre = (byte)(flTyreWear - this.m_frontLeftTyreLastRound);
-                float lapsToDriveTo70 = ((70 - flTyreWear) / this.m_frontLeftTyreLastRound);
+                float lapsToDriveTo70 = ((70 - flTyreWear) / this.m_deltaFrontLeftTyre);
                 this.m_wheelLapsTo70[2].setText("" + lapsToDriveTo70);
             }
             this.m_frontLeftTyreLastRound = flTyreWear;
@@ -266,10 +279,10 @@ public class LiveViewDialog extends DialogFx{
         this.m_wheelWear[3].setText(""+frTyreWear+"%");
         if(this.m_updateDeltaFrontRightTyre == true){
             this.m_updateDeltaFrontRightTyre = false;
-            if(this.m_frontRightTyreLastRound != -1){
+            if(this.m_frontRightTyreLastRound != -1 && this.m_frontRightTyreLastRound != 0){
                 this.m_deltaFrontRightTyre = (byte)(frTyreWear - this.m_frontRightTyreLastRound);
-                float lapsToDriveTo70 = ((70 - frTyreWear) / this.m_frontRightTyreLastRound);
-                this.m_wheelLapsTo70[1].setText("" + lapsToDriveTo70);
+                float lapsToDriveTo70 = ((70 - frTyreWear) / this.m_deltaFrontRightTyre);
+                this.m_wheelLapsTo70[3].setText("" + lapsToDriveTo70);
             }
             this.m_frontRightTyreLastRound = frTyreWear;
         }
@@ -277,9 +290,10 @@ public class LiveViewDialog extends DialogFx{
     
     public synchronized void setFuel(float fuel){
         this.m_fuelInTank = fuel;
+        this.m_textfuelInTank.setText(""+fuel);
         if(this.m_updateFuel){
             this.m_updateFuel = false;
-            if(this.m_fuelInTankLastRound != -1){
+            if(this.m_fuelInTankLastRound != -1 && this.m_fuelInTankLastRound != 0){
                 this.m_deltaFuel = this.m_fuelInTankLastRound - fuel;
                 float remainingFuel = fuel / this.m_deltaFuel;
                 m_lapsRemainingFuel.setText(""+remainingFuel);
@@ -291,6 +305,7 @@ public class LiveViewDialog extends DialogFx{
     public synchronized void setPlayerName(int index,String name){
         this.m_plyObj[index].m_name = name;
         byte playerPos = this.m_plyObj[index].m_position;
+        playerPos--;
         this.m_playerName[playerPos].setText(name);
     }
     public synchronized void setPlayerTime(int index,float time){
@@ -313,11 +328,21 @@ public class LiveViewDialog extends DialogFx{
     }
     
     public synchronized void setLapNum( byte lapNum){
-        this.m_currentLapNum = lapNum;
-        this.m_updateDeltaFrontLeftTyre = true;
-        this.m_updateDeltaFrontRightTyre = true;
-        this.m_updateDeltaRearLeftTyre = true;
-        this.m_updateDeltaRearRightTyre = true;
-        this.m_updateFuel = true;
+        String displayText = ""+lapNum;
+        if(this.m_maxLaps != -1){
+            displayText += "/"+this.m_maxLaps;
+        }
+        m_textCurrentLap.setText(displayText);
+        if(this.m_currentLapNum != lapNum){
+            this.m_currentLapNum = lapNum;
+            this.m_updateDeltaFrontLeftTyre = true;
+            this.m_updateDeltaFrontRightTyre = true;
+            this.m_updateDeltaRearLeftTyre = true;
+            this.m_updateDeltaRearRightTyre = true;
+            this.m_updateFuel = true;
+        }
+    }
+    public synchronized void setMaxLapNum(byte lapNum){
+        this.m_maxLaps = lapNum;
     }
 }

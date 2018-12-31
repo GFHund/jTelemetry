@@ -28,6 +28,7 @@ public class PacketBuilder{
             case 7:
             return getPacketCarStatusData(rawPacket, packetHeader);
             default:
+                System.out.println("could not find Package");
             return null;
         }
         
@@ -120,10 +121,45 @@ public class PacketBuilder{
         carMotion.setGForceVertical(getFloat(rawData,offset + 44));
         return carMotion;
     }
-
-    private static PacketSessionData getSessionData(byte[] rawData,Header head){
-        return null;
+    
+     private static MarshalZone getMarshalZones(byte[] rawData,int offset){
+        MarshalZone ret = new MarshalZone();
+        ret.setZoneStart(getFloat(rawData, offset));
+        ret.setZoneFlag(getFloat(rawData, offset+4));
+        return ret;
     }
+    
+    private static PacketSessionData getSessionData(byte[] rawData,Header head){
+        //return null;
+        PacketSessionData ret = new PacketSessionData();
+        ret.setHeader(head);
+        ret.setWeather(Weather.getWeatherFromValue(rawData[21]));
+        ret.setTrackTemperature(rawData[22]);
+        ret.setAirTemperature(rawData[23]);
+        ret.setTotalLaps(rawData[24]);
+        ret.setTrackLength(getShort(rawData, 25));
+        ret.setSessionType(SessionType.getTypeFromValue(rawData[27]));
+        ret.setTrackId(TrackID.getTrackIdFromValue(rawData[28]));
+        ret.setEra(rawData[29]);
+        ret.setSessionTimeLeft(getShort(rawData, 30));
+        ret.setSessionDuration(getShort(rawData, 32));
+        ret.setPitSpeedLimit(rawData[34]);
+        ret.setGamePaused(rawData[35]);
+        ret.setIsSpectating(rawData[36]);
+        ret.setSpectatorCarIndex(rawData[37]);
+        ret.setSliProNativeSupport(rawData[38]);
+        ret.setNumMarshalZones(rawData[39]);
+        for(int i=0;i<(int)ret.getNumMarshalZones();i++){
+            int offset = 40 + i*MarshalZone.getSize();
+            MarshalZone zone = getMarshalZones(rawData, offset);
+            ret.setMarshalZone(i, zone);
+        }
+        int currentOffset = 40 + ret.getNumMarshalZones() * MarshalZone.getSize();
+        ret.setSafetyCarStatus(rawData[currentOffset]);
+        ret.setNetworkGame(rawData[currentOffset+1]);
+        return ret;
+    }
+
     private static PacketLapData getLapData(byte[] rawData,Header head){
         PacketLapData packet = new PacketLapData();//21
         packet.setHeader(head);
@@ -158,8 +194,27 @@ public class PacketBuilder{
     private static PacketEventData getEventData(byte[] rawData,Header head){
         return null;
     }
+    
+    private static ParticipantData getParticipantData(byte[] rawData,int offset){
+        ParticipantData ret = new ParticipantData();
+        ret.setAiControlled(rawData[offset]);
+        ret.setDriverId(rawData[offset+1]);
+        ret.setTeamId(rawData[offset+2]);
+        ret.setRaceNumber(rawData[offset+3]);
+        ret.setNationality(rawData[offset+4]);
+        ret.setName(getString(rawData, offset+5));
+        return ret;
+    }
+    //------------------------------------------------------------------------------------
     private static PacketParticipantsData getParticipantsData(byte[] rawData,Header head){
-        return null;
+        PacketParticipantsData ret = new PacketParticipantsData();
+        ret.setHeader(head);
+        ret.setNumCars(rawData[Header.getSize()]);
+        for(int i=0;i<20;i++){
+            ParticipantData data = getParticipantData(rawData, i*ParticipantData.getSize()+Header.getSize()+1);
+            ret.setParticipantData(i, data);
+        }
+        return ret;
     }
     private static PacketCarSetupData getCarSetupData(byte[] rawData,Header head){
         return null;
@@ -171,7 +226,7 @@ public class PacketBuilder{
         PacketCarStatusData ret = new PacketCarStatusData();
         ret.setHeader(head);
         for(int i = 0;i<20;i++){
-            CarStatusData data = getCarStatusData(rawData, Header.getSize()+ i*52);
+            CarStatusData data = getCarStatusData(rawData, Header.getSize()+ i*CarStatusData.getSize());
             ret.setCarStatusData(i, data);
         }
         return ret;
@@ -237,6 +292,10 @@ public class PacketBuilder{
         ByteBuffer converter = ByteBuffer.wrap(raw,position,8);
         converter = converter.order(ByteOrder.LITTLE_ENDIAN);
         return converter.getLong();
+    }
+    private static String getString(byte[] raw,int position){
+        String ret = new String(raw, position, 48);
+        return ret;
     }
 
 }

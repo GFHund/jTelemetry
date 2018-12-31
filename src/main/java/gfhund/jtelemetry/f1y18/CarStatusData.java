@@ -1,5 +1,8 @@
 package gfhund.jtelemetry.f1y18;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+
 public class CarStatusData{
     private byte m_tractionControl;
     private byte m_antiLockBrakes;
@@ -37,6 +40,10 @@ public class CarStatusData{
     private float m_ersHarvestedThisLapMGUK;
     private float m_ersHarvestedThisLapMGUH;
     private float m_ersDeployedThisLap;
+    
+    public static int getSize(){
+        return 52;
+    }
 
     public byte getTractionControl() {
         return m_tractionControl;
@@ -132,6 +139,37 @@ public class CarStatusData{
 
     public void setTyresWear(byte[] m_tyresWear) {
         this.m_tyresWear = m_tyresWear;
+    }
+    /*
+    0 - Rear Left
+    1 - Rear Right
+    2 Front Left
+    4 Front Right
+    */
+    public byte getTyresWearRL(){
+        return this.m_tyresWear[0];
+    }
+    public byte getTyresWearRR(){
+        return this.m_tyresWear[1];
+    }
+    public byte getTyresWearFL(){
+        return this.m_tyresWear[2];
+    }
+    public byte getTyresWearFR(){
+        return this.m_tyresWear[3];
+    }
+    
+    public void setTyresWearRL(byte tyreWear){
+        this.m_tyresWear[0] = tyreWear;
+    }
+    public void setTyresWearRR(byte tyreWear){
+        this.m_tyresWear[1] = tyreWear;
+    }
+    public void setTyresWearFL(byte tyreWear){
+        this.m_tyresWear[2] = tyreWear;
+    }
+    public void setTyresWearFR(byte tyreWear){
+        this.m_tyresWear[3] = tyreWear;
     }
 
     public byte getTyreCompound() {
@@ -246,5 +284,41 @@ public class CarStatusData{
         this.m_ersDeployedThisLap = m_ersDeployedThisLap;
     }
     
-    
+    public byte[] getBytes(){
+        ByteBuffer ret = ByteBuffer.allocate(CarStatusData.getSize());
+        ret.order(ByteOrder.LITTLE_ENDIAN);
+        ret.put(m_tractionControl);
+        ret.put(m_antiLockBrakes);
+        ret.put(m_fuelMix);
+        ret.put(m_frontBrakeBias);
+        ret.put(m_pitLimiterStatus);
+        ret.putFloat(m_fuelInTank);
+        ret.putFloat(m_fuelCapacity);
+        ret.putShort(m_maxRPM);
+        ret.putShort(m_idleRPM);
+        
+        ret.put(m_maxGears);
+        ret.put(m_drsAllowed);
+        ret.put(m_tyresWear[0]);
+        ret.put(m_tyresWear[1]);
+        ret.put(m_tyresWear[2]);
+        ret.put(m_tyresWear[3]);
+        ret.put(m_tyreCompound);
+        ret.put(m_tyresDamage[0]);
+        ret.put(m_tyresDamage[1]);
+        ret.put(m_tyresDamage[2]);
+        ret.put(m_tyresDamage[3]);
+        ret.put(m_frontLeftWingDamage);
+        ret.put(m_frontRightWingDamage);
+        ret.put(m_rearWingDamage);
+        ret.put(m_gearBoxDamage);
+        ret.put(m_exhaustDamage);
+        ret.put(m_vehicleFiaFlags);
+        ret.putFloat(m_ersStoreEnergy);
+        ret.put(m_ersDeployMode);
+        ret.putFloat(m_ersHarvestedThisLapMGUK);
+        ret.putFloat(m_ersHarvestedThisLapMGUH);
+        ret.putFloat(m_ersDeployedThisLap);
+        return ret.array();
+    }
 }
