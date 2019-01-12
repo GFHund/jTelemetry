@@ -306,7 +306,10 @@ public class LiveViewDialog extends DialogFx{
         this.m_plyObj[index].m_name = name;
         byte playerPos = this.m_plyObj[index].m_position;
         playerPos--;
-        this.m_playerName[playerPos].setText(name);
+        if(playerPos >= 0 && playerPos < this.m_playerName.length && name != null){
+            this.m_playerName[playerPos].setText(name);
+        }
+        
     }
     public synchronized void setPlayerTime(int index,float time){
         if(this.m_plyObj == null){
