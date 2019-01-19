@@ -219,8 +219,44 @@ public class PacketBuilder{
     private static PacketCarSetupData getCarSetupData(byte[] rawData,Header head){
         return null;
     }
+    private static CarTelemetryData getCarTelemetry(byte[] rawData,int offset){
+        CarTelemetryData ret = new CarTelemetryData();
+        ret.setSpeed(getShort(rawData, offset));
+        ret.setThrottle(rawData[offset+2]);
+        ret.setSteer(rawData[offset+3]);
+        ret.setBrake(rawData[offset+4]);
+        ret.setClutch(rawData[offset+5]);
+        ret.setGear(rawData[offset+6]);
+        ret.setEngineRPM(getShort(rawData, offset+7));
+        ret.setDrs(rawData[offset+9]);
+        ret.setRevLightsPercent(rawData[offset+10]);
+        for(int i=0;i<4;i++){
+            int secondOffset= offset+11+i*2;
+            ret.setBrakeTemperature(i, getShort(rawData, secondOffset));
+        }
+        for(int i = 0;i<4;i++){
+            int secondOffset = offset+19+i*2;
+            ret.setTyreSurfaceTemperature(i, getShort(rawData,secondOffset));
+        }
+        for(int i=0;i<4;i++){
+            int secondOffset=offset+27+i*2;
+            ret.setTyreInnerTemperature(i, getShort(rawData, secondOffset));
+        }
+        ret.setEngineTemperature(getShort(rawData, offset+35));
+        for(int i=0;i<4;i++){
+            int secondOffset = offset+37+i*4;
+            ret.setTyrePressure(i, getFloat(rawData, secondOffset));
+        }
+        return ret;
+    }
     private static PacketCarTelemetryData getTelemetryData(byte[] rawData,Header head){
-        return null;
+        PacketCarTelemetryData ret = new PacketCarTelemetryData();
+        ret.setHeader(head);
+        for(int i=0;i<20;i++){
+            int offset = Header.getSize() + i*CarTelemetryData.getSize();
+            ret.setCarTelemetryData(i, getCarTelemetry(rawData, offset));
+        }
+        return ret;
     }
     private static PacketCarStatusData getPacketCarStatusData(byte[] rawData,Header head){
         PacketCarStatusData ret = new PacketCarStatusData();

@@ -12,12 +12,13 @@ import gfhund.jtelemetry.f1y18.PacketBuilder;
 import gfhund.jtelemetry.f1y18.AbstractPacket;
 import gfhund.jtelemetry.f1y18.F1Y2018ParseException;
 import java.util.ArrayList;
+import javafx.concurrent.Task;
 
 /**
  *
  * @author PhilippGL
  */
-public class F1Y2018ParseThread implements Runnable{
+public class F1Y2018ParseThread extends Task<AbstractPacket>{//implements Runnable
 
     private final ReentrantLock m_lock;
     private Condition m_cond;
@@ -29,7 +30,7 @@ public class F1Y2018ParseThread implements Runnable{
     }
     
     @Override
-    public void run() {
+    public AbstractPacket call() {
         while(!Thread.currentThread().isInterrupted()){
             this.m_lock.lock();
             try{
@@ -54,6 +55,7 @@ public class F1Y2018ParseThread implements Runnable{
                 
             }
         }
+        return null;
     }
     public void addRaw(byte[] raw){
         //System.out.println("Recived Raw Bytes");

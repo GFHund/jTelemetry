@@ -5,8 +5,10 @@
  */
 package gfhund.jtelemetry.fxgui;
 
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 /**
  *
@@ -17,8 +19,16 @@ public abstract class DialogFx {
         Stage dialogStage = new Stage();
         Scene dialogScene = init(dialogStage);
         dialogStage.setScene(dialogScene);
+        dialogStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                onExit();
+            }
+        });
         dialogStage.show();
     }
+    
+    public void onExit(){}
     
     public abstract Scene init(Stage stage);
 }

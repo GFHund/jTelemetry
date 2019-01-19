@@ -5,8 +5,30 @@
  */
 package gfhund.jtelemetry.fxgui;
 
+import gfhund.jtelemetry.f1y18.AbstractPacket;
+import gfhund.jtelemetry.f1y18.LapData;
+import gfhund.jtelemetry.f1y18.PacketCarStatusData;
+import gfhund.jtelemetry.f1y18.PacketLapData;
+import gfhund.jtelemetry.f1y18.PacketParticipantsData;
+import gfhund.jtelemetry.f1y18.PacketSessionData;
+import gfhund.jtelemetry.network.F1Y2018ParseResultEvent;
+import gfhund.jtelemetry.network.F1Y2018ParseThread;
+import gfhund.jtelemetry.network.GameNetworkConnection;
+import gfhund.jtelemetry.network.ReceiveEvent;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.locks.ReentrantLock;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ChoiceDialog;
+import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
@@ -14,6 +36,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 
@@ -23,12 +46,17 @@ import javafx.stage.Stage;
  */
 public class LiveViewDialog extends DialogFx{
 
+    private TelemetryWriter m_writer;
+    
     public class PlayerObj{
         public String m_name;
         public byte m_index;
         public float m_time;
         public byte m_position;
     }
+    
+    private Thread m_f1y18Thread;
+    private GameNetworkConnection m_networkThread;
     
     private PlayerObj[] m_plyObj;
     private Rectangle[] m_wheel;
@@ -72,6 +100,10 @@ public class LiveViewDialog extends DialogFx{
     private byte m_maxLaps = -1;
     
     
+    private Button recordingStart;
+    private Button recordingStop;
+    private Boolean isRecording;
+    
     public LiveViewDialog(Stage parent){
         super(parent);
     }
@@ -85,6 +117,26 @@ public class LiveViewDialog extends DialogFx{
             rect[i].setFill(Color.AQUA);
         }
 */
+        HBox box = new HBox();
+        box.setTranslateX(400.0f);
+        recordingStart = new Button("Start Recording");
+        //recordingStart.setTranslateX(400.0f);
+        recordingStart.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                startRecording(stage);
+            }
+        });
+        recordingStop = new Button("Stop Recording");
+        recordingStop.setDisable(true);
+        recordingStop.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                stopRecording(stage);
+            }
+        });
+        box.getChildren().addAll(recordingStart,recordingStop);
+        
         double scaleFactor = 50;//50;
         Scale scale = new Scale(scaleFactor,scaleFactor);
         Scale textScale = new Scale(2,2);
@@ -224,10 +276,131 @@ public class LiveViewDialog extends DialogFx{
         grp.getChildren().add(m_lapsRemainingFuel);
         grp.getChildren().add(m_textfuelInTank);
         grp.getChildren().add(m_textCurrentLap);
+        grp.getChildren().add(box);
         
         Scene scene = new Scene(grp,1024,768);
         return scene;
     }
+    
+    public void startRecording(Stage stage){
+        Alert writeFileDialog = new Alert(Alert.AlertType.CONFIRMATION);
+        writeFileDialog.setTitle("File Write");
+        writeFileDialog.setHeaderText("File Write Dialog");
+        writeFileDialog.setContentText("Do you want the record the session?");
+        ButtonType buttonYes = new ButtonType("Yes");
+        ButtonType buttonNo = new ButtonType("No");
+        writeFileDialog.getButtonTypes().setAll(buttonYes,buttonNo);
+        isRecording = false;
+        Optional<ButtonType> resultWriteFileDialog = writeFileDialog.showAndWait();
+        if(resultWriteFileDialog.get() == buttonYes){
+            isRecording = true;
+        }
+        else if(resultWriteFileDialog.get() == buttonNo){
+            isRecording = false;
+        }
+        
+        List<String> choices = new ArrayList<>();
+        String f1y18 = "Formel1 2018";
+        String pc2 = "Project Cars 2";
+        choices.add(f1y18);
+        choices.add(pc2);
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(f1y18,choices);
+        dialog.setTitle("Select Game");
+        dialog.setContentText("Select Game which you want to record");
+        Optional<String> result = dialog.showAndWait();
+        if(result.isPresent()){
+            this.recordingStart.setDisable(true);
+            this.recordingStop.setDisable(false);
+            String resultValue = result.get();
+            ReentrantLock lock = new ReentrantLock();
+            java.util.concurrent.locks.Condition cond = lock.newCondition();
+            m_networkThread = new GameNetworkConnection(lock,cond,20777,1341);
+            if(resultValue.equals(f1y18)){
+                F1Y2018ParseThread parseThread = new F1Y2018ParseThread(lock,cond);
+                if(m_f1y18Thread == null){
+                    m_f1y18Thread = new Thread(parseThread);
+                }
+                if(m_f1y18Thread.isAlive()){
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Thread not started");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Thread not started because it is already started");
+                    alert.showAndWait();
+                    return;
+                }
+                parseThread.addParseResultEvent(new F1Y2018ParseResultEvent() {
+                    @Override
+                    public void resultEvent(AbstractPacket packet) {
+                        parsePackager(packet);
+                    }
+                });
+                if(isRecording){
+                    this.m_writer = new TelemetryWriter();
+                    parseThread.addParseResultEvent(new F1Y2018ParseResultEvent() {
+                        @Override
+                        public void resultEvent(AbstractPacket packet) {
+                            m_writer.processPackage(packet);
+                        }
+                    });
+                }
+                m_networkThread.addReciveEvent(new ReceiveEvent(){
+                    @Override
+                    public void onReceive(byte[] data){
+                        //System.out.println("Übergebe einem Consumer Thread");
+                        parseThread.addRaw(data);
+                    }
+                });
+                m_f1y18Thread.start();
+                m_networkThread.start();
+            }
+        }
+    }
+    
+    public void parsePackager(AbstractPacket packet){
+        System.out.println("recived package");
+        if(packet instanceof PacketLapData){
+            for(int i=0;i<20;i++){
+                LapData data = ((PacketLapData) packet).getLapData(i);
+                this.setPlayerTime(i, data.getLastLapTime());
+                this.setPlayerPosition(i, data.getCarPosition());
+            }
+            int playerCarIndex = ((PacketLapData) packet).getHeader().getPlayerCarIndex();
+            this.setLapNum(((PacketLapData) packet).getLapData(playerCarIndex).getCurrentLapNum());
+        }
+        else if(packet instanceof PacketCarStatusData){
+            int playerCarIndex = ((PacketCarStatusData) packet).getHeader().getPlayerCarIndex();
+            byte[] tyreWear = ((PacketCarStatusData) packet).getCarStatusData(playerCarIndex).getTyresWear();
+            this.setRLTyreWear(tyreWear[0]);
+            this.setRRTyreWear(tyreWear[1]);
+            this.setFLTyreWear(tyreWear[2]);
+            this.setFRTyreWear(tyreWear[3]);
+            this.setFuel(((PacketCarStatusData) packet).getCarStatusData(playerCarIndex).getFuelInTank());
+        }else if(packet instanceof PacketParticipantsData){
+            for(int i=0 ;i<20;i++){
+                this.setPlayerName(i, ((PacketParticipantsData) packet).getParticipant(i).getName());
+            }
+        }else if(packet instanceof PacketSessionData){
+            this.setMaxLapNum(((PacketSessionData) packet).getTotalLaps());
+        }
+    }
+    
+    public void stopRecording(Stage stage){
+        this.recordingStart.setDisable(false);
+        this.recordingStop.setDisable(true);
+        
+        m_f1y18Thread.interrupt();
+        m_networkThread.interrupt();
+        
+        if(this.isRecording){
+            FileChooser fileDialog = new FileChooser();
+            fileDialog.setTitle("Save Data File");
+            File file = fileDialog.showSaveDialog(stage);
+            if(file != null){
+                this.m_writer.closeTelemetry(file);
+            }
+        }
+    }
+    
     /*
     0 - Rear Left
     1 - Rear Right
@@ -347,5 +520,15 @@ public class LiveViewDialog extends DialogFx{
     }
     public synchronized void setMaxLapNum(byte lapNum){
         this.m_maxLaps = lapNum;
+    }
+    
+    
+    public void onExit(){
+        if(m_networkThread != null && m_networkThread.isAlive()){
+            m_networkThread.interrupt();
+        }
+        if(m_f1y18Thread != null && m_f1y18Thread.isAlive()){
+            m_f1y18Thread.interrupt();
+        }
     }
 }

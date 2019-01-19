@@ -1,6 +1,6 @@
 package gfhund.jtelemetry.f1y18;
 
-class  PacketMotionData extends AbstractPacket{
+public class PacketMotionData extends AbstractPacket{
     private Header m_header;//0 21
     private CarMotionData[] m_carMotionData = new CarMotionData[20];//21 20*60 = 1200 
     private float m_suspensionPosition[] = new float[4];//1221 4*4 = 16
@@ -23,8 +23,14 @@ class  PacketMotionData extends AbstractPacket{
     public void setHeader(Header head){
         this.m_header = head;
     }
+    public Header getHeader(){
+        return this.m_header;
+    }
     public void setCarMotionData(int i,CarMotionData value){
         this.m_carMotionData[i] = value;
+    }
+    public CarMotionData getCarMotionData(int i){
+        return this.m_carMotionData[i];
     }
     public void setSuspensionPosition(int i,float value){
         this.m_suspensionPosition[i] = value;

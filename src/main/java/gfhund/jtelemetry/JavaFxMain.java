@@ -307,7 +307,6 @@ public class JavaFxMain extends Application{
                 m_startRecordMenuItem.setDisable(true);
             }
         }
-        
     }
     
     public void stopRecording(Stage stage){
