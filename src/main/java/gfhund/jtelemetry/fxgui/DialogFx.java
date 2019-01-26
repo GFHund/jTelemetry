@@ -15,8 +15,10 @@ import javafx.stage.WindowEvent;
  * @author PhilippGL
  */
 public abstract class DialogFx {
+    Stage dialogStage;
+    
     public DialogFx(Stage parent){
-        Stage dialogStage = new Stage();
+        dialogStage = new Stage();
         Scene dialogScene = init(dialogStage);
         dialogStage.setScene(dialogScene);
         dialogStage.setOnCloseRequest(new EventHandler<WindowEvent>() {

@@ -105,7 +105,7 @@ public class TelemetryWriter {
                 mapping.put("worldRightDirY", ""+motionData.getWorldRightDirY());
                 mapping.put("worldRightDirZ",""+motionData.getWorldRightDirZ());
                 try{
-                    this.m_playerPosition[i].writePropertyClass("carMotionData", mapping);
+                    this.m_playerPosition[i].writePropertyClass("carMotionData"+head.getFrameIdentifier(), mapping);
                 }
                 catch(IOException e){
                     logging.log(Level.WARNING, "Fehler beim Schreiben der Telemetrie Datei von Spieler "+i, e);
@@ -150,9 +150,9 @@ public class TelemetryWriter {
                 mapping.put("tyresPressureRR",""+telemetry.getTyrePressure(1));
                 mapping.put("tyresPressureFL",""+telemetry.getTyrePressure(2));
                 mapping.put("tyresPressureFR",""+telemetry.getTyrePressure(3));
-                
+                Header head = ((PacketCarTelemetryData) packet).getHeader();
                 try{
-                    this.m_ownTelemetry.writePropertyClass("ownProperty", mapping);
+                    this.m_ownTelemetry.writePropertyClass("ownProperty"+head.getFrameIdentifier(), mapping);
                 }
                 catch(IOException e){
                     logging.log(Level.WARNING, "Fehler beim Schreiben der eigenen Telemetrie Datei", e);
@@ -161,7 +161,7 @@ public class TelemetryWriter {
         }
     }
     
-    public void closeTelemetry(File file){
+    public void closeTelemetry(File file,LoadingBarDialog loadingBar){
         try{
             for(int i=0 ;i<20;i++){
                 m_playerPosition[i].closeFile();
@@ -171,49 +171,59 @@ public class TelemetryWriter {
             logging.log(Level.WARNING, "Fehler beim schließen der Telemetrie Datei", e);
             return;
         }
-        //"./temp/player"+i+".stf"
-        File ownTelemetry = new File("./temp/ownTelemetry.stf");
-        File[] playerPosition = new File[20];
-        for(int i=0;i<20;i++){
-            playerPosition[i] = new File("./temp/player"+i+".stf");
-        }
-        try{
-            ZipOutputStream zipStream = new ZipOutputStream(Files.newOutputStream(file.toPath()));
-            ZipEntry ownEntry = new ZipEntry("ownTelemetry.stf");
-            zipStream.putNextEntry(ownEntry);
-            FileInputStream ownInputStream = new FileInputStream(ownTelemetry);
-            DataInputStream ownDataInputStream = new DataInputStream(ownInputStream);
-            while(true){
+        
+        Thread packingThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                File ownTelemetry = new File("./temp/ownTelemetry.stf");
+                File[] playerPosition = new File[20];
+                for(int i=0;i<20;i++){
+                    playerPosition[i] = new File("./temp/player"+i+".stf");
+                }
                 try{
-                    byte data = ownDataInputStream.readByte();
-                    zipStream.write(data);
-                }catch(EOFException f){
-                    break;
-                }
-                
-            }
-            for(int i=0;i<20;i++){
-                ZipEntry playerEntry = new ZipEntry("player"+i+".stf");
-                zipStream.putNextEntry(playerEntry);
-                FileInputStream playerInputStream = new FileInputStream(playerPosition[i]);
-                DataInputStream playerDataInputStream = new DataInputStream(playerInputStream);
-                while(true){
-                    try{
-                        byte data = playerDataInputStream.readByte();
-                        zipStream.write(data);
-                    }catch(EOFException f){
-                        break;
+                    ZipOutputStream zipStream = new ZipOutputStream(Files.newOutputStream(file.toPath()));
+                    ZipEntry ownEntry = new ZipEntry("ownTelemetry.stf");
+                    zipStream.putNextEntry(ownEntry);
+                    FileInputStream ownInputStream = new FileInputStream(ownTelemetry);
+                    DataInputStream ownDataInputStream = new DataInputStream(ownInputStream);
+                    while(true){
+                        try{
+                            byte data = ownDataInputStream.readByte();
+                            zipStream.write(data);
+                        }catch(EOFException f){
+                            break;
+                        }
+
                     }
+                    double progress = 1/21;
+                    loadingBar.setValue(progress);
+                    for(int i=0;i<20;i++){
+                        ZipEntry playerEntry = new ZipEntry("player"+i+".stf");
+                        zipStream.putNextEntry(playerEntry);
+                        FileInputStream playerInputStream = new FileInputStream(playerPosition[i]);
+                        DataInputStream playerDataInputStream = new DataInputStream(playerInputStream);
+                        while(true){
+                            try{
+                                byte data = playerDataInputStream.readByte();
+                                zipStream.write(data);
+                            }catch(EOFException f){
+                                break;
+                            }
+                        }
+                        progress += (1/21);
+                    }
+                    zipStream.close();
+                }catch(IOException e){
+                    logging.log(Level.WARNING, "Fehler beim Schreiben der eigenen Telemetrie Datei", e);
                 }
             }
-            zipStream.close();
-        }catch(IOException e){
-            logging.log(Level.WARNING, "Fehler beim Schreiben der eigenen Telemetrie Datei", e);
-        }
+        });
+        //"./temp/player"+i+".stf"
+        packingThread.start();
         
     }
-    public void closeTelemetry(String zipFilename){
+    public void closeTelemetry(String zipFilename,LoadingBarDialog loadingBar){
         File file = new File(zipFilename);
-        this.closeTelemetry(file);
+        this.closeTelemetry(file,loadingBar);
     }
 }

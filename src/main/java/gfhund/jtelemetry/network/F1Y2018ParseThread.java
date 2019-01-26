@@ -18,7 +18,7 @@ import javafx.concurrent.Task;
  *
  * @author PhilippGL
  */
-public class F1Y2018ParseThread extends Task<AbstractPacket>{//implements Runnable
+public class F1Y2018ParseThread implements Runnable{//extends Task<AbstractPacket>{//
 
     private final ReentrantLock m_lock;
     private Condition m_cond;
@@ -30,7 +30,8 @@ public class F1Y2018ParseThread extends Task<AbstractPacket>{//implements Runnab
     }
     
     @Override
-    public AbstractPacket call() {
+    //public AbstractPacket call() {
+    public void run(){
         while(!Thread.currentThread().isInterrupted()){
             this.m_lock.lock();
             try{
@@ -55,7 +56,7 @@ public class F1Y2018ParseThread extends Task<AbstractPacket>{//implements Runnab
                 
             }
         }
-        return null;
+        //return null;
     }
     public void addRaw(byte[] raw){
         //System.out.println("Recived Raw Bytes");

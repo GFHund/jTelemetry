@@ -11,6 +11,7 @@ import gfhund.jtelemetry.f1y18.PacketCarStatusData;
 import gfhund.jtelemetry.f1y18.PacketLapData;
 import gfhund.jtelemetry.f1y18.PacketParticipantsData;
 import gfhund.jtelemetry.f1y18.PacketSessionData;
+import gfhund.jtelemetry.f1y18.PacketCarTelemetryData;
 import gfhund.jtelemetry.network.F1Y2018ParseResultEvent;
 import gfhund.jtelemetry.network.F1Y2018ParseThread;
 import gfhund.jtelemetry.network.GameNetworkConnection;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
@@ -62,6 +64,8 @@ public class LiveViewDialog extends DialogFx{
     private Rectangle[] m_wheel;
     private Text[] m_wheelWear;
     private Text[] m_wheelLapsTo70;
+    private Text[] m_wheelSurfaceTemp;
+    private Text[] m_wheelInnerTemp;
     private Text[] m_playerName;
     private Text[] m_playerTime;
     private Text[] m_playerPosition;
@@ -207,18 +211,38 @@ public class LiveViewDialog extends DialogFx{
             m_wheel1.setFill(Color.GREEN);
         }
         m_wheelLapsTo70 = new Text[4];
-        m_wheelLapsTo70[0] = new Text(-3.0*scaleFactor,2.80*scaleFactor,"-");
-        m_wheelLapsTo70[1] = new Text(-3.0*scaleFactor,-1.80*scaleFactor,"-");
-        m_wheelLapsTo70[2] = new Text(2.5*scaleFactor,2.80*scaleFactor,"-");
-        m_wheelLapsTo70[3] = new Text(2.5*scaleFactor,-1.80*scaleFactor,"-");
+        m_wheelLapsTo70[0] = new Text(-3.0*scaleFactor,2.80*scaleFactor,"RL");
+        m_wheelLapsTo70[1] = new Text(2.5*scaleFactor,2.80*scaleFactor,"RR");
+        m_wheelLapsTo70[2] = new Text(-3.0*scaleFactor,-1.80*scaleFactor,"FL");
+        m_wheelLapsTo70[3] = new Text(2.5*scaleFactor,-1.80*scaleFactor,"FR");
         for (Text m_wheelLapsTo701 : m_wheelLapsTo70) {
             m_wheelLapsTo701.setFont(new Font(30));
+        }
+        
+        m_wheelSurfaceTemp = new Text[4];
+        m_wheelSurfaceTemp[0] = new Text(-3.0 * scaleFactor,3.6 * scaleFactor,"RL");
+        m_wheelSurfaceTemp[1] = new Text( 2.5 * scaleFactor,3.6 * scaleFactor,"RR");
+        m_wheelSurfaceTemp[2] = new Text(-3.0 * scaleFactor,-1.0 * scaleFactor,"FL");
+        m_wheelSurfaceTemp[3] = new Text( 2.5 * scaleFactor,-1.0 * scaleFactor,"FR");
+        for (Text wheelSurfaceTemp : m_wheelSurfaceTemp) {
+            wheelSurfaceTemp.setFont(new Font(30));
+        }
+        
+        m_wheelInnerTemp = new Text[4];
+        m_wheelInnerTemp[0] = new Text(-3.0 * scaleFactor,4.4 * scaleFactor,"RL");
+        m_wheelInnerTemp[1] = new Text( 2.5 * scaleFactor,4.4 * scaleFactor,"RR");
+        m_wheelInnerTemp[2] = new Text(-3.0 * scaleFactor,-0.2 * scaleFactor,"FL");
+        m_wheelInnerTemp[3] = new Text( 2.5 * scaleFactor,-0.2 * scaleFactor,"FR");
+        for (Text wheelInnerTemp : m_wheelInnerTemp) {
+            wheelInnerTemp.setFont(new Font(30));
         }
         
         Group wheelGrp = new Group();
         wheelGrp.getChildren().addAll(m_wheel);
         wheelGrp.getChildren().addAll(m_wheelWear);
         wheelGrp.getChildren().addAll(m_wheelLapsTo70);
+        wheelGrp.getChildren().addAll(m_wheelSurfaceTemp);
+        wheelGrp.getChildren().addAll(m_wheelInnerTemp);
         
         Group carGrp = new Group();
         carGrp.getChildren().add(car);
@@ -357,31 +381,59 @@ public class LiveViewDialog extends DialogFx{
     }
     
     public void parsePackager(AbstractPacket packet){
-        System.out.println("recived package");
-        if(packet instanceof PacketLapData){
-            for(int i=0;i<20;i++){
-                LapData data = ((PacketLapData) packet).getLapData(i);
-                this.setPlayerTime(i, data.getLastLapTime());
-                this.setPlayerPosition(i, data.getCarPosition());
+        //System.out.println("recived package");
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                if(packet instanceof PacketLapData){
+                    for(int i=0;i<20;i++){
+                        LapData data = ((PacketLapData) packet).getLapData(i);
+                        setPlayerTime(i, data.getLastLapTime());
+                        setPlayerPosition(i, data.getCarPosition());
+                    }
+                    int playerCarIndex = ((PacketLapData) packet).getHeader().getPlayerCarIndex();
+                    setLapNum(((PacketLapData) packet).getLapData(playerCarIndex).getCurrentLapNum());
+                }
+                else if(packet instanceof PacketCarStatusData){
+                    int playerCarIndex = ((PacketCarStatusData) packet).getHeader().getPlayerCarIndex();
+                    byte[] tyreWear = ((PacketCarStatusData) packet).getCarStatusData(playerCarIndex).getTyresWear();
+                    setRLTyreWear(tyreWear[0]);
+                    setRRTyreWear(tyreWear[1]);
+                    setFLTyreWear(tyreWear[2]);
+                    setFRTyreWear(tyreWear[3]);
+                    setFuel(((PacketCarStatusData) packet).getCarStatusData(playerCarIndex).getFuelInTank());
+                }else if(packet instanceof PacketParticipantsData){
+                    for(int i=0 ;i<20;i++){
+                        setPlayerName(i, ((PacketParticipantsData) packet).getParticipant(i).getName());
+                    }
+                }else if(packet instanceof PacketSessionData){
+                    setMaxLapNum(((PacketSessionData) packet).getTotalLaps());
+                }
+                else if(packet instanceof PacketCarTelemetryData){
+                    int playerCarIndex = ((PacketCarTelemetryData) packet).getHeader().getPlayerCarIndex();
+                    short surfaceTempRL = ((PacketCarTelemetryData) packet).getCarTelemetryData(playerCarIndex).getTyreSurfaceTemperature(0);
+                    short surfaceTempRR = ((PacketCarTelemetryData) packet).getCarTelemetryData(playerCarIndex).getTyreSurfaceTemperature(1);
+                    short surfaceTempFL = ((PacketCarTelemetryData) packet).getCarTelemetryData(playerCarIndex).getTyreSurfaceTemperature(2);
+                    short surfaceTempFR = ((PacketCarTelemetryData) packet).getCarTelemetryData(playerCarIndex).getTyreSurfaceTemperature(3);
+                    
+                    short innerTempRL = ((PacketCarTelemetryData) packet).getCarTelemetryData(playerCarIndex).getTyreInnerTemperature(0);
+                    short innerTempRR = ((PacketCarTelemetryData) packet).getCarTelemetryData(playerCarIndex).getTyreInnerTemperature(1);
+                    short innerTempFL = ((PacketCarTelemetryData) packet).getCarTelemetryData(playerCarIndex).getTyreInnerTemperature(2);
+                    short innerTempFR = ((PacketCarTelemetryData) packet).getCarTelemetryData(playerCarIndex).getTyreInnerTemperature(3);
+                    
+                    setRLSurfaceTemp(surfaceTempRL);
+                    setRRSurfaceTemp(surfaceTempRR);
+                    setFLSurfaceTemp(surfaceTempFL);
+                    setFRSurfaceTemp(surfaceTempFR);
+                    
+                    setRLInnerTemp(innerTempRL);
+                    setRRInnerTemp(innerTempRR);
+                    setFLInnerTemp(innerTempFL);
+                    setFRInnerTemp(innerTempFR);
+                }
             }
-            int playerCarIndex = ((PacketLapData) packet).getHeader().getPlayerCarIndex();
-            this.setLapNum(((PacketLapData) packet).getLapData(playerCarIndex).getCurrentLapNum());
-        }
-        else if(packet instanceof PacketCarStatusData){
-            int playerCarIndex = ((PacketCarStatusData) packet).getHeader().getPlayerCarIndex();
-            byte[] tyreWear = ((PacketCarStatusData) packet).getCarStatusData(playerCarIndex).getTyresWear();
-            this.setRLTyreWear(tyreWear[0]);
-            this.setRRTyreWear(tyreWear[1]);
-            this.setFLTyreWear(tyreWear[2]);
-            this.setFRTyreWear(tyreWear[3]);
-            this.setFuel(((PacketCarStatusData) packet).getCarStatusData(playerCarIndex).getFuelInTank());
-        }else if(packet instanceof PacketParticipantsData){
-            for(int i=0 ;i<20;i++){
-                this.setPlayerName(i, ((PacketParticipantsData) packet).getParticipant(i).getName());
-            }
-        }else if(packet instanceof PacketSessionData){
-            this.setMaxLapNum(((PacketSessionData) packet).getTotalLaps());
-        }
+        });
+        
     }
     
     public void stopRecording(Stage stage){
@@ -392,12 +444,19 @@ public class LiveViewDialog extends DialogFx{
         m_networkThread.interrupt();
         
         if(this.isRecording){
+            
+            
             FileChooser fileDialog = new FileChooser();
             fileDialog.setTitle("Save Data File");
+            fileDialog.getExtensionFilters().add(new FileChooser.ExtensionFilter("Zip File", "*.zip"));
             File file = fileDialog.showSaveDialog(stage);
             if(file != null){
-                this.m_writer.closeTelemetry(file);
+                LoadingBarDialog loadingBar = new LoadingBarDialog(stage);
+                this.m_writer.closeTelemetry(file,loadingBar);
+                loadingBar.close();
             }
+            
+            
         }
     }
     
@@ -459,6 +518,30 @@ public class LiveViewDialog extends DialogFx{
             }
             this.m_frontRightTyreLastRound = frTyreWear;
         }
+    }
+    public synchronized void setRLSurfaceTemp(short temp){
+        this.m_wheelSurfaceTemp[0].setText(""+temp);
+    }
+    public synchronized void setRRSurfaceTemp(short temp){
+        this.m_wheelSurfaceTemp[1].setText(""+temp);
+    }
+    public synchronized void setFLSurfaceTemp(short temp){
+        this.m_wheelSurfaceTemp[2].setText(""+temp);
+    }
+    public synchronized void setFRSurfaceTemp(short temp){
+        this.m_wheelSurfaceTemp[3].setText(""+temp);
+    }
+    public synchronized void setRLInnerTemp(short temp){
+        this.m_wheelInnerTemp[0].setText(""+temp);
+    }
+    public synchronized void setRRInnerTemp(short temp){
+        this.m_wheelInnerTemp[1].setText(""+temp);
+    }
+    public synchronized void setFLInnerTemp(short temp){
+        this.m_wheelInnerTemp[2].setText(""+temp);
+    }
+    public synchronized void setFRInnerTemp(short temp){
+        this.m_wheelInnerTemp[3].setText(""+temp);
     }
     
     public synchronized void setFuel(float fuel){
