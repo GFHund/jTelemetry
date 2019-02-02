@@ -33,7 +33,7 @@ public class StfFormatReader {
             RandomAccessFile reader = new RandomAccessFile(file, "r");
             m_data = new HashMap<>();
             //char character = reader.readChar();
-            parseIdentifier(reader,ret);
+            ret = (StfDocument)parseIdentifier(reader,ret);
         }
         catch(IOException e){
             throw e;
@@ -44,11 +44,13 @@ public class StfFormatReader {
     private AbstractStfObject parseIdentifier(RandomAccessFile reader,StfClass parent){
         char readChar;
         String identifier = "";
-        do{
-            try{
+        try{
+            long fileLength = reader.length();
+            long curOffset = reader.getFilePointer();
+            do{
                 readChar = peekNextCharacter(reader);
                 if(readChar == '='){
-                    reader.readChar();
+                    reader.read();
                     String value = parseValue(reader);
                     identifier = identifier.replace('[',Character.MIN_VALUE);
                     identifier = identifier.replace(']', Character.MIN_VALUE);
@@ -56,69 +58,83 @@ public class StfFormatReader {
                     identifier = "";
                 }
                 else if(readChar == '{'){
-                    reader.readChar();
+                    reader.read();
                     identifier = identifier.replace('[',Character.MIN_VALUE);
                     identifier = identifier.replace(']', Character.MIN_VALUE);
                     AbstractStfObject obj = parseClass(reader,identifier);
+                    parent.addObject(obj);
+                    identifier = "";
+                }
+                else if(readChar == '}'){
+                    break;
                 }
                 else{
-                    readChar = reader.readChar();
+                    readChar = (char)reader.read();
                     identifier += readChar;
                 }
-            }catch(EOFException e){
-                break;
-            }
-            catch(IOException e){
-                //return false;
-            }
-          
-        }while(true);
+                curOffset = reader.getFilePointer();
+
+            }while(fileLength > curOffset);
+        }catch(EOFException e){
+            //break;
+        }
+        catch(IOException e){
+            //return false;
+        }
         
         return parent;
     }
     private String parseValue(RandomAccessFile reader){
         char readChar;
         String value = "";
-        do{
-            try{
+        try{
+            long fileLength = reader.length();
+            long curOffset = reader.getFilePointer();
+            do{
                 readChar = peekNextCharacter(reader);
-                if(readChar != '[' || readChar != '}'){
-                    readChar = reader.readChar();
+                if(readChar != '[' && readChar != '}'){
+                    readChar = (char)reader.read();
                     value += readChar;
                 }else{
                     return value;
                 }
-            }catch(IOException e){
-                break;
-            }
-            
-        }while(true);
-        return "";
+                curOffset = reader.getFilePointer();
+
+            }while(fileLength > curOffset);
+        }catch(IOException e){
+            return "";
+        }
+        return value;
     }
     private StfClass parseClass(RandomAccessFile reader,String propertyName){
         char readChar;
         //ArrayList<AbstractStfObject> objects = new ArrayList<AbstractStfObject>();
         StfClass ret = new StfClass(propertyName);
-        do{
-            try{
+        try{
+            long fileLength = reader.length();
+            long curOffset = reader.getFilePointer();
+            do{
                 readChar = peekNextCharacter(reader);
                 if(readChar != '}'){
                     AbstractStfObject obj = parseIdentifier(reader, ret);
-                    ret.addObject(obj);
+                    //ret.addObject(obj);
+                    ret = (StfClass)obj;
                 }
                 else {
                     break;
                 }
-            }catch(IOException e){
-                break;
-            }
-        }while(true);
+                curOffset = reader.getFilePointer();
+            }while(fileLength > curOffset);
+        }catch(IOException e){
+            return null;
+        }
         return ret;
     }
     private char peekNextCharacter(RandomAccessFile reader)throws IOException{
         try{
             long filePointer = reader.getFilePointer();
-            char nextCharacter = reader.readChar();
+            //char nextCharacter = reader.readChar();
+            char nextCharacter = (char)reader.read();
             reader.seek(filePointer);
             return nextCharacter;
         }catch(IOException e){

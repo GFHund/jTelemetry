@@ -176,9 +176,11 @@ public class TelemetryWriter {
             @Override
             public void run() {
                 File ownTelemetry = new File("./temp/ownTelemetry.stf");
+                long totalSize = ownTelemetry.length();
                 File[] playerPosition = new File[20];
                 for(int i=0;i<20;i++){
                     playerPosition[i] = new File("./temp/player"+i+".stf");
+                    totalSize += playerPosition[i].length();
                 }
                 try{
                     ZipOutputStream zipStream = new ZipOutputStream(Files.newOutputStream(file.toPath()));
@@ -186,14 +188,15 @@ public class TelemetryWriter {
                     zipStream.putNextEntry(ownEntry);
                     FileInputStream ownInputStream = new FileInputStream(ownTelemetry);
                     DataInputStream ownDataInputStream = new DataInputStream(ownInputStream);
-                    while(true){
+                    long fileSize = ownTelemetry.length();
+                    for(long i = 0;i<fileSize;i++){
                         try{
                             byte data = ownDataInputStream.readByte();
                             zipStream.write(data);
                         }catch(EOFException f){
                             break;
                         }
-
+                        loadingBar.setValue((i/fileSize));
                     }
                     double progress = 1/21;
                     loadingBar.setValue(progress);
@@ -202,13 +205,15 @@ public class TelemetryWriter {
                         zipStream.putNextEntry(playerEntry);
                         FileInputStream playerInputStream = new FileInputStream(playerPosition[i]);
                         DataInputStream playerDataInputStream = new DataInputStream(playerInputStream);
-                        while(true){
+                        long filesize = playerPosition[i].length();
+                        for(long j = 0;j<fileSize;j++){
                             try{
                                 byte data = playerDataInputStream.readByte();
                                 zipStream.write(data);
                             }catch(EOFException f){
                                 break;
                             }
+                            loadingBar.setValue((j/fileSize));
                         }
                         progress += (1/21);
                     }
@@ -216,6 +221,7 @@ public class TelemetryWriter {
                 }catch(IOException e){
                     logging.log(Level.WARNING, "Fehler beim Schreiben der eigenen Telemetrie Datei", e);
                 }
+                loadingBar.close();
             }
         });
         //"./temp/player"+i+".stf"

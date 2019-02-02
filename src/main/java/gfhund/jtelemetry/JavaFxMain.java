@@ -42,6 +42,7 @@ import javafx.scene.chart.*;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.*;
+import java.lang.Float;
 
 /**
  *
@@ -54,22 +55,18 @@ public class JavaFxMain extends Application{
     private Thread m_f1y18Thread;
     private GameNetworkConnection m_networkThread;
     private static LiveViewDialog m_liveViewDialog;
-    private MenuItem m_startRecordMenuItem;
-    private MenuItem m_stopRecordMenuItem;
     
     @Override
     public void start(Stage primaryStage) throws Exception {
         MenuBar menuBar = new MenuBar();
         Menu menuFile = new Menu("File");
         Menu menuView = new Menu("View");
-        Menu menuRecord = new Menu("Recording");
-        menuBar.getMenus().addAll(menuFile,menuView,menuRecord);
+        menuBar.getMenus().addAll(menuFile,menuView);
         MenuItem openMenuItem = new MenuItem("Open");
         openMenuItem.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 fileOpenAction(primaryStage);
-                //System.out.println("drin");
             }
         });
         
@@ -81,33 +78,28 @@ public class JavaFxMain extends Application{
             }
         });
         
-        m_startRecordMenuItem = new MenuItem("Start");
-        m_startRecordMenuItem.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                startRecording(primaryStage);
-            }
-        });
-        m_stopRecordMenuItem = new MenuItem("Stop");
-        m_stopRecordMenuItem.setOnAction(new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent event){
-                stopRecording(primaryStage);
-            }
-        });
-        m_stopRecordMenuItem.setDisable(true);
         menuFile.getItems().add(openMenuItem);
         menuView.getItems().add(liveViewMenuItem);
-        menuRecord.getItems().addAll(m_startRecordMenuItem,m_stopRecordMenuItem);
         
         VBox layout = new VBox();
         
         Scene scene = new Scene(layout,400,300);
 
-        
-        
         HBox firstRow = new HBox();
-        //LineChart<float,float> diagramm = new LineChart<>();
+        
+        NumberAxis xAxis = new NumberAxis();
+        NumberAxis yAxis = new NumberAxis();
+        LineChart<Number,Number> diagramm = new LineChart<>(xAxis,yAxis);
+        firstRow.getChildren().add(diagramm);
+        ObservableList<XYChart.Data<Number,Number>> series = FXCollections.observableArrayList();
+        for(int i=0;i<5;i++){
+            series.add(new XYChart.Data<Number, Number>(new Float((float)i) ,new Float((float)(i*i))));
+        }
+        ObservableList<XYChart.Series<Number,Number>> data = FXCollections.observableArrayList();
+        data.add(new LineChart.Series<>(series));
+        diagramm.setData(data);
+        
+        
         HBox secondRow = new HBox();
         
         table.setEditable(true);
@@ -145,6 +137,7 @@ public class JavaFxMain extends Application{
     public void fileOpenAction(Stage stage){
         FileChooser fileDialog = new FileChooser();
         fileDialog.setTitle("Open Data File");
+        fileDialog.getExtensionFilters().add(new FileChooser.ExtensionFilter("F1 Telemetry File", "*.zip"));
         File file = fileDialog.showOpenDialog(stage);
         //JFileChooser fileDialog = new JFileChooser();
         //fileDialog.setFileFilter(new FileNameExtensionFilter("Formel1 2018",".f1data"));
@@ -202,124 +195,6 @@ public class JavaFxMain extends Application{
                 return;
             }
         }
-    }
-    
-    public void startRecording(Stage stage){
-        List<String> choices = new ArrayList<>();
-        String f1y18 = "Formel1 2018";
-        String pc2 = "Project Cars 2";
-        choices.add(f1y18);
-        choices.add(pc2);
-        ChoiceDialog<String> dialog = new ChoiceDialog<>(f1y18,choices);
-        dialog.setTitle("Select Game");
-        dialog.setContentText("Select Game which you want to record");
-        Optional<String> result = dialog.showAndWait();
-        if(result.isPresent()){
-            String resultValue = result.get();
-            ReentrantLock lock = new ReentrantLock();
-            java.util.concurrent.locks.Condition cond = lock.newCondition();
-            m_networkThread = new GameNetworkConnection(lock,cond,20777,1341);
-            if(resultValue.equals(f1y18)){
-                F1Y2018ParseThread parseThread = new F1Y2018ParseThread(lock,cond);
-                if(m_f1y18Thread == null){
-                    m_f1y18Thread = new Thread(parseThread);
-                }
-                
-                if(m_f1y18Thread.isAlive()){
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Thread not started");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Thread not started because it is already started");
-                    alert.showAndWait();
-                    return;
-                }
- 
-                parseThread.addParseResultEvent(new F1Y2018ParseResultEvent() {
-                    @Override
-                    public void resultEvent(AbstractPacket packet) {
-                        //System.out.println("Recived packages");
-                        if(m_liveViewDialog == null){
-                            return;
-                        }
-                        /*
-                        0 - Rear Left
-                        1 - Rear Right
-                        2 Front Left
-                        4 Front Right
-                        */
-                        if(packet instanceof PacketLapData){
-                            //System.out.println("recived Packet Lap Data");
-                            for(int i=0;i<20;i++){
-                                LapData data = ((PacketLapData) packet).getLapData(i);
-                                m_liveViewDialog.setPlayerTime(i, data.getLastLapTime());
-                                m_liveViewDialog.setPlayerPosition(i, data.getCarPosition());
-                                
-                                
-                            }
-                            int playerCarIndex = ((PacketLapData) packet).getHeader().getPlayerCarIndex();
-                            m_liveViewDialog.setLapNum(((PacketLapData) packet).getLapData(playerCarIndex).getCurrentLapNum());
-                        }
-                        else if(packet instanceof PacketCarStatusData){
-                            //System.out.println("Recived Car Status");
-                            int playerCarIndex = ((PacketCarStatusData) packet).getHeader().getPlayerCarIndex();
-                            byte[] tyreWear = ((PacketCarStatusData) packet).getCarStatusData(playerCarIndex).getTyresWear();
-                            
-                            m_liveViewDialog.setRLTyreWear(tyreWear[0]);
-                            m_liveViewDialog.setRRTyreWear(tyreWear[1]);
-                            m_liveViewDialog.setFLTyreWear(tyreWear[2]);
-                            m_liveViewDialog.setFRTyreWear(tyreWear[3]);
-                            m_liveViewDialog.setFuel(((PacketCarStatusData) packet).getCarStatusData(playerCarIndex).getFuelInTank());
-                        }
-                        else if(packet instanceof PacketParticipantsData){
-                            //System.out.println("recived Packet Participants Data");
-                            for(int i=0 ;i<20;i++){
-                                m_liveViewDialog.setPlayerName(i, ((PacketParticipantsData) packet).getParticipant(i).getName());
-                            }
-                            
-                        }
-                        else if(packet instanceof PacketSessionData){
-                            m_liveViewDialog.setMaxLapNum(((PacketSessionData) packet).getTotalLaps());
-                        }
-                    }
-                });
-
-
-                m_networkThread.addReciveEvent(new ReceiveEvent(){
-                    @Override
-                    public void onReceive(byte[] data){
-                        //System.out.println("Übergebe einem Consumer Thread");
-                        parseThread.addRaw(data);
-                    }
-                });
-                m_f1y18Thread.start();
-                m_networkThread.start();
-                
-                m_stopRecordMenuItem.setDisable(false);
-                m_startRecordMenuItem.setDisable(true);
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Recording started");
-                alert.setHeaderText(null);
-                alert.setContentText("Recording is started");
-                alert.showAndWait();
-            }
-            else{
-                m_stopRecordMenuItem.setDisable(false);
-                m_startRecordMenuItem.setDisable(true);
-            }
-        }
-    }
-    
-    public void stopRecording(Stage stage){
-        m_f1y18Thread.interrupt();
-        m_networkThread.interrupt();
-        m_stopRecordMenuItem.setDisable(true);
-        m_startRecordMenuItem.setDisable(false);
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Recording stop");
-        alert.setHeaderText(null);
-        alert.setContentText("Recording is stopped");
-        alert.showAndWait();
-                    
     }
     
     public void startLiveViewDialog(Stage stage){

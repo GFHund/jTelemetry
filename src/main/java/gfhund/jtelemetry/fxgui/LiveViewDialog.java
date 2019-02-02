@@ -453,7 +453,7 @@ public class LiveViewDialog extends DialogFx{
             if(file != null){
                 LoadingBarDialog loadingBar = new LoadingBarDialog(stage);
                 this.m_writer.closeTelemetry(file,loadingBar);
-                loadingBar.close();
+                
             }
             
             

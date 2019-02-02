@@ -20,27 +20,22 @@ import org.junit.jupiter.api.BeforeAll;
 class StfFormatReaderTest {
     
     @BeforeAll
-    void prepareTest(){
+    static void prepareTest(){
         try{
             File testCase1 = new File("testCase1.stf");
             FileWriter testCase1Writer = new FileWriter(testCase1);
             testCase1Writer.write("[prop1]=50[prop2]=5.5[prop3]=Hallo Welt");
+            testCase1Writer.close();
             
             File testCase2 = new File("testCase2.stf");
             FileWriter testCase2Writer = new FileWriter(testCase2);
             testCase2Writer.write("[class1]{[prop1]=50[prop2]=5.5[prop3]=Hallo Welt}");
+            testCase2Writer.close();
             
             File testCase3 = new File("testCase3.stf");
             FileWriter testCase3Writer = new FileWriter(testCase3);
-            testCase3Writer.write("[class1]{[class2]={[prop1]=50[prop2]=5.5[prop3]=Hallo Welt}}");
-            
-            File testCase4 = new File("testCase4.stf");
-            FileWriter testCase4Writer = new FileWriter(testCase4);
-            testCase4Writer.write("[class1]{[class2]={[prop1]=50[prop2]=5.5[prop3]=Hallo Welt}}");
-            
-            File testCase5 = new File("testCase5.stf");
-            FileWriter testCase5Writer = new FileWriter(testCase5);
-            testCase5Writer.write("[class1]{[prop1]=50[class2]={[prop2]=5.5[prop3]=Hallo Welt}}");
+            testCase3Writer.write("[class1]{[class2]{[prop1]=50[prop2]=5.5[prop3]=Hallo Welt}}");
+            testCase3Writer.close();
             
             //File wrongTestCase1 = new File("wrongTestCase1.stf");
             //FileWriter wrongTestCase5Writer = new FileWriter(wrongTestCase1);
@@ -55,19 +50,58 @@ class StfFormatReaderTest {
     void testCase1Test() throws IOException{
         StfFormatReader reader = new StfFormatReader();
         try{
-            AbstractStfObject obj = reader.read("testCase1.stf");
+            StfDocument obj = reader.read("testCase1.stf");
             assertTrue(obj instanceof StfDocument);
-            
+            String value = obj.getValue("prop1");
+            assertEquals("50",value);
+            value = obj.getValue("prop2");
+            assertEquals("5.5",value);
+            value = obj.getValue("prop3");
+            assertEquals("Hallo Welt",value);
         }catch(IOException e){
             throw e;
         }
         
         
-        assertEquals(2,1+1);//hallo Welt
+        //assertEquals(2,1+1);//hallo Welt
+    }
+    
+    @Test
+    void testCase2Test()throws IOException{
+       StfFormatReader reader = new StfFormatReader();
+        try{
+            StfDocument obj = reader.read("testCase2.stf");
+            assertTrue(obj instanceof StfDocument);
+            String value = obj.getValue("class1.prop1");
+            assertEquals("50",value);
+            value = obj.getValue("class1.prop2");
+            assertEquals("5.5",value);
+            value = obj.getValue("class1.prop3");
+            assertEquals("Hallo Welt",value);
+        }catch(IOException e){
+            throw e;
+        } 
+    }
+    
+    @Test
+    void testCase3Test()throws IOException{
+       StfFormatReader reader = new StfFormatReader();
+        try{
+            StfDocument obj = reader.read("testCase3.stf");
+            assertTrue(obj instanceof StfDocument);
+            String value = obj.getValue("class1.class2.prop1");
+            assertEquals("50",value);
+            value = obj.getValue("class1.class2.prop2");
+            assertEquals("5.5",value);
+            value = obj.getValue("class1.class2.prop3");
+            assertEquals("Hallo Welt",value);
+        }catch(IOException e){
+            throw e;
+        } 
     }
     
     @AfterAll
-    void cleanUp(){
+    static void cleanUp(){
         
     }
 }
