@@ -20,6 +20,7 @@ import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.zip.ZipOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.HashMap;
@@ -34,6 +35,8 @@ public class TelemetryWriter {
     class PlayerValues{
         public byte m_lap;
         public String name;
+        public float lastLapTime;
+        public float currentLapTime;
     }
     
     private StfFormatWriter[] m_playerPosition = new StfFormatWriter[20];
@@ -41,6 +44,7 @@ public class TelemetryWriter {
     private PlayerValues[] m_playerValues = new PlayerValues[20];
     private byte m_lap;
     private static final Logger logging = Logger.getLogger(TelemetryWriter.class.getName());
+    private ArrayList<ProgressEvent> progressEventList = new ArrayList<>();
     
 
     public TelemetryWriter() {
@@ -76,6 +80,8 @@ public class TelemetryWriter {
         }else if(packet instanceof PacketLapData){
             for(int i=0;i<20;i++){
                this.m_playerValues[i].m_lap = ((PacketLapData) packet).getLapData(i).getCurrentLapNum();
+               this.m_playerValues[i].currentLapTime = ((PacketLapData)packet).getLapData(i).getCurrentLapTime();
+               this.m_playerValues[i].lastLapTime = ((PacketLapData)packet).getLapData(i).getLastLapTime();
             }
         }
         else if(packet instanceof PacketMotionData){
@@ -118,6 +124,8 @@ public class TelemetryWriter {
             if(playerIndex >= 0 && playerIndex<20){
                 HashMap<String,String> mapping = new HashMap<>();
                 mapping.put("lap", ""+this.m_playerValues[playerIndex].m_lap);
+                mapping.put("currentLapTime",""+this.m_playerValues[playerIndex].currentLapTime);
+                mapping.put("lastLapTime",""+this.m_playerValues[playerIndex].lastLapTime);
                 mapping.put("sessionUid", ""+((PacketCarTelemetryData) packet).getHeader().getSessionUid());
                 mapping.put("sessionTime", ""+((PacketCarTelemetryData) packet).getHeader().getSessionTime());
                 
@@ -161,7 +169,7 @@ public class TelemetryWriter {
         }
     }
     
-    public void closeTelemetry(File file,LoadingBarDialog loadingBar){
+    public void closeTelemetry(File file){
         try{
             for(int i=0 ;i<20;i++){
                 m_playerPosition[i].closeFile();
@@ -175,61 +183,53 @@ public class TelemetryWriter {
         Thread packingThread = new Thread(new Runnable() {
             @Override
             public void run() {
-                File ownTelemetry = new File("./temp/ownTelemetry.stf");
-                long totalSize = ownTelemetry.length();
-                File[] playerPosition = new File[20];
-                for(int i=0;i<20;i++){
-                    playerPosition[i] = new File("./temp/player"+i+".stf");
-                    totalSize += playerPosition[i].length();
+                File tempDirectory = new File("./temp");
+                long totalSize= 0;
+                long totalBytesWritten=0;
+                File[] tempFiles = tempDirectory.listFiles();
+                for(int i=0;i<tempFiles.length;i++){
+                    totalSize += tempFiles[i].length();
                 }
                 try{
                     ZipOutputStream zipStream = new ZipOutputStream(Files.newOutputStream(file.toPath()));
-                    ZipEntry ownEntry = new ZipEntry("ownTelemetry.stf");
-                    zipStream.putNextEntry(ownEntry);
-                    FileInputStream ownInputStream = new FileInputStream(ownTelemetry);
-                    DataInputStream ownDataInputStream = new DataInputStream(ownInputStream);
-                    long fileSize = ownTelemetry.length();
-                    for(long i = 0;i<fileSize;i++){
-                        try{
-                            byte data = ownDataInputStream.readByte();
-                            zipStream.write(data);
-                        }catch(EOFException f){
-                            break;
-                        }
-                        loadingBar.setValue((i/fileSize));
-                    }
-                    double progress = 1/21;
-                    loadingBar.setValue(progress);
-                    for(int i=0;i<20;i++){
-                        ZipEntry playerEntry = new ZipEntry("player"+i+".stf");
-                        zipStream.putNextEntry(playerEntry);
-                        FileInputStream playerInputStream = new FileInputStream(playerPosition[i]);
-                        DataInputStream playerDataInputStream = new DataInputStream(playerInputStream);
-                        long filesize = playerPosition[i].length();
-                        for(long j = 0;j<fileSize;j++){
-                            try{
-                                byte data = playerDataInputStream.readByte();
-                                zipStream.write(data);
-                            }catch(EOFException f){
+                    for(int i=0;i<tempFiles.length;i++){
+                        ZipEntry zipEntry = new ZipEntry(tempFiles[i].getName());
+                        zipStream.putNextEntry(zipEntry);
+                        FileInputStream tempFileInputStream = new FileInputStream(tempFiles[i]);
+                        DataInputStream tempFileDataInputStream = new DataInputStream(tempFileInputStream);
+                        byte[] data = new byte[1000];
+                        for(int j=0;j<tempFiles[i].length();j+=1000){
+                            
+                            int numBytesWritten = tempFileDataInputStream.read(data);
+                            if(numBytesWritten<=0){
                                 break;
                             }
-                            loadingBar.setValue((j/fileSize));
-                        }
-                        progress += (1/21);
+                            
+                            zipStream.write(data,0,numBytesWritten);
+                            totalBytesWritten += numBytesWritten;
+                            float writtenInPercent = totalBytesWritten / totalSize;
+                            for(ProgressEvent e:progressEventList){
+                                e.onProgress(writtenInPercent);
+                            }
+                            
+                        } 
                     }
                     zipStream.close();
                 }catch(IOException e){
                     logging.log(Level.WARNING, "Fehler beim Schreiben der eigenen Telemetrie Datei", e);
-                }
-                loadingBar.close();
+                }      
             }
         });
         //"./temp/player"+i+".stf"
         packingThread.start();
         
     }
-    public void closeTelemetry(String zipFilename,LoadingBarDialog loadingBar){
+    public void closeTelemetry(String zipFilename){
         File file = new File(zipFilename);
-        this.closeTelemetry(file,loadingBar);
+        this.closeTelemetry(file);
+    }
+    
+    public void addProgressListener(ProgressEvent event){
+        this.progressEventList.add(event);
     }
 }

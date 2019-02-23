@@ -21,6 +21,10 @@ import gfhund.jtelemetry.f1y18.PacketLapData;
 import gfhund.jtelemetry.f1y18.PacketCarStatusData;
 import gfhund.jtelemetry.f1y18.PacketParticipantsData;
 import gfhund.jtelemetry.f1y18.PacketSessionData;
+import gfhund.jtelemetry.fxgui.TelemetryReader;
+import gfhund.jtelemetry.stfFormat.AbstractStfObject;
+import gfhund.jtelemetry.stfFormat.StfDocument;
+import gfhund.jtelemetry.stfFormat.StfClass;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -43,6 +47,8 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.*;
 import java.lang.Float;
+import java.util.HashMap;
+import javafx.collections.ListChangeListener;
 
 /**
  *
@@ -50,11 +56,14 @@ import java.lang.Float;
  */
 public class JavaFxMain extends Application{
     private ObservableList<TimingFx> m_timings = FXCollections.observableArrayList();
+    private ObservableList<String> m_properties = FXCollections.observableArrayList();
+    private ObservableList<String> m_sessions = FXCollections.observableArrayList();
     private AbstractPackets m_packetManager;
     private TableView<TimingFx> table = new TableView<>();
     private Thread m_f1y18Thread;
     private GameNetworkConnection m_networkThread;
     private static LiveViewDialog m_liveViewDialog;
+    private HashMap<String,StfDocument> m_documents;
     
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -87,6 +96,17 @@ public class JavaFxMain extends Application{
 
         HBox firstRow = new HBox();
         
+        ListView<String> list = new ListView<String>();
+        list.setItems(this.m_properties);
+        list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        list.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<String>() {
+            @Override
+            public void onChanged(ListChangeListener.Change<? extends String> c) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        });
+        firstRow.getChildren().add(list);
+        
         NumberAxis xAxis = new NumberAxis();
         NumberAxis yAxis = new NumberAxis();
         LineChart<Number,Number> diagramm = new LineChart<>(xAxis,yAxis);
@@ -99,8 +119,17 @@ public class JavaFxMain extends Application{
         data.add(new LineChart.Series<>(series));
         diagramm.setData(data);
         
-        
         HBox secondRow = new HBox();
+        
+        ListView<String> sessionList = new ListView<String>();
+        sessionList.setItems(this.m_sessions);
+        sessionList.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<String>() {
+            @Override
+            public void onChanged(ListChangeListener.Change<? extends String> c) {
+                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        });
+        secondRow.getChildren().add(sessionList);
         
         table.setEditable(true);
         
@@ -154,50 +183,45 @@ public class JavaFxMain extends Application{
                 alert.showAndWait();
                 return;
             }
-            String sFileContent = "";
-            try{
-                byte[] fileContent = Files.readAllBytes(file.toPath());
-                sFileContent = new String(fileContent);//, Charset.forName("ascii")
-            }catch(IOException e){
-                //JOptionPane.showMessageDialog(null, "Cannot read File. Reason:"+e.getMessage(), "File Error", JOptionPane.ERROR_MESSAGE);
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("File Error");
-                alert.setHeaderText(null);
-                alert.setContentText("Cannot read File. Reason: "+e.getMessage());
-                alert.showAndWait();
-                return;
-            }
-            if(sFileContent.isEmpty()){
-                //JOptionPane.showMessageDialog(null, "Cannot read File. Reason: "+"File is empty", "File Error", JOptionPane.ERROR_MESSAGE);
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("File Error");
-                alert.setHeaderText(null);
-                alert.setContentText("Cannot read File. Reason: "+"File is empty");
-                alert.showAndWait();
-                return;
-            }
-            try{
-                m_packetManager = F1Y2018Packets.parse(sFileContent);
-                //this.m_timings.addAll(m_packetManager.getTimings());
-                Timing[] timings = m_packetManager.getTimings();
-                for(Timing time:timings){
-                    System.out.println("Daten Insert");
-                    TimingFx timingfx = new TimingFx(time);
-                    this.m_timings.add(timingfx);
+            TelemetryReader reader = new TelemetryReader();
+            HashMap<String,StfDocument> documents = reader.read(file);
+            StfClass rootClass = (StfClass)documents.get("ownTelemetry.stf").getChild(0);
+            StfClass dataClass = (StfClass)rootClass.getChild(0);
+            String[] properties = dataClass.getChildPropertyName();
+            this.m_properties.addAll(properties);
+            AbstractStfObject[] children = rootClass.getChildren();
+            ArrayList<String> sessions = new ArrayList<>();
+            for(AbstractStfObject obj:children){
+                
+                if(obj instanceof StfClass){
+                    String sessionIdentifier = ((StfClass) obj).getChildPropertyValue("sessionUid");
+                    boolean bFound = false;
+                    for(int i=0;i<sessions.size();i++){
+                        if(sessions.get(i).compareTo(sessionIdentifier)==0){
+                            bFound = true;
+                        }
+                    }
+                    if(!bFound){
+                        sessions.add(sessionIdentifier);
+                    }
                 }
-                System.out.println("Daten Insert");
-            }catch(F1Y2018ParseException e){
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Parse Error");
-                alert.setHeaderText(null);
-                alert.setContentText("Parse Error. Reason: "+e.getMessage());
-                alert.showAndWait();
-                return;
+                
             }
+            this.m_sessions.addAll(sessions);
+            m_documents = documents;
         }
     }
     
     public void startLiveViewDialog(Stage stage){
         m_liveViewDialog = new LiveViewDialog(stage);
+    }
+    
+    public void selectSession(){
+        StfDocument doc = this.m_documents.get("ownTelemetry.stf");
+        StfClass rootClass = (StfClass) doc.getChild(0);
+        AbstractStfObject[] children = rootClass.getChildren();
+        for(AbstractStfObject obj: children){
+            //
+        }
     }
 }

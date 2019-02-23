@@ -68,4 +68,35 @@ public class StfClass extends AbstractStfObject {
         }
         return ret;
     }
+    //-------------------------------------------
+    public AbstractStfObject getChild(int index){
+        return this.objects.get(index);
+    }
+    //---------------------------
+    public String[] getChildPropertyName(){
+        String[] ret = new String[objects.size()];
+        int i=0;
+        for(AbstractStfObject obj: objects){
+            ret[i] = obj.getPropertyName();
+            i++;
+        }
+        return ret;
+    }
+    public String getChildPropertyValue(String propertyName){
+        String value = "";
+        for(AbstractStfObject obj:objects){
+            String objPropertyName = obj.getPropertyName();
+            objPropertyName = objPropertyName.trim();
+            if(objPropertyName.compareTo(propertyName) == 0){
+                if(obj instanceof StfProperty){
+                    value = ((StfProperty) obj).getValue();
+                    return value;
+                }
+                else{
+                    //
+                }
+            }
+        }
+        return value;
+    }
 }
