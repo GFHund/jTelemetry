@@ -12,6 +12,9 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
 
 /**
  *
@@ -20,6 +23,7 @@ import java.io.InputStream;
 public class StfFormatReader {
     
     private HashMap<String,Object> m_data;
+    private LinkedList<Character> inputQueue;
     
     
     public StfDocument read(String filename)throws IOException{
@@ -152,17 +156,26 @@ public class StfFormatReader {
     private long numReadData;
     private char readCharacter;
     private char peekNextCharacter(InputStream stream)throws IOException{
-        try{
-            char nextCharacter = (char)stream.read();
-            this.readCharacter = nextCharacter;
-            numReadData++;
-            return nextCharacter;
-        }catch(IOException e){
-            throw e;
+        if(inputQueue.size()<= 0){
+            try{
+                char nextCharacter = (char)stream.read();
+                this.readCharacter = nextCharacter;
+                numReadData++;
+                //return nextCharacter;
+                inputQueue.add(new Character(nextCharacter));
+            }catch(IOException e){
+                throw e;
+            }
         }
+        return inputQueue.peek().charValue();
     }
     private char readCharacter(){
-        return this.readCharacter;
+        //return this.readCharacter;
+        Character c = this.inputQueue.poll(); 
+        if(c == null){
+            return (char)0;
+        }
+        return c.charValue();
     }
     private AbstractStfObject parseIdentifier(InputStream stream,StfClass parent)throws IOException{
         char readChar;
@@ -172,6 +185,7 @@ public class StfFormatReader {
             do{
                 readChar = peekNextCharacter(stream);
                 if(readChar == '='){
+                    readCharacter();
                     String value = parseValue(stream);
                     identifier = identifier.replace('[',Character.MIN_VALUE);
                     identifier = identifier.replace(']', Character.MIN_VALUE);
@@ -179,10 +193,12 @@ public class StfFormatReader {
                     identifier = "";
                 }
                 else if(readChar == '{'){
+                    readCharacter();
                     identifier = identifier.replace('[',Character.MIN_VALUE);
                     identifier = identifier.replace(']', Character.MIN_VALUE);
                     AbstractStfObject obj = parseClass(stream,identifier);
                     parent.addObject(obj);
+                    readCharacter();
                     identifier = "";
                 }
                 else if(readChar == '}'){
@@ -245,6 +261,7 @@ public class StfFormatReader {
         try{
             numReadData = 0;
             this.fileSize = length;
+            inputQueue = new LinkedList<>();
             ret = (StfDocument)parseIdentifier(stream, ret);
         }catch(IOException e){
             throw e;

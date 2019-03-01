@@ -37,6 +37,8 @@ public class TelemetryWriter {
         public String name;
         public float lastLapTime;
         public float currentLapTime;
+        public float section1Time;
+        public float section2Time;
     }
     
     private StfFormatWriter[] m_playerPosition = new StfFormatWriter[20];
@@ -59,11 +61,13 @@ public class TelemetryWriter {
         }
         try{
             m_ownTelemetry = new StfFormatWriter("./temp/ownTelemetry.stf","ownTelemetry");
+            /*
             for(int i=0;i<m_playerPosition.length;i++){
                
                 m_playerPosition[i] = new StfFormatWriter("./temp/player"+i+".stf", "player"+i);
                 m_playerValues[i] = new PlayerValues();
             }
+            */
         }
         catch(IOException e){
             logging.log(Level.WARNING, "Fehler beim Anlegen der Telemetrie Datei", e);
@@ -82,6 +86,8 @@ public class TelemetryWriter {
                this.m_playerValues[i].m_lap = ((PacketLapData) packet).getLapData(i).getCurrentLapNum();
                this.m_playerValues[i].currentLapTime = ((PacketLapData)packet).getLapData(i).getCurrentLapTime();
                this.m_playerValues[i].lastLapTime = ((PacketLapData)packet).getLapData(i).getLastLapTime();
+               this.m_playerValues[i].section1Time = ((PacketLapData)packet).getLapData(i).getSector1Time();
+               this.m_playerValues[i].section2Time = ((PacketLapData)packet).getLapData(i).getSector2Time();
             }
         }
         else if(packet instanceof PacketMotionData){
@@ -110,12 +116,14 @@ public class TelemetryWriter {
                 mapping.put("worldRightDirX", ""+motionData.getWorldRightDirX());
                 mapping.put("worldRightDirY", ""+motionData.getWorldRightDirY());
                 mapping.put("worldRightDirZ",""+motionData.getWorldRightDirZ());
+                /*
                 try{
                     this.m_playerPosition[i].writePropertyClass("carMotionData"+head.getFrameIdentifier(), mapping);
                 }
                 catch(IOException e){
                     logging.log(Level.WARNING, "Fehler beim Schreiben der Telemetrie Datei von Spieler "+i, e);
                 }
+*/
                 
             }
         }
@@ -126,6 +134,8 @@ public class TelemetryWriter {
                 mapping.put("lap", ""+this.m_playerValues[playerIndex].m_lap);
                 mapping.put("currentLapTime",""+this.m_playerValues[playerIndex].currentLapTime);
                 mapping.put("lastLapTime",""+this.m_playerValues[playerIndex].lastLapTime);
+                mapping.put("section1Time",""+this.m_playerValues[playerIndex].section1Time);
+                mapping.put("section2Time",""+this.m_playerValues[playerIndex].section2Time);
                 mapping.put("sessionUid", ""+((PacketCarTelemetryData) packet).getHeader().getSessionUid());
                 mapping.put("sessionTime", ""+((PacketCarTelemetryData) packet).getHeader().getSessionTime());
                 
@@ -171,9 +181,11 @@ public class TelemetryWriter {
     
     public void closeTelemetry(File file){
         try{
+            /*
             for(int i=0 ;i<20;i++){
                 m_playerPosition[i].closeFile();
             }
+*/
             this.m_ownTelemetry.closeFile();
         }catch(IOException e){
             logging.log(Level.WARNING, "Fehler beim schließen der Telemetrie Datei", e);

@@ -1,6 +1,7 @@
 package gfhund.jtelemetry.data;
 
 public class Timing{
+    private int mLapNum;
     private float mLapTime;
     private float mSector1Time;
     private float mSector2Time;
@@ -8,6 +9,10 @@ public class Timing{
     private float mSector4Time;
     private float mSector5Time;
 
+    public  int getLapNum(){
+        return this.mLapNum;
+    }
+    
     public float getLapTime(){
         return this.mLapTime;
     }
@@ -27,6 +32,9 @@ public class Timing{
         return this.mSector5Time;
     }
 
+    public void setLapNum(int lapNum){
+        this.mLapNum = lapNum;
+    }
     public void setLapTime(float lapTime){
         this.mLapTime = lapTime;
     }

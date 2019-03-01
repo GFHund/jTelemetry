@@ -34,15 +34,16 @@ public class TelemetryWriterTest {
     @Test
     void writerTest(){
         TelemetryWriter writer = new TelemetryWriter();
-        
+        int childLength = 10;
         PacketParticipantsData participantData = getParticipants();
         PacketLapData lapData = getLapData();
         PacketMotionData motionData = getMotionData();
         PacketCarTelemetryData telemetryData = getCarTelemetryData();
-        for(int i=0;i<10;i++){
+        for(int i=0;i<childLength;i++){
             writer.processPackage(participantData);
             writer.processPackage(lapData);
             writer.processPackage(motionData);
+            telemetryData.getHeader().setFrameIdentifier(i);
             writer.processPackage(telemetryData);
         }
         writer.closeTelemetry("./testTelemetryWriter.zip");
@@ -72,7 +73,8 @@ public class TelemetryWriterTest {
             else{
                 StfClass rootClass = (StfClass)doc.getValue().getChild(0);
                 AbstractStfObject[] children = rootClass.getChildren();
-                assertTrue(children.length > 0);
+                //assertTrue(children.length == childLength);
+                assertEquals(childLength,children.length);
                 for(AbstractStfObject obj: children){
                     if(obj instanceof StfClass){
                         String value = ((StfClass) obj).getValue("speed");

@@ -7,12 +7,14 @@ package gfhund.jtelemetry.fxgui;
 
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.SimpleFloatProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import gfhund.jtelemetry.data.Timing;
 /**
  *
  * @author PhilippGL
  */
 public class TimingFx {
+    private final SimpleIntegerProperty lapNum;
     private final SimpleFloatProperty lapTime;
     private final SimpleFloatProperty sector1Time;
     private final SimpleFloatProperty sector2Time;
@@ -21,6 +23,7 @@ public class TimingFx {
     private final SimpleFloatProperty sector5Time;
     
     public TimingFx(){
+        this.lapNum = new SimpleIntegerProperty(0);
         this.lapTime = new SimpleFloatProperty(0.0f);
         this.sector1Time = new SimpleFloatProperty(0.0f);
         this.sector2Time = new SimpleFloatProperty(0.0f);
@@ -29,6 +32,7 @@ public class TimingFx {
         this.sector5Time = new SimpleFloatProperty(0.0f);
     }
     public TimingFx(Timing timing){
+        this.lapNum = new SimpleIntegerProperty(timing.getLapNum());
         this.lapTime = new SimpleFloatProperty(timing.getLapTime());
         this.sector1Time = new SimpleFloatProperty(timing.getSector1Time());
         this.sector2Time = new SimpleFloatProperty(timing.getSector2Time());
@@ -37,6 +41,10 @@ public class TimingFx {
         this.sector5Time = new SimpleFloatProperty(timing.getSector5Time());
     }
 
+    public int getLapNum(){
+        return lapNum.get();
+    }
+    
     public float getLapTime() {
         return lapTime.get();
     }
@@ -61,6 +69,9 @@ public class TimingFx {
         return sector5Time.get();
     }
     
+    public void setLapNum(int value){
+        this.lapNum.set(value);
+    }
     public void setLapTime(float value){
         this.lapTime.set(value);
     }
