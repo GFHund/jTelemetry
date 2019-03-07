@@ -41,12 +41,91 @@ public class TelemetryWriter {
         public float section2Time;
     }
     
+    class TelemetryValue{
+        public String frameIdentifier;
+        public String lap;
+        public String currentLapTime;
+        public String lastLapTime;
+        public String section1Time;
+        public String section2Time;
+        public String sessionUid;
+        public String sessionTime;
+        public String speed;
+        public String throttle;
+        public String brake;
+        public String steer;
+        public String clutch;
+        public String rpm;
+        public String gear;
+        public String brakeTemperatureRL;
+        public String brakeTemperatureRR;
+        public String brakeTemperatureFL;
+        public String brakeTemperatureFR;
+        public String tyresSurfaceTemperatureRL;
+        public String tyresSurfaceTemperatureRR;
+        public String tyresSurfaceTemperatureFL;
+        public String tyresSurfaceTemperatureFR;
+        public String tyresInnerTemperatureRL;
+        public String tyresInnerTemperatureRR;
+        public String tyresInnerTemperatureFL;
+        public String tyresInnerTemperatureFR;
+        public String tyresPressureRL;
+        public String tyresPressureRR;
+        public String tyresPressureFL;
+        public String tyresPressureFR;
+        
+        public HashMap<String,String> getHashMap(){
+             HashMap<String,String> mapping = new HashMap<>();
+                mapping.put("lap", ""+this.lap);
+                mapping.put("currentLapTime",""+this.currentLapTime);
+                mapping.put("lastLapTime",""+this.lastLapTime);
+                mapping.put("section1Time",""+this.section1Time);
+                mapping.put("section2Time",""+this.section2Time);
+                mapping.put("sessionUid", ""+this.sessionUid);
+                mapping.put("sessionTime", ""+this.sessionTime);
+                
+                mapping.put("speed", ""+speed);
+                mapping.put("throttle", ""+throttle);
+                mapping.put("brake", ""+brake);
+                mapping.put("steer", ""+steer);
+                mapping.put("clutch", ""+clutch);
+                mapping.put("rpm", ""+rpm);
+                mapping.put("gear", ""+gear);
+                
+                mapping.put("brakeTemperatureRL",""+brakeTemperatureRL);
+                mapping.put("brakeTemperatureRR",""+brakeTemperatureRR);
+                mapping.put("brakeTemperatureFL",""+brakeTemperatureFL);
+                mapping.put("brakeTemperatureFR",""+brakeTemperatureFR);
+                
+                mapping.put("tyresSurfaceTemperatureRL",""+tyresSurfaceTemperatureRL);
+                mapping.put("tyresSurfaceTemperatureRR",""+tyresSurfaceTemperatureRR);
+                mapping.put("tyresSurfaceTemperatureFL",""+tyresSurfaceTemperatureFL);
+                mapping.put("tyresSurfaceTemperatureFR",""+tyresSurfaceTemperatureFR);
+                
+                mapping.put("tyresInnerTemperatureRL",""+tyresInnerTemperatureRL);
+                mapping.put("tyresInnerTemperatureRR",""+tyresInnerTemperatureRR);
+                mapping.put("tyresInnerTemperatureFL",""+tyresInnerTemperatureFL);
+                mapping.put("tyresInnerTemperatureFR",""+tyresInnerTemperatureFR);
+                
+                mapping.put("tyresPressureRL",""+tyresPressureRL);
+                mapping.put("tyresPressureRR",""+tyresPressureRR);
+                mapping.put("tyresPressureFL",""+tyresPressureFL);
+                mapping.put("tyresPressureFR",""+tyresPressureFR);
+                return mapping;
+        }
+    }
+    
+    private TelemetryValue[] buffer = new TelemetryValue[1000];
+    private int bufferPointer = 0;
+    
     private StfFormatWriter[] m_playerPosition = new StfFormatWriter[20];
     private StfFormatWriter m_ownTelemetry;
     private PlayerValues[] m_playerValues = new PlayerValues[20];
     private byte m_lap;
     private static final Logger logging = Logger.getLogger(TelemetryWriter.class.getName());
     private ArrayList<ProgressEvent> progressEventList = new ArrayList<>();
+    
+    
     
 
     public TelemetryWriter() {
@@ -130,56 +209,80 @@ public class TelemetryWriter {
         else if( packet instanceof PacketCarTelemetryData){
             int playerIndex = ((PacketCarTelemetryData) packet).getHeader().getPlayerCarIndex();
             if(playerIndex >= 0 && playerIndex<20){
+                TelemetryValue value = new TelemetryValue();
                 HashMap<String,String> mapping = new HashMap<>();
-                mapping.put("lap", ""+this.m_playerValues[playerIndex].m_lap);
-                mapping.put("currentLapTime",""+this.m_playerValues[playerIndex].currentLapTime);
-                mapping.put("lastLapTime",""+this.m_playerValues[playerIndex].lastLapTime);
-                mapping.put("section1Time",""+this.m_playerValues[playerIndex].section1Time);
-                mapping.put("section2Time",""+this.m_playerValues[playerIndex].section2Time);
-                mapping.put("sessionUid", ""+((PacketCarTelemetryData) packet).getHeader().getSessionUid());
-                mapping.put("sessionTime", ""+((PacketCarTelemetryData) packet).getHeader().getSessionTime());
+                value.lap = ""+this.m_playerValues[playerIndex].m_lap;
+                value.currentLapTime = ""+this.m_playerValues[playerIndex].currentLapTime;
+                value.lastLapTime = ""+this.m_playerValues[playerIndex].lastLapTime;
+                value.section1Time = ""+this.m_playerValues[playerIndex].section1Time;
+                value.section2Time = ""+this.m_playerValues[playerIndex].section2Time;
+                value.sessionUid = ""+((PacketCarTelemetryData) packet).getHeader().getSessionUid();
+                value.sessionTime = ""+((PacketCarTelemetryData) packet).getHeader().getSessionTime();
                 
                 CarTelemetryData telemetry = ((PacketCarTelemetryData) packet).getCarTelemetryData(playerIndex);
                 
-                mapping.put("speed", ""+telemetry.getSpeed());
-                mapping.put("throttle", ""+telemetry.getThrottle());
-                mapping.put("brake", ""+telemetry.getBrake());
-                mapping.put("steer", ""+telemetry.getSteer());
-                mapping.put("clutch", ""+telemetry.getClutch());
-                mapping.put("rpm", ""+telemetry.getEngineRPM());
-                mapping.put("gear", ""+telemetry.getGear());
+                value.speed =  ""+telemetry.getSpeed();
+                value.throttle = ""+telemetry.getThrottle();
+                value.brake = ""+telemetry.getBrake();
+                value.steer = ""+telemetry.getSteer();
+                value.clutch = ""+telemetry.getClutch();
+                value.rpm = ""+telemetry.getEngineRPM();
+                value.gear = ""+telemetry.getGear();
                 
-                mapping.put("brakeTemperatureRL",""+telemetry.getBrakeTemperature(0));
-                mapping.put("brakeTemperatureRR",""+telemetry.getBrakeTemperature(1));
-                mapping.put("brakeTemperatureFL",""+telemetry.getBrakeTemperature(2));
-                mapping.put("brakeTemperatureFR",""+telemetry.getBrakeTemperature(3));
+                value.brakeTemperatureRL = ""+telemetry.getBrakeTemperature(0);
+                value.brakeTemperatureRR = ""+telemetry.getBrakeTemperature(1);
+                value.brakeTemperatureFL = ""+telemetry.getBrakeTemperature(2);
+                value.brakeTemperatureFR = ""+telemetry.getBrakeTemperature(3);
                 
-                mapping.put("tyresSurfaceTemperatureRL",""+telemetry.getTyreSurfaceTemperature(0));
-                mapping.put("tyresSurfaceTemperatureRR",""+telemetry.getTyreSurfaceTemperature(1));
-                mapping.put("tyresSurfaceTemperatureFL",""+telemetry.getTyreSurfaceTemperature(2));
-                mapping.put("tyresSurfaceTemperatureFR",""+telemetry.getTyreSurfaceTemperature(3));
+                value.tyresSurfaceTemperatureRL = ""+telemetry.getTyreSurfaceTemperature(0);
+                value.tyresSurfaceTemperatureRR = ""+telemetry.getTyreSurfaceTemperature(1);
+                value.tyresSurfaceTemperatureFL = ""+telemetry.getTyreSurfaceTemperature(2);
+                value.tyresSurfaceTemperatureFR = ""+telemetry.getTyreSurfaceTemperature(3);
                 
-                mapping.put("tyresInnerTemperatureRL",""+telemetry.getTyreInnerTemperature(0));
-                mapping.put("tyresInnerTemperatureRR",""+telemetry.getTyreInnerTemperature(1));
-                mapping.put("tyresInnerTemperatureFL",""+telemetry.getTyreInnerTemperature(2));
-                mapping.put("tyresInnerTemperatureFR",""+telemetry.getTyreInnerTemperature(3));
+                value.tyresInnerTemperatureRL = ""+telemetry.getTyreInnerTemperature(0);
+                value.tyresInnerTemperatureRR = ""+telemetry.getTyreInnerTemperature(1);
+                value.tyresInnerTemperatureFL = ""+telemetry.getTyreInnerTemperature(2);
+                value.tyresInnerTemperatureFR = ""+telemetry.getTyreInnerTemperature(3);
                 
-                mapping.put("tyresPressureRL",""+telemetry.getTyrePressure(0));
-                mapping.put("tyresPressureRR",""+telemetry.getTyrePressure(1));
-                mapping.put("tyresPressureFL",""+telemetry.getTyrePressure(2));
-                mapping.put("tyresPressureFR",""+telemetry.getTyrePressure(3));
+                value.tyresPressureRL = ""+telemetry.getTyrePressure(0);
+                value.tyresPressureRR = ""+telemetry.getTyrePressure(1);
+                value.tyresPressureFL = ""+telemetry.getTyrePressure(2);
+                value.tyresPressureFR = ""+telemetry.getTyrePressure(3);
                 Header head = ((PacketCarTelemetryData) packet).getHeader();
-                try{
-                    this.m_ownTelemetry.writePropertyClass("ownProperty"+head.getFrameIdentifier(), mapping);
+                value.frameIdentifier = ""+head.getFrameIdentifier();
+                
+                buffer[bufferPointer] = value;
+                bufferPointer++;
+                
+                if(bufferPointer >= buffer.length){
+                    for(int i=0;i<buffer.length;i++){
+                        try{
+                            HashMap<String,String> map = buffer[i].getHashMap();
+                            this.m_ownTelemetry.writePropertyClass("ownProperty"+buffer[i].frameIdentifier, map);
+                        }
+                        catch(IOException e){
+                            logging.log(Level.WARNING, "Fehler beim Schreiben der eigenen Telemetrie Datei", e);
+                        }
+                    }
+                    bufferPointer = 0;
+                    
                 }
-                catch(IOException e){
-                    logging.log(Level.WARNING, "Fehler beim Schreiben der eigenen Telemetrie Datei", e);
-                }
+                
             }
         }
     }
     
     public void closeTelemetry(File file){
+        //Write all remaining data to File
+        for(int i=0;i<bufferPointer;i++){
+            try{
+                HashMap<String,String> map = buffer[i].getHashMap();
+                this.m_ownTelemetry.writePropertyClass("ownProperty"+buffer[i].frameIdentifier, map);
+            }
+            catch(IOException e){
+                logging.log(Level.WARNING, "Fehler beim Schreiben der eigenen Telemetrie Datei", e);
+            }
+        }
         try{
             /*
             for(int i=0 ;i<20;i++){
