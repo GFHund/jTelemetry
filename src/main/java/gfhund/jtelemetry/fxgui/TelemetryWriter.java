@@ -61,13 +61,13 @@ public class TelemetryWriter {
         }
         try{
             m_ownTelemetry = new StfFormatWriter("./temp/ownTelemetry.stf","ownTelemetry");
-            /*
+            
             for(int i=0;i<m_playerPosition.length;i++){
                
-                m_playerPosition[i] = new StfFormatWriter("./temp/player"+i+".stf", "player"+i);
+                //m_playerPosition[i] = new StfFormatWriter("./temp/player"+i+".stf", "player"+i);
                 m_playerValues[i] = new PlayerValues();
             }
-            */
+            
         }
         catch(IOException e){
             logging.log(Level.WARNING, "Fehler beim Anlegen der Telemetrie Datei", e);
@@ -77,10 +77,12 @@ public class TelemetryWriter {
     
     public void processPackage(AbstractPacket packet){
         if(packet instanceof PacketParticipantsData){
+            /*
             for(int i=0 ;i<20;i++){
                 //this.setPlayerName(i, ((PacketParticipantsData) packet).getParticipant(i).getName());
                 this.m_playerValues[i].name = ((PacketParticipantsData) packet).getParticipant(i).getName();
             }
+            */
         }else if(packet instanceof PacketLapData){
             for(int i=0;i<20;i++){
                this.m_playerValues[i].m_lap = ((PacketLapData) packet).getLapData(i).getCurrentLapNum();
