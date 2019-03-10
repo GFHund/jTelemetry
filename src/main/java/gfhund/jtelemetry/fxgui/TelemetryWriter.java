@@ -39,6 +39,10 @@ public class TelemetryWriter {
         public float currentLapTime;
         public float section1Time;
         public float section2Time;
+        public float posX;
+        public float posY;
+        public float posZ;
+        
     }
     
     class TelemetryValue{
@@ -73,6 +77,9 @@ public class TelemetryWriter {
         public String tyresPressureRR;
         public String tyresPressureFL;
         public String tyresPressureFR;
+        public String posX;
+        public String posY;
+        public String posZ;
         
         public HashMap<String,String> getHashMap(){
              HashMap<String,String> mapping = new HashMap<>();
@@ -88,7 +95,7 @@ public class TelemetryWriter {
                 mapping.put("throttle", ""+throttle);
                 mapping.put("brake", ""+brake);
                 mapping.put("steer", ""+steer);
-                mapping.put("clutch", ""+clutch);
+                //mapping.put("clutch", ""+clutch);
                 mapping.put("rpm", ""+rpm);
                 mapping.put("gear", ""+gear);
                 
@@ -111,6 +118,9 @@ public class TelemetryWriter {
                 mapping.put("tyresPressureRR",""+tyresPressureRR);
                 mapping.put("tyresPressureFL",""+tyresPressureFL);
                 mapping.put("tyresPressureFR",""+tyresPressureFR);
+                mapping.put("posX",""+posX);
+                mapping.put("posY",""+posY);
+                mapping.put("posZ",""+posZ);
                 return mapping;
         }
     }
@@ -171,6 +181,7 @@ public class TelemetryWriter {
         }
         else if(packet instanceof PacketMotionData){
             Header head = ((PacketMotionData) packet).getHeader();
+            
             for(int i=0 ; i<20;i++){
                 CarMotionData motionData = ((PacketMotionData) packet).getCarMotionData(i);
                 HashMap<String,String> mapping = new HashMap<>();
@@ -183,6 +194,9 @@ public class TelemetryWriter {
                 mapping.put("worldPositionX", ""+motionData.getWorldPositionX());
                 mapping.put("worldPositionY", ""+motionData.getWorldPositionY());
                 mapping.put("worldPositionZ", ""+motionData.getWorldPositionZ());
+                this.m_playerValues[i].posX = motionData.getWorldPositionX();
+                this.m_playerValues[i].posY = motionData.getWorldPositionY();
+                this.m_playerValues[i].posZ = motionData.getWorldPositionZ();
                 
                 mapping.put("worldVelocityX", ""+motionData.getWorldVelocityX());
                 mapping.put("worldVelocityY", ""+motionData.getWorldVelocityY());
@@ -216,6 +230,9 @@ public class TelemetryWriter {
                 value.lastLapTime = ""+this.m_playerValues[playerIndex].lastLapTime;
                 value.section1Time = ""+this.m_playerValues[playerIndex].section1Time;
                 value.section2Time = ""+this.m_playerValues[playerIndex].section2Time;
+                value.posX = ""+this.m_playerValues[playerIndex].posX;
+                value.posY = ""+this.m_playerValues[playerIndex].posY;
+                value.posZ = ""+this.m_playerValues[playerIndex].posZ;
                 value.sessionUid = ""+((PacketCarTelemetryData) packet).getHeader().getSessionUid();
                 value.sessionTime = ""+((PacketCarTelemetryData) packet).getHeader().getSessionTime();
                 
