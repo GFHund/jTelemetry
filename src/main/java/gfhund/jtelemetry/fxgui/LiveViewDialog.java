@@ -452,6 +452,18 @@ public class LiveViewDialog extends DialogFx{
             File file = fileDialog.showSaveDialog(stage);
             if(file != null){
                 LoadingBarDialog loadingBar = new LoadingBarDialog(stage);
+                this.m_writer.addProgressListener(new ProgressEvent() {
+                    @Override
+                    public void onProgress(float progress) {
+                        loadingBar.setValue(progress);
+                    }
+                });
+                this.m_writer.addOnFinishListener(new FinishEvent() {
+                    @Override
+                    public void onFinish() {
+                        loadingBar.close();
+                    }
+                });
                 this.m_writer.closeTelemetry(file);
                 
             }

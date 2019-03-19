@@ -134,6 +134,7 @@ public class TelemetryWriter {
     private byte m_lap;
     private static final Logger logging = Logger.getLogger(TelemetryWriter.class.getName());
     private ArrayList<ProgressEvent> progressEventList = new ArrayList<>();
+    private ArrayList<FinishEvent> finishEventList = new ArrayList<>();
     
     
     
@@ -347,6 +348,9 @@ public class TelemetryWriter {
                         } 
                     }
                     zipStream.close();
+                    for(FinishEvent e:finishEventList){
+                        e.onFinish();
+                    }
                 }catch(IOException e){
                     logging.log(Level.WARNING, "Fehler beim Schreiben der eigenen Telemetrie Datei", e);
                 }      
@@ -364,5 +368,11 @@ public class TelemetryWriter {
     public void addProgressListener(ProgressEvent event){
         this.progressEventList.add(event);
     }
+    public void addOnFinishListener(FinishEvent event){
+        this.finishEventList.add(event);
+    }
 }
+interface FinishEvent{
+    public abstract void onFinish();
+} 
 

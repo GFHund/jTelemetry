@@ -22,6 +22,7 @@ import gfhund.jtelemetry.f1y18.PacketCarStatusData;
 import gfhund.jtelemetry.f1y18.PacketParticipantsData;
 import gfhund.jtelemetry.f1y18.PacketSessionData;
 import gfhund.jtelemetry.fxgui.TelemetryReader;
+import gfhund.jtelemetry.fxgui.TrackView;
 import gfhund.jtelemetry.stfFormat.AbstractStfObject;
 import gfhund.jtelemetry.stfFormat.StfDocument;
 import gfhund.jtelemetry.stfFormat.StfClass;
@@ -59,16 +60,18 @@ public class JavaFxMain extends Application{
     private ObservableList<String> m_properties = FXCollections.observableArrayList();
     private ObservableList<String> m_sessions = FXCollections.observableArrayList();
     ObservableList<XYChart.Series<Number,Number>> diagramData = FXCollections.observableArrayList();
+    ObservableList<TrackView.TrackRound> trackRounds = FXCollections.observableArrayList();
     
     private AbstractPackets m_packetManager;
     private TableView<TimingFx> table = new TableView<>();
+    TrackView trackView;
     ListView<String> list;
     ListView<String> sessionList;
     
     private Thread m_f1y18Thread;
     private GameNetworkConnection m_networkThread;
     private static LiveViewDialog m_liveViewDialog;
-    private HashMap<String,StfDocument> m_documents;
+    private HashMap<String,StfDocument> m_documents = new HashMap<String, StfDocument>();
     
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -97,7 +100,7 @@ public class JavaFxMain extends Application{
         
         VBox layout = new VBox();
         
-        Scene scene = new Scene(layout,400,300);
+        Scene scene = new Scene(layout,1920,1000);
 
         HBox firstRow = new HBox();
         
@@ -125,6 +128,10 @@ public class JavaFxMain extends Application{
         diagramData.add(new LineChart.Series<>(series));
         diagramm.setData(diagramData);
         diagramm.setCreateSymbols(false);
+        
+        trackView = new TrackView();
+        trackView.setData(trackRounds);
+        firstRow.getChildren().add(trackView);
         
         HBox secondRow = new HBox();
         
@@ -204,8 +211,10 @@ public class JavaFxMain extends Application{
                 return;
             }
             TelemetryReader reader = new TelemetryReader();
-            HashMap<String,StfDocument> documents = reader.read(file);
-            StfClass rootClass = (StfClass)documents.get("ownTelemetry.stf").getChild(0);
+            //HashMap<String,StfDocument> documents = reader.read(file);
+            StfDocument doc = reader.read(file, "ownTelemetry.stf");
+            StfClass rootClass = (StfClass)doc.getChild(0);
+            //StfClass rootClass = (StfClass)documents.get("ownTelemetry.stf").getChild(0);
             StfClass dataClass = (StfClass)rootClass.getChild(0);
             String[] properties = dataClass.getChildPropertyName();
             this.m_properties.addAll(properties);
@@ -228,7 +237,8 @@ public class JavaFxMain extends Application{
                 
             }
             this.m_sessions.addAll(sessions);
-            m_documents = documents;
+            //m_documents = documents;
+            m_documents.put("ownTelemetry.stf", doc);
         }
     }
     
@@ -315,12 +325,43 @@ public class JavaFxMain extends Application{
         ObservableList<TimingFx> selectedRounds = table.getSelectionModel().getSelectedItems();
         ObservableList<String> selectedProperties = list.getSelectionModel().getSelectedItems();
         String selectedItem = sessionList.getSelectionModel().getSelectedItem();
-        if(selectedRounds.size() <=0 || selectedProperties.size() <= 0){
-            return;
-        }
+        
         StfDocument doc = this.m_documents.get("ownTelemetry.stf");
         StfClass rootClass = (StfClass) doc.getChild(0);
         AbstractStfObject[] children = rootClass.getChildren();
+        
+        if(selectedRounds.size() >= 1){
+            this.trackRounds.clear();
+            for(TimingFx rounds : selectedRounds){
+                ObservableList<TrackView.TrackPoint> points = FXCollections.observableArrayList();
+                
+                TrackView.TrackRound  trackRounds = new TrackView.TrackRound();
+                for(AbstractStfObject obj: children){
+                    try{
+                        String sLapNum = ((StfClass)obj).getChildPropertyValue("lap");
+                        String sessionIdentifier = ((StfClass) obj).getChildPropertyValue("sessionUid");
+                        int iLapNum = Integer.parseInt(sLapNum);
+                        if( selectedItem.equals(sessionIdentifier) && iLapNum == rounds.getLapNum()){
+                            String sPosX = ((StfClass)obj).getChildPropertyValue("posX");
+                            String sPosZ = ((StfClass)obj).getChildPropertyValue("posZ");
+                            float fPosX = Float.parseFloat(sPosX);
+                            float fPosZ = Float.parseFloat(sPosZ);
+                            points.add(new TrackView.TrackPoint(fPosX, fPosZ));
+                        }
+                    }catch(NumberFormatException e){
+                        
+                    }
+                }
+                trackRounds.setData(points);
+                this.trackRounds.add(trackRounds);
+            }
+        }
+        
+        if(selectedRounds.size() <=0 || selectedProperties.size() <= 0){
+            return;
+        }
+        
+        
         //ObservableList<XYChart.Data<Number,Number>>[] series;
         //series = new ObservableList<XYChart.Data<Number, Number>>[5];
         /*
@@ -344,6 +385,8 @@ public class JavaFxMain extends Application{
                             float fLapTime = Float.parseFloat(lapTime);
                             float fProperty = Float.parseFloat(selectedProperty);//I dont know the datatype. So i use float because all other datatype should be covered
                             series.add(new XYChart.Data<Number,Number>(new Float(fLapTime),new Float(fProperty)));
+                            
+                            addTrackPoints();
                         }
                     }catch(NumberFormatException e){
                         
@@ -354,6 +397,9 @@ public class JavaFxMain extends Application{
                 diagramData.add(temp);
             }
         }
+    }
+    private void addTrackPoints(){
+        
     }
 }
 /*
