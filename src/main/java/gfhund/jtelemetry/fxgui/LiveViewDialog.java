@@ -30,6 +30,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.ChoiceDialog;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
@@ -107,6 +109,11 @@ public class LiveViewDialog extends DialogFx{
     private Button recordingStart;
     private Button recordingStop;
     private Boolean isRecording;
+    
+    private ImageView tempTyreRR;
+    private ImageView tempTyreRL;
+    private ImageView tempTyreFR;
+    private ImageView tempTyreFL;
     
     public LiveViewDialog(Stage parent){
         super(parent);
@@ -237,12 +244,38 @@ public class LiveViewDialog extends DialogFx{
             wheelInnerTemp.setFont(new Font(30));
         }
         
+        tempTyreFL = new ImageView();
+        tempTyreFR = new ImageView();
+        tempTyreRR = new ImageView();
+        tempTyreRL = new ImageView();
+        
+        Image tempIcon = new Image("file:images/TempIcon.png");
+        
+        tempTyreFL.setImage(tempIcon);
+        tempTyreFR.setImage(tempIcon);
+        tempTyreRR.setImage(tempIcon);
+        tempTyreRL.setImage(tempIcon);
+        
+        tempTyreFL.setX(scaleFactor * -4.5);
+        tempTyreFL.setY(scaleFactor * -3.0);
+        tempTyreFR.setX(scaleFactor * 4.5);
+        tempTyreFR.setY(scaleFactor * -3.0);
+        tempTyreRL.setX(scaleFactor * -4.5);
+        tempTyreRL.setY(scaleFactor * 2.0);
+        tempTyreRR.setX(scaleFactor * 4.5);
+        tempTyreRR.setY(scaleFactor * 2.0);
+        
+        
         Group wheelGrp = new Group();
         wheelGrp.getChildren().addAll(m_wheel);
         wheelGrp.getChildren().addAll(m_wheelWear);
         wheelGrp.getChildren().addAll(m_wheelLapsTo70);
         wheelGrp.getChildren().addAll(m_wheelSurfaceTemp);
         wheelGrp.getChildren().addAll(m_wheelInnerTemp);
+        wheelGrp.getChildren().add(tempTyreFL);
+        wheelGrp.getChildren().add(tempTyreFR);
+        wheelGrp.getChildren().add(tempTyreRR);
+        wheelGrp.getChildren().add(tempTyreRL);
         
         Group carGrp = new Group();
         carGrp.getChildren().add(car);
@@ -480,6 +513,15 @@ public class LiveViewDialog extends DialogFx{
     */
     public synchronized void setRLTyreWear(byte rlTyreWear){
         this.m_rearLeftTyreWear = rlTyreWear;
+        if(rlTyreWear < 40){
+            this.m_wheel[0].setFill(Color.GREEN);
+        }
+        else if(rlTyreWear < 70){
+            this.m_wheel[0].setFill(Color.ORANGE);
+        }
+        else{
+            this.m_wheel[0].setFill(Color.RED);
+        }
         this.m_wheelWear[0].setText(""+rlTyreWear+"%");
         if(this.m_updateDeltaRearLeftTyre == true){
             this.m_updateDeltaRearLeftTyre = false;
@@ -494,6 +536,15 @@ public class LiveViewDialog extends DialogFx{
     }
     public synchronized void setRRTyreWear(byte rrTyreWear){
         this.m_rearRightTyreWear = rrTyreWear;
+        if(rrTyreWear < 40){
+            this.m_wheel[1].setFill(Color.GREEN);
+        }
+        else if(rrTyreWear < 70){
+            this.m_wheel[1].setFill(Color.ORANGE);
+        }
+        else{
+            this.m_wheel[1].setFill(Color.RED);
+        }
         this.m_wheelWear[1].setText(""+rrTyreWear+"%");
         if(this.m_updateDeltaRearRightTyre == true){
             this.m_updateDeltaRearRightTyre = false;
@@ -507,6 +558,15 @@ public class LiveViewDialog extends DialogFx{
     }
     public synchronized void setFLTyreWear(byte flTyreWear){
         this.m_frontLeftTyreWear = flTyreWear;
+        if(flTyreWear < 40){
+            this.m_wheel[2].setFill(Color.GREEN);
+        }
+        else if(flTyreWear < 70){
+            this.m_wheel[2].setFill(Color.ORANGE);
+        }
+        else{
+            this.m_wheel[2].setFill(Color.RED);
+        }
         this.m_wheelWear[2].setText(""+flTyreWear+"%");
         if(this.m_updateDeltaFrontLeftTyre == true){
             this.m_updateDeltaFrontLeftTyre = false;
@@ -520,6 +580,15 @@ public class LiveViewDialog extends DialogFx{
     }
     public synchronized void setFRTyreWear(byte frTyreWear){
         this.m_frontRightTyreWear = frTyreWear;
+        if(frTyreWear < 40){
+            this.m_wheel[3].setFill(Color.GREEN);
+        }
+        else if(frTyreWear < 70){
+            this.m_wheel[3].setFill(Color.ORANGE);
+        }
+        else{
+            this.m_wheel[3].setFill(Color.RED);
+        }
         this.m_wheelWear[3].setText(""+frTyreWear+"%");
         if(this.m_updateDeltaFrontRightTyre == true){
             this.m_updateDeltaFrontRightTyre = false;
@@ -533,27 +602,75 @@ public class LiveViewDialog extends DialogFx{
     }
     public synchronized void setRLSurfaceTemp(short temp){
         this.m_wheelSurfaceTemp[0].setText(""+temp);
+        if(temp > 110){
+            this.tempTyreRL.setVisible(true);
+        }
+        else{
+            this.tempTyreRL.setVisible(false);
+        }
     }
     public synchronized void setRRSurfaceTemp(short temp){
         this.m_wheelSurfaceTemp[1].setText(""+temp);
+        if(temp > 110){
+            this.tempTyreRR.setVisible(true);
+        }
+        else{
+            this.tempTyreRR.setVisible(false);
+        }
     }
     public synchronized void setFLSurfaceTemp(short temp){
         this.m_wheelSurfaceTemp[2].setText(""+temp);
+        if(temp > 110){
+            this.tempTyreFL.setVisible(true);
+        }
+        else{
+            this.tempTyreFL.setVisible(false);
+        }
     }
     public synchronized void setFRSurfaceTemp(short temp){
         this.m_wheelSurfaceTemp[3].setText(""+temp);
+        if(temp > 110){
+            this.tempTyreFR.setVisible(true);
+        }
+        else{
+            this.tempTyreFR.setVisible(false);
+        }
     }
     public synchronized void setRLInnerTemp(short temp){
         this.m_wheelInnerTemp[0].setText(""+temp);
+        if(temp < 90){
+            this.tempTyreRL.setVisible(true);
+        }
+        else{
+            this.tempTyreRL.setVisible(false);
+        }
     }
     public synchronized void setRRInnerTemp(short temp){
         this.m_wheelInnerTemp[1].setText(""+temp);
+        if(temp < 90){
+            this.tempTyreRR.setVisible(true);
+        }
+        else{
+            this.tempTyreRR.setVisible(false);
+        }
     }
     public synchronized void setFLInnerTemp(short temp){
         this.m_wheelInnerTemp[2].setText(""+temp);
+        if(temp < 90){
+            this.tempTyreFL.setVisible(true);
+        }
+        else{
+            this.tempTyreFL.setVisible(false);
+        }
     }
     public synchronized void setFRInnerTemp(short temp){
         this.m_wheelInnerTemp[3].setText(""+temp);
+        if(temp < 90){
+            this.tempTyreFR.setVisible(true);
+        }
+        else{
+            this.tempTyreFR.setVisible(false);
+        }
     }
     
     public synchronized void setFuel(float fuel){
@@ -565,6 +682,12 @@ public class LiveViewDialog extends DialogFx{
                 this.m_deltaFuel = this.m_fuelInTankLastRound - fuel;
                 float remainingFuel = fuel / this.m_deltaFuel;
                 m_lapsRemainingFuel.setText(""+remainingFuel);
+                if(remainingFuel < this.m_maxLaps){
+                    m_lapsRemainingFuel.setStroke(Color.RED);
+                }
+                else{
+                    m_lapsRemainingFuel.setStroke(Color.BLACK);
+                }
             }
             this.m_fuelInTankLastRound = fuel;
         }
