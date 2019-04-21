@@ -23,6 +23,7 @@ import gfhund.jtelemetry.f1y18.PacketParticipantsData;
 import gfhund.jtelemetry.f1y18.PacketSessionData;
 import gfhund.jtelemetry.fxgui.TelemetryReader;
 import gfhund.jtelemetry.fxgui.TrackView;
+import gfhund.jtelemetry.fxgui.DiagramView;
 import gfhund.jtelemetry.stfFormat.AbstractStfObject;
 import gfhund.jtelemetry.stfFormat.StfDocument;
 import gfhund.jtelemetry.stfFormat.StfClass;
@@ -61,6 +62,7 @@ public class JavaFxMain extends Application{
     private ObservableList<String> m_sessions = FXCollections.observableArrayList();
     ObservableList<XYChart.Series<Number,Number>> diagramData = FXCollections.observableArrayList();
     ObservableList<TrackView.TrackRound> trackRounds = FXCollections.observableArrayList();
+    ObservableList<DiagramView.DiagrammLine> newDiagramData = FXCollections.observableArrayList();
     
     private AbstractPackets m_packetManager;
     private TableView<TimingFx> table = new TableView<>();
@@ -132,6 +134,16 @@ public class JavaFxMain extends Application{
         trackView = new TrackView();
         trackView.setData(trackRounds);
         firstRow.getChildren().add(trackView);
+        
+        DiagramView diaView = new DiagramView();
+        DiagramView.DiagrammLine newDiaLine = new DiagramView.DiagrammLine();
+        for(int i=0;i<5;i++){
+            newDiaLine.addTrackPoint(new DiagramView.DiagrammPoint(i, i*i));
+        }
+        diaView.setData(newDiagramData);
+        newDiagramData.add(newDiaLine);
+        
+        firstRow.getChildren().add(diaView);
         
         HBox secondRow = new HBox();
         
@@ -370,9 +382,11 @@ public class JavaFxMain extends Application{
         }
 */
         diagramData.clear();
+        newDiagramData.clear();
         for(TimingFx rounds:selectedRounds){
             for(String property: selectedProperties){
                 ObservableList<XYChart.Data<Number,Number>> series = FXCollections.observableArrayList();
+                ObservableList<DiagramView.DiagrammPoint> points = FXCollections.observableArrayList();
                 for(AbstractStfObject obj: children){
                     try{
                         String sLapNum = ((StfClass)obj).getChildPropertyValue("lap");
@@ -385,8 +399,7 @@ public class JavaFxMain extends Application{
                             float fLapTime = Float.parseFloat(lapTime);
                             float fProperty = Float.parseFloat(selectedProperty);//I dont know the datatype. So i use float because all other datatype should be covered
                             series.add(new XYChart.Data<Number,Number>(new Float(fLapTime),new Float(fProperty)));
-                            
-                            addTrackPoints();
+                            points.add(new DiagramView.DiagrammPoint(fLapTime, fProperty));
                         }
                     }catch(NumberFormatException e){
                         
@@ -395,12 +408,13 @@ public class JavaFxMain extends Application{
                 LineChart.Series<Number,Number> temp = new LineChart.Series<>(series);
                 temp.setName("Runde "+rounds.getLapNum());
                 diagramData.add(temp);
+                DiagramView.DiagrammLine line = new DiagramView.DiagrammLine();
+                line.setData(points);
+                newDiagramData.add(line);
             }
         }
     }
-    private void addTrackPoints(){
-        
-    }
+
 }
 /*
 ObservableList<XYChart.Data<Number,Number>> series = FXCollections.observableArrayList();
