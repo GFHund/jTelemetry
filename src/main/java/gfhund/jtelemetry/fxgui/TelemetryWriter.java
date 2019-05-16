@@ -7,8 +7,10 @@ package gfhund.jtelemetry.fxgui;
 
 import gfhund.jtelemetry.f1y18.AbstractPacket;
 import gfhund.jtelemetry.f1y18.CarMotionData;
+import gfhund.jtelemetry.f1y18.CarStatusData;
 import gfhund.jtelemetry.f1y18.CarTelemetryData;
 import gfhund.jtelemetry.f1y18.Header;
+import gfhund.jtelemetry.f1y18.PacketCarStatusData;
 import gfhund.jtelemetry.f1y18.PacketCarTelemetryData;
 import gfhund.jtelemetry.f1y18.PacketLapData;
 import gfhund.jtelemetry.f1y18.PacketMotionData;
@@ -42,7 +44,10 @@ public class TelemetryWriter {
         public float posX;
         public float posY;
         public float posZ;
-        
+        public byte tyreDamageRL;
+        public byte tyreDamageRR;
+        public byte tyreDamageFL;
+        public byte tyreDamageFR;
     }
     
     class TelemetryValue{
@@ -80,6 +85,10 @@ public class TelemetryWriter {
         public String posX;
         public String posY;
         public String posZ;
+        public String tyreDamageRL;
+        public String tyreDamageRR;
+        public String tyreDamageFL;
+        public String tyreDamageFR;
         
         public HashMap<String,String> getHashMap(){
              HashMap<String,String> mapping = new HashMap<>();
@@ -121,6 +130,12 @@ public class TelemetryWriter {
                 mapping.put("posX",""+posX);
                 mapping.put("posY",""+posY);
                 mapping.put("posZ",""+posZ);
+                
+                mapping.put("tyreDamageRL", ""+tyreDamageRL);
+                mapping.put("tyreDamageRR", ""+tyreDamageRR);
+                mapping.put("tyreDamageFL", ""+tyreDamageFL);
+                mapping.put("tyreDamageFR", ""+tyreDamageFR);
+                
                 return mapping;
         }
     }
@@ -268,6 +283,10 @@ public class TelemetryWriter {
                 value.tyresPressureFR = ""+telemetry.getTyrePressure(3);
                 Header head = ((PacketCarTelemetryData) packet).getHeader();
                 value.frameIdentifier = ""+head.getFrameIdentifier();
+                value.tyreDamageFL = ""+this.m_playerValues[playerIndex].tyreDamageFL;
+                value.tyreDamageRL = ""+this.m_playerValues[playerIndex].tyreDamageRL;
+                value.tyreDamageRR = ""+this.m_playerValues[playerIndex].tyreDamageRR;
+                value.tyreDamageFR = ""+this.m_playerValues[playerIndex].tyreDamageFR;
                 
                 buffer[bufferPointer] = value;
                 bufferPointer++;
@@ -286,6 +305,15 @@ public class TelemetryWriter {
                     
                 }
                 
+            }
+        }else if(packet instanceof PacketCarStatusData) {
+            int playerIndex = ((PacketCarTelemetryData) packet).getHeader().getPlayerCarIndex();
+            for(int i=0; i < 20;i++) {
+                CarStatusData carStatus = ((PacketCarStatusData) packet).getCarStatusData(i);
+                this.m_playerValues[i].tyreDamageFL = carStatus.getTyresWearFL();
+                this.m_playerValues[i].tyreDamageFR = carStatus.getTyresWearFR();
+                this.m_playerValues[i].tyreDamageRR = carStatus.getTyresWearRR();
+                this.m_playerValues[i].tyreDamageRL = carStatus.getTyresWearRL();
             }
         }
     }
