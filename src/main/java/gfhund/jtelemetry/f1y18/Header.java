@@ -4,13 +4,13 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class Header{
-    private short m_packetFormat;//2  0
-    private byte m_packetVersion;//1  2
-    private byte m_packetId;//1       3
-    private long m_sessionUID;//8     4
-    private float m_sessionTime;//4   12
-    private int m_frameIdentifier;//4 16
-    private byte m_playerCarIndex;//1 20
+    protected short m_packetFormat;//2  0
+    protected byte m_packetVersion;//1  2
+    protected byte m_packetId;//1       3
+    protected long m_sessionUID;//8     4
+    protected float m_sessionTime;//4   12
+    protected int m_frameIdentifier;//4 16
+    protected byte m_playerCarIndex;//1 20
     //total: 21
     public static int getSize(){
         return 21;

@@ -1,4 +1,4 @@
-package gfhund.jtelemetry.f1y18;
+package gfhund.jtelemetry.commontelemetry;
 
 public abstract class AbstractPacket{
     

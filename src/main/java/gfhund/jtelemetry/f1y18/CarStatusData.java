@@ -4,42 +4,42 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class CarStatusData{
-    private byte m_tractionControl;
-    private byte m_antiLockBrakes;
-    private byte m_fuelMix;
-    private byte m_frontBrakeBias;
-    private byte m_pitLimiterStatus;
-    private float m_fuelInTank;
-    private float m_fuelCapacity;
-    private short m_maxRPM;
-    private short m_idleRPM;
-    private byte m_maxGears;
-    private byte m_drsAllowed;
+    protected byte m_tractionControl;
+    protected byte m_antiLockBrakes;
+    protected byte m_fuelMix;
+    protected byte m_frontBrakeBias;
+    protected byte m_pitLimiterStatus;
+    protected float m_fuelInTank;
+    protected float m_fuelCapacity;
+    protected short m_maxRPM;
+    protected short m_idleRPM;
+    protected byte m_maxGears;
+    protected byte m_drsAllowed;
     /*
     0 - Rear Left
     1 - Rear Right
     2 Front Left
     4 Front Right
     */
-    private byte[] m_tyresWear = new byte[4];
-    private byte m_tyreCompound;// Modern - 0 = hyper soft, 1 = ultra soft
+    protected byte[] m_tyresWear = new byte[4];
+    protected byte m_tyreCompound;// Modern - 0 = hyper soft, 1 = ultra soft
     // 2 = super soft, 3 = soft, 4 = medium, 5 = hard
     // 6 = super hard, 7 = inter, 8 = wet
     // Classic - 0-6 = dry, 7-8 = wet
-    private byte[] m_tyresDamage = new byte[4];
-    private byte m_frontLeftWingDamage;
-    private byte m_frontRightWingDamage;
-    private byte m_rearWingDamage;
-    private byte m_engineDamage;
-    private byte m_gearBoxDamage;
-    private byte m_exhaustDamage;
-    private byte m_vehicleFiaFlags;// -1 = invalid/unknown, 0 = none, 1 = green
+    protected byte[] m_tyresDamage = new byte[4];
+    protected byte m_frontLeftWingDamage;
+    protected byte m_frontRightWingDamage;
+    protected byte m_rearWingDamage;
+    protected byte m_engineDamage;
+    protected byte m_gearBoxDamage;
+    protected byte m_exhaustDamage;
+    protected byte m_vehicleFiaFlags;// -1 = invalid/unknown, 0 = none, 1 = green
     // 2 = blue, 3 = yellow, 4 = red
-    private float m_ersStoreEnergy;
-    private byte m_ersDeployMode;
-    private float m_ersHarvestedThisLapMGUK;
-    private float m_ersHarvestedThisLapMGUH;
-    private float m_ersDeployedThisLap;
+    protected float m_ersStoreEnergy;
+    protected byte m_ersDeployMode;
+    protected float m_ersHarvestedThisLapMGUK;
+    protected float m_ersHarvestedThisLapMGUH;
+    protected float m_ersDeployedThisLap;
     
     public static int getSize(){
         return 52;

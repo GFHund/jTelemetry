@@ -7,7 +7,7 @@ package gfhund.jtelemetry;
 
 import gfhund.jtelemetry.data.AbstractPackets;
 import gfhund.jtelemetry.data.Timing;
-import gfhund.jtelemetry.f1y18.AbstractPacket;
+import gfhund.jtelemetry.commontelemetry.AbstractPacket;
 import gfhund.jtelemetry.f1y18.F1Y2018Packets;
 import gfhund.jtelemetry.f1y18.F1Y2018ParseException;
 import gfhund.jtelemetry.f1y18.LapData;

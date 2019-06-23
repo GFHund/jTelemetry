@@ -1,20 +1,20 @@
 package gfhund.jtelemetry.f1y18;
 
 public class CarTelemetryData{
-    private short m_speed;//0 2
-    private byte m_throttle;//2 1
-    private byte m_steer;//3 1
-    private byte m_brake;//4 1
-    private byte m_clutch;//5 1
-    private byte m_gear;//6 1
-    private short m_engineRPM;//7 2
-    private byte m_drs;//9 1
-    private byte m_revLightsPercent;//10 1
-    private short[] m_brakesTemperature = new short[4];//11 4*2 = 8
-    private short[] m_tyresSurfaceTemperature = new short[4];//19 8
-    private short[] m_tyresInnerTemperature = new short[4];//27 8
-    private short m_engineTemperature;//35 2
-    private float[] m_tyresPressure = new float[4];//37 4*4 = 16
+    protected short m_speed;//0 2
+    protected byte m_throttle;//2 1
+    protected byte m_steer;//3 1
+    protected byte m_brake;//4 1
+    protected byte m_clutch;//5 1
+    protected byte m_gear;//6 1
+    protected short m_engineRPM;//7 2
+    protected byte m_drs;//9 1
+    protected byte m_revLightsPercent;//10 1
+    protected short[] m_brakesTemperature = new short[4];//11 4*2 = 8
+    protected short[] m_tyresSurfaceTemperature = new short[4];//19 8
+    protected short[] m_tyresInnerTemperature = new short[4];//27 8
+    protected short m_engineTemperature;//35 2
+    protected float[] m_tyresPressure = new float[4];//37 4*4 = 16
     //53
     public static int getSize(){
         return 53;

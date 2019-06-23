@@ -4,12 +4,12 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class ParticipantData{
-    private byte m_aiControlled;
-    private byte m_driverId ;
-    private byte m_teamId;
-    private byte m_raceNumber;
-    private byte m_nationality;
-    private String m_name; 
+    protected byte m_aiControlled;
+    protected byte m_driverId ;
+    protected byte m_teamId;
+    protected byte m_raceNumber;
+    protected byte m_nationality;
+    protected String m_name; 
     
     public byte[] getBytes(){
         ByteBuffer ret = ByteBuffer.allocate(ParticipantData.getSize());

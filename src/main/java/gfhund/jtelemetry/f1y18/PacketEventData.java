@@ -1,6 +1,8 @@
 package gfhund.jtelemetry.f1y18;
 
+import gfhund.jtelemetry.commontelemetry.AbstractPacket;
+
 class PacketEventData extends AbstractPacket{
-    private Header m_header;
-    private String m_eventStringCode;
+    protected Header m_header;
+    protected String m_eventStringCode;
 }

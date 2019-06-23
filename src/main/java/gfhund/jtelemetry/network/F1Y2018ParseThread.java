@@ -9,7 +9,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import gfhund.jtelemetry.f1y18.PacketBuilder;
-import gfhund.jtelemetry.f1y18.AbstractPacket;
+import gfhund.jtelemetry.commontelemetry.AbstractPacket;
 import gfhund.jtelemetry.f1y18.F1Y2018ParseException;
 import java.util.ArrayList;
 import javafx.concurrent.Task;

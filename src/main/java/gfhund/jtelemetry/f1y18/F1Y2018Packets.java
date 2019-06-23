@@ -1,5 +1,6 @@
 package gfhund.jtelemetry.f1y18;
 
+import gfhund.jtelemetry.commontelemetry.AbstractPacket;
 import java.util.ArrayList;
 import java.util.List;
 import gfhund.jtelemetry.data.AbstractPackets;

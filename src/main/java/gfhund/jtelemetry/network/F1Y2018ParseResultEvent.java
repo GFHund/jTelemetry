@@ -5,7 +5,7 @@
  */
 package gfhund.jtelemetry.network;
 
-import gfhund.jtelemetry.f1y18.AbstractPacket;
+import gfhund.jtelemetry.commontelemetry.AbstractPacket;
 /**
  *
  * @author PhilippGL

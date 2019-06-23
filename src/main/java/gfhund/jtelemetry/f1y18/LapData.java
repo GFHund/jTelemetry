@@ -4,24 +4,24 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class LapData {
-    private float m_lastLapTime;//0
-    private float m_currentLapTime;//4
-    private float m_bestLapTime;//8
-    private float m_sector1Time;//12
-    private float m_sector2Time;//16
-    private float m_lapDistance;//20
-    private float m_totalDistance;//24
-    private float m_safetyCarDelta;//28
-    private byte m_carPosition;//32
-    private byte m_currentLapNum;//33
-    private byte m_pitStatus;//34  0 = none, 1 = pitting, 2 = in pit area
-    private byte m_sector;//35
-    private byte m_currentLapInvalid;//36
-    private byte m_penalties;//37
-    private byte m_gridPosition;//38
-    private byte m_driverStatus;//39  Status of driver - 0 = in garage, 1 = flying lap
+    protected float m_lastLapTime;//0
+    protected float m_currentLapTime;//4
+    protected float m_bestLapTime;//8
+    protected float m_sector1Time;//12
+    protected float m_sector2Time;//16
+    protected float m_lapDistance;//20
+    protected float m_totalDistance;//24
+    protected float m_safetyCarDelta;//28
+    protected byte m_carPosition;//32
+    protected byte m_currentLapNum;//33
+    protected byte m_pitStatus;//34  0 = none, 1 = pitting, 2 = in pit area
+    protected byte m_sector;//35
+    protected byte m_currentLapInvalid;//36
+    protected byte m_penalties;//37
+    protected byte m_gridPosition;//38
+    protected byte m_driverStatus;//39  Status of driver - 0 = in garage, 1 = flying lap
     // 2 = in lap, 3 = out lap, 4 = on track
-    private byte m_resultStatus;//40 Result status - 0 = invalid, 1 = inactive, 2 = active
+    protected byte m_resultStatus;//40 Result status - 0 = invalid, 1 = inactive, 2 = active
     // 3 = finished, 4 = disqualified, 5 = not classified
     // 6 = retired
     public static int getSize(){

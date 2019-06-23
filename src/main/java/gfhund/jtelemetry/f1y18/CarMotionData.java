@@ -1,29 +1,29 @@
 package gfhund.jtelemetry.f1y18;
 
 public class CarMotionData{
-    private float m_worldPositionX;//4
-    private float m_worldPositionY;//4
-    private float m_worldPositionZ;//4
+    protected float m_worldPositionX;//4
+    protected float m_worldPositionY;//4
+    protected float m_worldPositionZ;//4
 
-    private float m_worldVelocityX;//4
-    private float m_worldVelocityY;//4
-    private float m_worldVelocityZ;//4
+    protected float m_worldVelocityX;//4
+    protected float m_worldVelocityY;//4
+    protected float m_worldVelocityZ;//4
 
-    private short m_worldForwardDirX;//2
-    private short m_worldForwardDirY;//2
-    private short m_worldForwardDirZ;//2
+    protected short m_worldForwardDirX;//2
+    protected short m_worldForwardDirY;//2
+    protected short m_worldForwardDirZ;//2
 
-    private short m_worldRightDirX;//2
-    private short m_worldRightDirY;//2
-    private short m_worldRightDirZ;//2
+    protected short m_worldRightDirX;//2
+    protected short m_worldRightDirY;//2
+    protected short m_worldRightDirZ;//2
 
-    private float m_gForceLateral;//4
-    private float m_gForceLongitudinal;//4
-    private float m_gForceVertical;//4
+    protected float m_gForceLateral;//4
+    protected float m_gForceLongitudinal;//4
+    protected float m_gForceVertical;//4
 
-    private float m_yaw;//4
-    private float m_pitch;//4
-    private float m_roll;//4
+    protected float m_yaw;//4
+    protected float m_pitch;//4
+    protected float m_roll;//4
     //total: 12*4+6*2 = 60
 
     public static int getSize(){

@@ -1,23 +1,25 @@
 package gfhund.jtelemetry.f1y18;
 
+import gfhund.jtelemetry.commontelemetry.AbstractPacket;
+
 public class PacketMotionData extends AbstractPacket{
-    private Header m_header;//0 21
-    private CarMotionData[] m_carMotionData = new CarMotionData[20];//21 20*60 = 1200 
-    private float m_suspensionPosition[] = new float[4];//1221 4*4 = 16
-    private float m_suspensionVelocity[] = new float[4];//1237 4*4 = 16
-    private float m_suspensionAcceleration[] = new float[4];//1253 4*4 = 16
-    private float m_wheelSpeed[] = new float[4];//1269 4*4=16
-    private float m_wheelSlip[] = new float[4];//1285 4*4=16
-    private float m_localVelocityX;//1301 4
-    private float m_localVelocityY;//4
-    private float m_localVelocityZ;//4
-    private float m_angularVelocityX;//4
-    private float m_angularVelocityY;//4
-    private float m_angularVelocityZ;//4
-    private float m_angularAccelerationX;//4
-    private float m_angularAccelerationY;//4
-    private float m_angularAccelerationZ;//4
-    private float m_frontWheelsAngle;//4
+    protected Header m_header;//0 21
+    protected CarMotionData[] m_carMotionData = new CarMotionData[20];//21 20*60 = 1200 
+    protected float m_suspensionPosition[] = new float[4];//1221 4*4 = 16
+    protected float m_suspensionVelocity[] = new float[4];//1237 4*4 = 16
+    protected float m_suspensionAcceleration[] = new float[4];//1253 4*4 = 16
+    protected float m_wheelSpeed[] = new float[4];//1269 4*4=16
+    protected float m_wheelSlip[] = new float[4];//1285 4*4=16
+    protected float m_localVelocityX;//1301 4
+    protected float m_localVelocityY;//4
+    protected float m_localVelocityZ;//4
+    protected float m_angularVelocityX;//4
+    protected float m_angularVelocityY;//4
+    protected float m_angularVelocityZ;//4
+    protected float m_angularAccelerationX;//4
+    protected float m_angularAccelerationY;//4
+    protected float m_angularAccelerationZ;//4
+    protected float m_frontWheelsAngle;//4
     //total = 21+1200+5*16+10*4 = 21+1200+80+40=1200+141=1341
 
     public void setHeader(Header head){

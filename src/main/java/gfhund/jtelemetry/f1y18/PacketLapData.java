@@ -1,4 +1,5 @@
 package gfhund.jtelemetry.f1y18;
+import gfhund.jtelemetry.commontelemetry.AbstractPacket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 public class PacketLapData extends AbstractPacket{

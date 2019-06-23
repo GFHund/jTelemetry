@@ -1,30 +1,31 @@
 package gfhund.jtelemetry.f1y18;
 
+import gfhund.jtelemetry.commontelemetry.AbstractPacket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class PacketSessionData extends AbstractPacket{
-    private Header m_header;
-    private Weather m_weather;
-    private byte m_trackTemperature;
-    private byte m_airTemperature;
-    private byte m_totalLaps;
-    private short m_trackLength;
-    private SessionType m_sessionType;
-    private TrackID m_trackId;
-    private byte m_era;
-    private short m_sessionTimeLeft;
-    private short m_sessionDuration;
-    private byte m_pitSpeedLimit;// Pit speed limit in kilometres per hour
-    private byte m_gamePaused;
-    private byte m_isSpectating;
-    private byte m_spectatorCarIndex;
-    private byte m_sliProNativeSupport;
-    private byte m_numMarshalZones;
-    private MarshalZone[] m_marshalZones = new MarshalZone[21];
-    private byte m_safetyCarStatus;// 0 = no safety car, 1 = full safety car
+    protected Header m_header;
+    protected Weather m_weather;
+    protected byte m_trackTemperature;
+    protected byte m_airTemperature;
+    protected byte m_totalLaps;
+    protected short m_trackLength;
+    protected SessionType m_sessionType;
+    protected TrackID m_trackId;
+    protected byte m_era;
+    protected short m_sessionTimeLeft;
+    protected short m_sessionDuration;
+    protected byte m_pitSpeedLimit;// Pit speed limit in kilometres per hour
+    protected byte m_gamePaused;
+    protected byte m_isSpectating;
+    protected byte m_spectatorCarIndex;
+    protected byte m_sliProNativeSupport;
+    protected byte m_numMarshalZones;
+    protected MarshalZone[] m_marshalZones = new MarshalZone[21];
+    protected byte m_safetyCarStatus;// 0 = no safety car, 1 = full safety car
     // 2 = virtual safety car
-    private byte m_networkGame;// 0 = offline, 1 = online
+    protected byte m_networkGame;// 0 = offline, 1 = online
 
     public static int getSize(){
         return 147;

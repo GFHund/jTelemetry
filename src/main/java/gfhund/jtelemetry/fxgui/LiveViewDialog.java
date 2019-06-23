@@ -5,7 +5,7 @@
  */
 package gfhund.jtelemetry.fxgui;
 
-import gfhund.jtelemetry.f1y18.AbstractPacket;
+import gfhund.jtelemetry.commontelemetry.AbstractPacket;
 import gfhund.jtelemetry.f1y18.LapData;
 import gfhund.jtelemetry.f1y18.PacketCarStatusData;
 import gfhund.jtelemetry.f1y18.PacketLapData;

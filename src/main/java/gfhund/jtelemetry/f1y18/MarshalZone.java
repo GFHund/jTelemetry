@@ -3,9 +3,9 @@ package gfhund.jtelemetry.f1y18;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-class MarshalZone{
-    float m_zoneStart;
-    float m_zoneFlag;
+public class MarshalZone{
+    protected float m_zoneStart;
+    protected float m_zoneFlag;
     
     public void setZoneStart(float zoneStart){
         this.m_zoneStart = zoneStart;
