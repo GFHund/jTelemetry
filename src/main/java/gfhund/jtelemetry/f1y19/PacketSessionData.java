@@ -10,12 +10,12 @@ package gfhund.jtelemetry.f1y19;
  * @author PhilippHolzmann
  */
 public class PacketSessionData extends gfhund.jtelemetry.f1y18.PacketSessionData {
-    protected Header m_header19;
+    protected Header header19;
     
     public Header getHeader19(){
-        return this.m_header19;
+        return this.header19;
     }
     public void setHeader19(Header header){
-        this.m_header19 = header;
+        this.header19 = header;
     }
 }

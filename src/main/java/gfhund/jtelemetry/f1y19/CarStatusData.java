@@ -14,23 +14,23 @@ import java.nio.ByteOrder;
  */
 public class CarStatusData extends gfhund.jtelemetry.f1y18.CarStatusData {
     //Note Exhaust Damage would be removed in f1 2019
-    protected float m_fuelRemainingLaps;
+    protected float fuelRemainingLaps;
     
-    protected byte m_tyreVisualCompound;
+    protected byte tyreVisualCompound;
     
     public float getFuelRemainingLaps(){
-        return this.m_fuelRemainingLaps;
+        return this.fuelRemainingLaps;
     }
     
     public void setFuelRaminingLaps(float remainingLaps){
-        this.m_fuelRemainingLaps = remainingLaps;
+        this.fuelRemainingLaps = remainingLaps;
     }
     
     public byte getTyreVisualCompound(){
-        return this.m_tyreVisualCompound;
+        return this.tyreVisualCompound;
     }
     public void setTyreVisualCompound(byte visualCompound){
-        this.m_tyreVisualCompound = visualCompound;
+        this.tyreVisualCompound = visualCompound;
     }
     
     public static int getSize(){
@@ -40,39 +40,39 @@ public class CarStatusData extends gfhund.jtelemetry.f1y18.CarStatusData {
     public byte[] getBytes(){
         ByteBuffer ret = ByteBuffer.allocate(gfhund.jtelemetry.f1y18.CarStatusData.getSize());
         ret.order(ByteOrder.LITTLE_ENDIAN);
-        ret.put(m_tractionControl);
-        ret.put(m_antiLockBrakes);
-        ret.put(m_fuelMix);
-        ret.put(m_frontBrakeBias);
-        ret.put(m_pitLimiterStatus);
-        ret.putFloat(m_fuelInTank);
-        ret.putFloat(m_fuelCapacity);
-        ret.putFloat(m_fuelRemainingLaps);
-        ret.putShort(m_maxRPM);
-        ret.putShort(m_idleRPM);
+        ret.put(tractionControl);
+        ret.put(antiLockBrakes);
+        ret.put(fuelMix);
+        ret.put(frontBrakeBias);
+        ret.put(pitLimiterStatus);
+        ret.putFloat(fuelInTank);
+        ret.putFloat(fuelCapacity);
+        ret.putFloat(fuelRemainingLaps);
+        ret.putShort(maxRPM);
+        ret.putShort(idleRPM);
         
-        ret.put(m_maxGears);
-        ret.put(m_drsAllowed);
-        ret.put(m_tyresWear[0]);
-        ret.put(m_tyresWear[1]);
-        ret.put(m_tyresWear[2]);
-        ret.put(m_tyresWear[3]);
-        ret.put(m_tyreCompound);
-        ret.put(m_tyreVisualCompound);
-        ret.put(m_tyresDamage[0]);
-        ret.put(m_tyresDamage[1]);
-        ret.put(m_tyresDamage[2]);
-        ret.put(m_tyresDamage[3]);
-        ret.put(m_frontLeftWingDamage);
-        ret.put(m_frontRightWingDamage);
-        ret.put(m_rearWingDamage);
-        ret.put(m_gearBoxDamage);
-        ret.put(m_vehicleFiaFlags);
-        ret.putFloat(m_ersStoreEnergy);
-        ret.put(m_ersDeployMode);
-        ret.putFloat(m_ersHarvestedThisLapMGUK);
-        ret.putFloat(m_ersHarvestedThisLapMGUH);
-        ret.putFloat(m_ersDeployedThisLap);
+        ret.put(maxGears);
+        ret.put(drsAllowed);
+        ret.put(tyresWear[0]);
+        ret.put(tyresWear[1]);
+        ret.put(tyresWear[2]);
+        ret.put(tyresWear[3]);
+        ret.put(tyreCompound);
+        ret.put(tyreVisualCompound);
+        ret.put(tyresDamage[0]);
+        ret.put(tyresDamage[1]);
+        ret.put(tyresDamage[2]);
+        ret.put(tyresDamage[3]);
+        ret.put(frontLeftWingDamage);
+        ret.put(frontRightWingDamage);
+        ret.put(rearWingDamage);
+        ret.put(gearBoxDamage);
+        ret.put(vehicleFiaFlags);
+        ret.putFloat(ersStoreEnergy);
+        ret.put(ersDeployMode);
+        ret.putFloat(ersHarvestedThisLapMGUK);
+        ret.putFloat(ersHarvestedThisLapMGUH);
+        ret.putFloat(ersDeployedThisLap);
         return ret.array();
     }
 }

@@ -9,6 +9,6 @@ package gfhund.jtelemetry.f1y19;
  *
  * @author PhilippHolzmann
  */
-public class CarSetupData extends gfhund.jtelemetry.f1y18.CarStatusData {
+public class CarSetupData extends gfhund.jtelemetry.f1y18.CarSetupData {
     
 }

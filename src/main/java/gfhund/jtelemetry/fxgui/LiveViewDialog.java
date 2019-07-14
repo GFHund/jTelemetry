@@ -12,8 +12,8 @@ import gfhund.jtelemetry.f1y18.PacketLapData;
 import gfhund.jtelemetry.f1y18.PacketParticipantsData;
 import gfhund.jtelemetry.f1y18.PacketSessionData;
 import gfhund.jtelemetry.f1y18.PacketCarTelemetryData;
-import gfhund.jtelemetry.network.F1Y2018ParseResultEvent;
-import gfhund.jtelemetry.network.F1Y2018ParseThread;
+import gfhund.jtelemetry.f1y18.F1Y2018ParseResultEvent;
+import gfhund.jtelemetry.f1y18.F1Y2018ParseThread;
 import gfhund.jtelemetry.network.GameNetworkConnection;
 import gfhund.jtelemetry.network.ReceiveEvent;
 import java.io.File;
@@ -358,7 +358,9 @@ public class LiveViewDialog extends DialogFx{
         
         List<String> choices = new ArrayList<>();
         String f1y18 = "Formel1 2018";
+        String f1y19 = "Formel1 2019";
         String pc2 = "Project Cars 2";
+        choices.add(f1y19);
         choices.add(f1y18);
         choices.add(pc2);
         ChoiceDialog<String> dialog = new ChoiceDialog<>(f1y18,choices);
@@ -369,48 +371,63 @@ public class LiveViewDialog extends DialogFx{
             this.recordingStart.setDisable(true);
             this.recordingStop.setDisable(false);
             String resultValue = result.get();
-            ReentrantLock lock = new ReentrantLock();
-            java.util.concurrent.locks.Condition cond = lock.newCondition();
-            m_networkThread = new GameNetworkConnection(lock,cond,20777,1341);
+            
+            
             if(resultValue.equals(f1y18)){
-                F1Y2018ParseThread parseThread = new F1Y2018ParseThread(lock,cond);
-                if(m_f1y18Thread == null){
-                    m_f1y18Thread = new Thread(parseThread);
-                }
-                if(m_f1y18Thread.isAlive()){
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Thread not started");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Thread not started because it is already started");
-                    alert.showAndWait();
-                    return;
-                }
-                parseThread.addParseResultEvent(new F1Y2018ParseResultEvent() {
-                    @Override
-                    public void resultEvent(AbstractPacket packet) {
-                        parsePackager(packet);
-                    }
-                });
-                if(isRecording){
-                    this.m_writer = new TelemetryWriter();
-                    parseThread.addParseResultEvent(new F1Y2018ParseResultEvent() {
-                        @Override
-                        public void resultEvent(AbstractPacket packet) {
-                            m_writer.processPackage(packet);
-                        }
-                    });
-                }
-                m_networkThread.addReciveEvent(new ReceiveEvent(){
-                    @Override
-                    public void onReceive(byte[] data){
-                        //System.out.println("Übergebe einem Consumer Thread");
-                        parseThread.addRaw(data);
-                    }
-                });
-                m_f1y18Thread.start();
-                m_networkThread.start();
+                this.handleF1Y2018();
+            }
+            else if(resultValue.equals(f1y19)){
+                this.handleF1Y2019();
             }
         }
+    }
+    
+    private void handleF1Y2018(){
+        ReentrantLock lock = new ReentrantLock();
+        java.util.concurrent.locks.Condition cond = lock.newCondition();
+        m_networkThread = new GameNetworkConnection(lock,cond,20777,1341);
+        F1Y2018ParseThread parseThread = new F1Y2018ParseThread(lock,cond);
+        if(m_f1y18Thread == null){
+            m_f1y18Thread = new Thread(parseThread);
+        }
+        if(m_f1y18Thread.isAlive()){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Thread not started");
+            alert.setHeaderText(null);
+            alert.setContentText("Thread not started because it is already started");
+            alert.showAndWait();
+            return;
+        }
+        parseThread.addParseResultEvent(new F1Y2018ParseResultEvent() {
+            @Override
+            public void resultEvent(AbstractPacket packet) {
+                parsePackager(packet);
+            }
+        });
+        if(isRecording){
+            this.m_writer = new TelemetryWriter();
+            parseThread.addParseResultEvent(new F1Y2018ParseResultEvent() {
+                @Override
+                public void resultEvent(AbstractPacket packet) {
+                    m_writer.processPackage(packet);
+                }
+            });
+        }
+        m_networkThread.addReciveEvent(new ReceiveEvent(){
+            @Override
+            public void onReceive(byte[] data){
+                //System.out.println("Übergebe einem Consumer Thread");
+                parseThread.addRaw(data);
+            }
+        });
+        m_f1y18Thread.start();
+        m_networkThread.start();
+    }
+    
+    private void handleF1Y2019(){
+        ReentrantLock lock = new ReentrantLock();
+        java.util.concurrent.locks.Condition cond = lock.newCondition();
+        m_networkThread = new GameNetworkConnection(lock,cond,20777,1341);
     }
     
     public void parsePackager(AbstractPacket packet){

@@ -5,27 +5,27 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class PacketSessionData extends AbstractPacket{
-    protected Header m_header;
-    protected Weather m_weather;
-    protected byte m_trackTemperature;
-    protected byte m_airTemperature;
-    protected byte m_totalLaps;
-    protected short m_trackLength;
-    protected SessionType m_sessionType;
-    protected TrackID m_trackId;
-    protected byte m_era;
-    protected short m_sessionTimeLeft;
-    protected short m_sessionDuration;
-    protected byte m_pitSpeedLimit;// Pit speed limit in kilometres per hour
-    protected byte m_gamePaused;
-    protected byte m_isSpectating;
-    protected byte m_spectatorCarIndex;
-    protected byte m_sliProNativeSupport;
-    protected byte m_numMarshalZones;
-    protected MarshalZone[] m_marshalZones = new MarshalZone[21];
-    protected byte m_safetyCarStatus;// 0 = no safety car, 1 = full safety car
+    protected Header header;
+    protected byte weather;
+    protected byte trackTemperature;
+    protected byte airTemperature;
+    protected byte totalLaps;
+    protected short trackLength;
+    protected byte sessionType;
+    protected byte trackId;
+    protected byte era;
+    protected short sessionTimeLeft;
+    protected short sessionDuration;
+    protected byte pitSpeedLimit;// Pit speed limit in kilometres per hour
+    protected byte gamePaused;
+    protected byte isSpectating;
+    protected byte spectatorCarIndex;
+    protected byte sliProNativeSupport;
+    protected byte numMarshalZones;
+    protected MarshalZone[] marshalZones = new MarshalZone[21];
+    protected byte safetyCarStatus;// 0 = no safety car, 1 = full safety car
     // 2 = virtual safety car
-    protected byte m_networkGame;// 0 = offline, 1 = online
+    protected byte networkGame;// 0 = offline, 1 = online
 
     public static int getSize(){
         return 147;
@@ -34,146 +34,146 @@ public class PacketSessionData extends AbstractPacket{
     public byte[] getBytes(){
         ByteBuffer ret = ByteBuffer.allocate(PacketSessionData.getSize());
         ret.order(ByteOrder.LITTLE_ENDIAN);
-        byte[] headerData = m_header.getBytes();
+        byte[] headerData = header.getBytes();
         for(int i=0;i<headerData.length;i++){
             ret.put(i,headerData[i]);
         }
-        ret.put(21,m_weather.getValue());
-        ret.put(22,this.m_trackTemperature);
-        ret.put(23,this.m_airTemperature);
-        ret.put(24,this.m_totalLaps);
-        ret.putShort(25,this.m_trackLength);
-        ret.put(27,this.m_sessionType.getValue());
-        ret.put(28,this.m_trackId.getValue());
-        ret.put(29,this.m_era);
-        ret.putShort(30,this.m_sessionTimeLeft);
-        ret.putShort(32,this.m_sessionDuration);
-        ret.put(35,this.m_pitSpeedLimit);
-        ret.put(36,m_gamePaused);
-        ret.put(37,m_isSpectating);
-        ret.put(38,m_spectatorCarIndex);
-        ret.put(39,m_sliProNativeSupport);
-        ret.put(40,m_numMarshalZones);
-        for(int i=0;i<m_numMarshalZones;i++){
-            byte[] marshalZone = this.m_marshalZones[i].getBytes();
+        ret.put(21,weather);
+        ret.put(22,this.trackTemperature);
+        ret.put(23,this.airTemperature);
+        ret.put(24,this.totalLaps);
+        ret.putShort(25,this.trackLength);
+        ret.put(27,this.sessionType);
+        ret.put(28,this.trackId);
+        ret.put(29,this.era);
+        ret.putShort(30,this.sessionTimeLeft);
+        ret.putShort(32,this.sessionDuration);
+        ret.put(35,this.pitSpeedLimit);
+        ret.put(36,gamePaused);
+        ret.put(37,isSpectating);
+        ret.put(38,spectatorCarIndex);
+        ret.put(39,sliProNativeSupport);
+        ret.put(40,numMarshalZones);
+        for(int i=0;i<numMarshalZones;i++){
+            byte[] marshalZone = this.marshalZones[i].getBytes();
             for(int j=0;j<marshalZone.length;j++){
                 ret.put(41+j,marshalZone[j]);
             }
         }
-        int offset = 41+MarshalZone.getSize()*m_numMarshalZones;
-        ret.put(offset,m_safetyCarStatus);
-        ret.put(offset+1,m_networkGame);
+        int offset = 41+MarshalZone.getSize()*numMarshalZones;
+        ret.put(offset,safetyCarStatus);
+        ret.put(offset+1,networkGame);
         return ret.array();
     }
     
     public Header getHeader(){
-        return this.m_header;
+        return this.header;
     }
     public void setHeader(Header head){
-        this.m_header = head;
+        this.header = head;
     }
-    public Weather getWeather(){
-        return this.m_weather;
+    public byte getWeather(){
+        return this.weather;
     }
-    public void setWeather(Weather weather){
-        this.m_weather = weather;
+    public void setWeather(byte weather){
+        this.weather = weather;
     }
     public byte getTrackTemperature(){
-        return this.m_trackTemperature;
+        return this.trackTemperature;
     }
     public void setTrackTemperature(byte temperature){
-        this.m_trackTemperature = temperature;
+        this.trackTemperature = temperature;
     }
     public byte getAirTemperature(){
-        return this.m_airTemperature;
+        return this.airTemperature;
     }
     public void setAirTemperature(byte temperature){
-        this.m_airTemperature = temperature;
+        this.airTemperature = temperature;
     }
     public byte getTotalLaps(){
-        return this.m_totalLaps;
+        return this.totalLaps;
     }
     public void setTotalLaps(byte totalLaps){
-        this.m_totalLaps = totalLaps;
+        this.totalLaps = totalLaps;
     }
     public short getTrackLength(){
-        return this.m_trackLength;
+        return this.trackLength;
     }
     public void setTrackLength(short length){
-        this.m_trackLength = length;
+        this.trackLength = length;
     }
-    public SessionType getSessionType(){
-        return this.m_sessionType;
+    public byte getSessionType(){
+        return this.sessionType;
     }
-    public void setSessionType(SessionType type){
-        this.m_sessionType = type;
+    public void setSessionType(byte type){
+        this.sessionType = type;
     }
-    public TrackID getTrackId(){
-        return this.m_trackId;
+    public byte getTrackId(){
+        return this.trackId;
     }
-    public void setTrackId(TrackID track){
-        this.m_trackId = track;
+    public void setTrackId(byte track){
+        this.trackId = track;
     }
     public byte getEra(){
-        return this.m_era;
+        return this.era;
     }
     public void setEra(byte era){
-        this.m_era = era;
+        this.era = era;
     }    
     public short getSessionTimeLeft(){
-        return this.m_sessionTimeLeft;
+        return this.sessionTimeLeft;
     }
     public void setSessionTimeLeft(short left){
-        this.m_sessionTimeLeft = left;
+        this.sessionTimeLeft = left;
     }
     public short getSessionDuration(){
-        return this.m_sessionDuration;
+        return this.sessionDuration;
     }
     public void setSessionDuration(short duration){
-        this.m_sessionDuration = duration;
+        this.sessionDuration = duration;
     }
     
     public void setPitSpeedLimit(byte m_pitSpeedLimit) {
-        this.m_pitSpeedLimit = m_pitSpeedLimit;
+        this.pitSpeedLimit = m_pitSpeedLimit;
     }
 
     public void setGamePaused(byte m_gamePaused) {
-        this.m_gamePaused = m_gamePaused;
+        this.gamePaused = m_gamePaused;
     }
 
     public void setIsSpectating(byte m_isSpectating) {
-        this.m_isSpectating = m_isSpectating;
+        this.isSpectating = m_isSpectating;
     }
 
     public void setSpectatorCarIndex(byte m_spectatorCarIndex) {
-        this.m_spectatorCarIndex = m_spectatorCarIndex;
+        this.spectatorCarIndex = m_spectatorCarIndex;
     }
 
     public void setSliProNativeSupport(byte m_sliProNativeSupport) {
-        this.m_sliProNativeSupport = m_sliProNativeSupport;
+        this.sliProNativeSupport = m_sliProNativeSupport;
     }
 
     public void setNumMarshalZones(byte m_numMarshalZones) {
-        this.m_numMarshalZones = m_numMarshalZones;
+        this.numMarshalZones = m_numMarshalZones;
     }
     public byte getNumMarshalZones(){
-        return this.m_numMarshalZones;
+        return this.numMarshalZones;
     }
 
     public void setMarshalZones(MarshalZone[] m_marshalZones) {
-        this.m_marshalZones = m_marshalZones;
+        this.marshalZones = m_marshalZones;
     }
     public void setMarshalZone(int i,MarshalZone marshalZone){
-        this.m_marshalZones[i] = marshalZone;
+        this.marshalZones[i] = marshalZone;
     }
     
 
     public void setSafetyCarStatus(byte m_safetyCarStatus) {
-        this.m_safetyCarStatus = m_safetyCarStatus;
+        this.safetyCarStatus = m_safetyCarStatus;
     }
 
     public void setNetworkGame(byte m_networkGame) {
-        this.m_networkGame = m_networkGame;
+        this.networkGame = m_networkGame;
     }
     
     

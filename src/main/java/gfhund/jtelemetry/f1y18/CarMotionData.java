@@ -1,29 +1,32 @@
 package gfhund.jtelemetry.f1y18;
 
-public class CarMotionData{
-    protected float m_worldPositionX;//4
-    protected float m_worldPositionY;//4
-    protected float m_worldPositionZ;//4
+import gfhund.jtelemetry.commontelemetry.AbstractSubPackage;
+import java.nio.ByteBuffer;
 
-    protected float m_worldVelocityX;//4
-    protected float m_worldVelocityY;//4
-    protected float m_worldVelocityZ;//4
+public class CarMotionData extends AbstractSubPackage{
+    protected float worldPositionX;//4
+    protected float worldPositionY;//4
+    protected float worldPositionZ;//4
 
-    protected short m_worldForwardDirX;//2
-    protected short m_worldForwardDirY;//2
-    protected short m_worldForwardDirZ;//2
+    protected float worldVelocityX;//4
+    protected float worldVelocityY;//4
+    protected float worldVelocityZ;//4
 
-    protected short m_worldRightDirX;//2
-    protected short m_worldRightDirY;//2
-    protected short m_worldRightDirZ;//2
+    protected short worldForwardDirX;//2
+    protected short worldForwardDirY;//2
+    protected short worldForwardDirZ;//2
 
-    protected float m_gForceLateral;//4
-    protected float m_gForceLongitudinal;//4
-    protected float m_gForceVertical;//4
+    protected short worldRightDirX;//2
+    protected short worldRightDirY;//2
+    protected short worldRightDirZ;//2
 
-    protected float m_yaw;//4
-    protected float m_pitch;//4
-    protected float m_roll;//4
+    protected float gForceLateral;//4
+    protected float gForceLongitudinal;//4
+    protected float gForceVertical;//4
+
+    protected float yaw;//4
+    protected float pitch;//4
+    protected float roll;//4
     //total: 12*4+6*2 = 60
 
     public static int getSize(){
@@ -31,105 +34,157 @@ public class CarMotionData{
     }
 
     public void setWorldPositionX(float worldPositionX){
-        this.m_worldPositionX = worldPositionX;
+        this.worldPositionX = worldPositionX;
     }
     public float getWorldPositionX(){
-        return this.m_worldPositionX;
+        return this.worldPositionX;
     }
     
     public void setWorldPositionY(float worldPositionY){
-        this.m_worldPositionY = worldPositionY;
+        this.worldPositionY = worldPositionY;
     }
     public float getWorldPositionY(){
-        return this.m_worldPositionY;
+        return this.worldPositionY;
     }
     
     public void setWorldPositionZ(float worldPositionZ){
-        this.m_worldPositionZ = worldPositionZ;
+        this.worldPositionZ = worldPositionZ;
     }
     public float getWorldPositionZ(){
-        return this.m_worldPositionZ;
+        return this.worldPositionZ;
     }
     
     public void setWorldVelocityX(float worldVelocityX){
-        this.m_worldVelocityX = worldVelocityX;
+        this.worldVelocityX = worldVelocityX;
     }
     public float getWorldVelocityX(){
-        return this.m_worldVelocityX;
+        return this.worldVelocityX;
     }
     
     public void setWorldVelocityY(float worldVelocyityY){
-        this.m_worldVelocityY = worldVelocyityY;
+        this.worldVelocityY = worldVelocyityY;
     }
     public float getWorldVelocityY(){
-        return this.m_worldVelocityY;
+        return this.worldVelocityY;
     }
     
     public void setWorldVelocityZ(float worldVelocityZ){
-        this.m_worldVelocityZ = worldVelocityZ;
+        this.worldVelocityZ = worldVelocityZ;
     }
     public float getWorldVelocityZ(){
-        return this.m_worldVelocityZ;
+        return this.worldVelocityZ;
     }
     
     public void setWorldForwardDirX(short worldForwardDirX){
-        this.m_worldForwardDirX = worldForwardDirX;
+        this.worldForwardDirX = worldForwardDirX;
     }
     public short getWorldForwardDirX(){
-        return this.m_worldForwardDirX;
+        return this.worldForwardDirX;
     }
     
     public void setWorldForwardDirY(short worldForwardDirY){
-        this.m_worldForwardDirY = worldForwardDirY;
+        this.worldForwardDirY = worldForwardDirY;
     }
     public short getWorldForwardDirY(){
-        return this.m_worldForwardDirY;
+        return this.worldForwardDirY;
     }
     
     public void setWorldForwardDirZ(short worldForwardDirZ){
-        this.m_worldForwardDirZ = worldForwardDirZ;
+        this.worldForwardDirZ = worldForwardDirZ;
     }
     public short getWorldForwardDirZ(){
-        return this.m_worldForwardDirZ;
+        return this.worldForwardDirZ;
     }
     
-    public void setWordRightDirX(short worldRightDirX){
-        this.m_worldRightDirX = worldRightDirX;
+    public void setWorldRightDirX(short worldRightDirX){
+        this.worldRightDirX = worldRightDirX;
     }
     public short getWorldRightDirX(){
-        return this.m_worldRightDirX;
+        return this.worldRightDirX;
     }
     
     
     public void setWorldRightDirY(short worldRightDirY){
-        this.m_worldRightDirY = worldRightDirY;
+        this.worldRightDirY = worldRightDirY;
     }
     public short getWorldRightDirY(){
-        return this.m_worldRightDirY;
+        return this.worldRightDirY;
     }
     
     public void setWorldRightDirZ(short worldRightDirZ){
-        this.m_worldRightDirZ = worldRightDirZ;
+        this.worldRightDirZ = worldRightDirZ;
     }
     public short getWorldRightDirZ(){
-        return this.m_worldRightDirZ;
+        return this.worldRightDirZ;
     }
+    
     public void setGForceLateral(float gForceLateral){
-        this.m_gForceLateral = gForceLateral;
+        this.gForceLateral = gForceLateral;
     }
+    public float getGForceLateral(){
+        return this.gForceLateral;
+    }
+    
     public void setGForceLongitudinal(float gForceLongitudinal){
-        this.m_gForceLongitudinal = gForceLongitudinal;
+        this.gForceLongitudinal = gForceLongitudinal;
     }
+    public float getGForceLongitudinal(){
+        return this.gForceLongitudinal;
+    }
+    
     public void setGForceVertical(float gForceVertical){
-        this.m_gForceVertical = gForceVertical;
+        this.gForceVertical = gForceVertical;
     }
+    public float getGForceVertical(){
+        return this.gForceVertical;
+    }
+    
     public void setYaw(float yaw){
-        this.m_yaw = yaw;
+        this.yaw = yaw;
     }
+    public float getYaw(){
+        return this.yaw;
+    }
+    
     public void setRoll(float roll){
-        this.m_roll = roll;
+        this.roll = roll;
     }
+    public float getRoll(){
+        return this.roll;
+    }
+    
     public void setPitch(float pitch){
-        this.m_pitch = pitch;
+        this.pitch = pitch;
+    }
+    public float getPitch(){
+        return this.pitch;
+    }
+   
+    public byte[] getBytes(){
+        ByteBuffer ret = ByteBuffer.allocate(CarMotionData.getSize());
+        ret.putFloat(this.getWorldPositionX());
+        ret.putFloat(4, this.getWorldPositionY());
+        ret.putFloat(8, this.getWorldPositionZ());
+        
+        ret.putFloat(12, this.getWorldVelocityX());
+        ret.putFloat(16, this.getWorldVelocityY());
+        ret.putFloat(20, this.getWorldVelocityZ());
+        
+        ret.putShort(24, this.getWorldForwardDirX());
+        ret.putShort(26, this.getWorldForwardDirY());
+        ret.putShort(28, this.getWorldForwardDirZ());
+        
+        ret.putShort(30, this.getWorldRightDirX());
+        ret.putShort(32, this.getWorldRightDirY());
+        ret.putShort(34, this.getWorldRightDirZ());
+        
+        ret.putFloat(36, this.getGForceLateral());
+        ret.putFloat(40, this.getGForceLongitudinal());
+        ret.putFloat(44, this.getGForceVertical());
+        
+        ret.putFloat(48, this.getYaw());
+        ret.putFloat(52, this.getPitch());
+        ret.putFloat(56, this.getRoll());
+        return ret.array();
     }
 }

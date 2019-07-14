@@ -14,22 +14,22 @@ import gfhund.jtelemetry.commontelemetry.AbstractPacket;
  * @author PhilippHolzmann
  */
 public class PacketCarStatusData extends AbstractPacket {
-    private Header m_header19;
-    private CarStatusData[] m_carStatusData = new CarStatusData[20];
+    private Header header19;
+    private CarStatusData[] carStatusData = new CarStatusData[20];
 
     public Header getHeader19() {
-        return m_header19;
+        return header19;
     }
 
     public void setHeader(Header m_header) {
-        this.m_header19 = m_header;
+        this.header19 = m_header;
     }
     
     public void setCarStatusData(int i,CarStatusData data){
-        this.m_carStatusData[i] = data;
+        this.carStatusData[i] = data;
     }
     public CarStatusData getCarStatusData(int i){
-        return this.m_carStatusData[i];
+        return this.carStatusData[i];
     }
     
     public static int getSize(){

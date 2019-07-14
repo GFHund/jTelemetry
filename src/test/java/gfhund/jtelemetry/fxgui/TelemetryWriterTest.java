@@ -197,7 +197,7 @@ public class TelemetryWriterTest {
             data.setGForceVertical(3.7f);
             data.setPitch(3.8f);
             data.setRoll(3.9f);
-            data.setWordRightDirX((short)20);
+            data.setWorldRightDirX((short)20);
             data.setWorldForwardDirX((short)21);
             data.setWorldForwardDirY((short)22);
             data.setWorldForwardDirZ((short)23);

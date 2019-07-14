@@ -1,106 +1,108 @@
 package gfhund.jtelemetry.f1y18;
 
-public class CarTelemetryData{
-    protected short m_speed;//0 2
-    protected byte m_throttle;//2 1
-    protected byte m_steer;//3 1
-    protected byte m_brake;//4 1
-    protected byte m_clutch;//5 1
-    protected byte m_gear;//6 1
-    protected short m_engineRPM;//7 2
-    protected byte m_drs;//9 1
-    protected byte m_revLightsPercent;//10 1
-    protected short[] m_brakesTemperature = new short[4];//11 4*2 = 8
-    protected short[] m_tyresSurfaceTemperature = new short[4];//19 8
-    protected short[] m_tyresInnerTemperature = new short[4];//27 8
-    protected short m_engineTemperature;//35 2
-    protected float[] m_tyresPressure = new float[4];//37 4*4 = 16
+import gfhund.jtelemetry.commontelemetry.AbstractSubPackage;
+
+public class CarTelemetryData extends AbstractSubPackage{
+    protected short speed;//0 2
+    protected byte throttle;//2 1
+    protected byte steer;//3 1
+    protected byte brake;//4 1
+    protected byte clutch;//5 1
+    protected byte gear;//6 1
+    protected short engineRPM;//7 2
+    protected byte drs;//9 1
+    protected byte revLightsPercent;//10 1
+    protected short[] brakesTemperature = new short[4];//11 4*2 = 8
+    protected short[] tyresSurfaceTemperature = new short[4];//19 8
+    protected short[] tyresInnerTemperature = new short[4];//27 8
+    protected short engineTemperature;//35 2
+    protected float[] tyresPressure = new float[4];//37 4*4 = 16
     //53
     public static int getSize(){
         return 53;
     }
     public void setSpeed(short speed){
-        this.m_speed = speed;
+        this.speed = speed;
     }
     public short getSpeed(){
-        return this.m_speed;
+        return this.speed;
     }
     public void setThrottle(byte throttle){
-        this.m_throttle = throttle;
+        this.throttle = throttle;
     }
     public byte getThrottle(){
-        return this.m_throttle;
+        return this.throttle;
     }
     public void setSteer(byte steer){
-        this.m_steer = steer;
+        this.steer = steer;
     }
     public byte getSteer(){
-        return this.m_steer;
+        return this.steer;
     }
     public void setBrake(byte brake){
-        this.m_brake = brake;
+        this.brake = brake;
     }
     public byte getBrake(){
-        return this.m_brake;
+        return this.brake;
     }
     public void setClutch(byte clutch){
-        this.m_clutch = clutch;
+        this.clutch = clutch;
     }
     public byte getClutch(){
-        return this.m_clutch;
+        return this.clutch;
     }
     public void setGear(byte gear){
-        this.m_gear = gear;
+        this.gear = gear;
     }
     public byte getGear(){
-        return this.m_gear;
+        return this.gear;
     }
     public void setEngineRPM(short engineRpm){
-        this.m_engineRPM = engineRpm;
+        this.engineRPM = engineRpm;
     }
     public short getEngineRPM(){
-        return this.m_engineRPM;
+        return this.engineRPM;
     }
     public void setDrs(byte drs){
-        this.m_drs = drs;
+        this.drs = drs;
     }
     public byte getDrs(){
-        return this.m_drs;
+        return this.drs;
     }
     public void setRevLightsPercent(byte revLightsPercent){
-        this.m_revLightsPercent = revLightsPercent;
+        this.revLightsPercent = revLightsPercent;
     }
     public byte getRevLightsPercent(){
-        return this.m_revLightsPercent;
+        return this.revLightsPercent;
     }
     public void setBrakeTemperature(int i,short temperature){
-        this.m_brakesTemperature[i] = temperature;
+        this.brakesTemperature[i] = temperature;
     }
     public short getBrakeTemperature(int i){
-        return this.m_brakesTemperature[i];
+        return this.brakesTemperature[i];
     }
     public void setTyreSurfaceTemperature(int i,short temperature){
-        this.m_tyresSurfaceTemperature[i] = temperature;
+        this.tyresSurfaceTemperature[i] = temperature;
     }
     public short getTyreSurfaceTemperature(int i){
-        return this.m_tyresSurfaceTemperature[i];
+        return this.tyresSurfaceTemperature[i];
     }
     public void setTyreInnerTemperature(int i,short temperature){
-        this.m_tyresInnerTemperature[i] = temperature;
+        this.tyresInnerTemperature[i] = temperature;
     }
     public short getTyreInnerTemperature(int i){
-        return this.m_tyresInnerTemperature[i];
+        return this.tyresInnerTemperature[i];
     }
     public void setEngineTemperature(short temperature){
-        this.m_engineTemperature = temperature;
+        this.engineTemperature = temperature;
     }
     public short getEngineTemperature(){
-        return this.m_engineTemperature;
+        return this.engineTemperature;
     }
     public void setTyrePressure(int i,float pressure){
-        this.m_tyresPressure[i] = pressure;
+        this.tyresPressure[i] = pressure;
     }
     public float getTyrePressure(int i){
-        return this.m_tyresPressure[i];
+        return this.tyresPressure[i];
     }
 }

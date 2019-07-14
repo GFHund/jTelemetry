@@ -5,31 +5,32 @@
  */
 package gfhund.jtelemetry.f1y19;
 
+import gfhund.jtelemetry.commontelemetry.AbstractPacket;
 /**
  *
  * @author PhilippHolzmann
  */
-public class PacketEventData {
-    protected Header m_header19;
-    protected String m_eventStringCode;
-    protected EventDataDetails m_details;
+public class PacketEventData extends AbstractPacket {
+    protected Header header19;
+    protected String eventStringCode;
+    protected EventDataDetails details;
     
     public Header getHeader19(){
-        return this.m_header19;
+        return this.header19;
     }
     public void setHeader19(Header header){
-        this.m_header19 = header;
+        this.header19 = header;
     }
     public String getEventStringCode(){
-        return this.m_eventStringCode;
+        return this.eventStringCode;
     }
     public void setEventStringCode(String code){
-        this.m_eventStringCode = code;
+        this.eventStringCode = code;
     }
     public EventDataDetails getDetails(){
-        return this.m_details;
+        return this.details;
     }
     public void setDetails(EventDataDetails det){
-        this.m_details = det;
+        this.details = det;
     }
 }

@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package gfhund.jtelemetry.network;
+package gfhund.jtelemetry.f1y18;
 
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import gfhund.jtelemetry.f1y18.PacketBuilder;
+import gfhund.jtelemetry.f1common.PacketBuilder;
 import gfhund.jtelemetry.commontelemetry.AbstractPacket;
 import gfhund.jtelemetry.f1y18.F1Y2018ParseException;
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class F1Y2018ParseThread implements Runnable{//extends Task<AbstractPacke
             while(!this.m_inputQueue.isEmpty()){
                 byte[] raw = this.m_inputQueue.poll();
                 try{
-                    AbstractPacket packet = PacketBuilder.parseUDPPacket(raw);
+                    AbstractPacket packet = PacketBuilder.parseUDPPacket2018(raw);
                     for(F1Y2018ParseResultEvent event:this.m_events){
                         event.resultEvent(packet);
                     }

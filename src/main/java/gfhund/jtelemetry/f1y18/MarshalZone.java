@@ -1,17 +1,18 @@
 package gfhund.jtelemetry.f1y18;
 
+import gfhund.jtelemetry.commontelemetry.AbstractSubPackage;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class MarshalZone{
-    protected float m_zoneStart;
-    protected float m_zoneFlag;
+public class MarshalZone extends AbstractSubPackage{
+    protected float zoneStart;
+    protected float zoneFlag;
     
     public void setZoneStart(float zoneStart){
-        this.m_zoneStart = zoneStart;
+        this.zoneStart = zoneStart;
     }
     public void setZoneFlag(float zoneFlag){
-        this.m_zoneFlag = zoneFlag;
+        this.zoneFlag = zoneFlag;
     }
     public static int getSize(){
         return 8;
@@ -20,8 +21,8 @@ public class MarshalZone{
     public byte[] getBytes(){
         ByteBuffer ret = ByteBuffer.allocate(MarshalZone.getSize());
         ret.order(ByteOrder.LITTLE_ENDIAN);
-        ret.putFloat(m_zoneStart);
-        ret.putFloat(m_zoneFlag);
+        ret.putFloat(zoneStart);
+        ret.putFloat(zoneFlag);
         return ret.array();
     }
     

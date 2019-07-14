@@ -14,33 +14,33 @@ import gfhund.jtelemetry.commontelemetry.AbstractPacket;
  * @author PhilippHolzmann
  */
 public class PacketLapData extends AbstractPacket {
-    private gfhund.jtelemetry.f1y18.Header m_header;
-    private gfhund.jtelemetry.f1y18.LapData[] m_lapData = new gfhund.jtelemetry.f1y18.LapData[20];
+    private Header header;
+    private LapData[] lapData = new LapData[20];
 
-    public void setHeader(gfhund.jtelemetry.f1y18.Header head){
-        this.m_header = head;
+    public void setHeader(Header head){
+        this.header = head;
     }
-    public void setLapData(int i,gfhund.jtelemetry.f1y18.LapData lapData){
-        this.m_lapData[i] = lapData;
+    public void setLapData(int i,LapData lapData){
+        this.lapData[i] = lapData;
     }
     
-    public gfhund.jtelemetry.f1y18.Header getHeader(){
-        return this.m_header;
+    public Header getHeader(){
+        return this.header;
     }
-    public gfhund.jtelemetry.f1y18.LapData getLapData(int index){
-        return this.m_lapData[index];
+    public LapData getLapData(int index){
+        return this.lapData[index];
     }
     
     public byte[] getBytes(){
         ByteBuffer ret = ByteBuffer.allocate(841);
         ret.order(ByteOrder.LITTLE_ENDIAN);
-        byte[] headerData = this.m_header.getBytes();
+        byte[] headerData = this.header.getBytes();
         for(int i =0;i<headerData.length;i++){
             ret.put(i,headerData[i]);
         }
         for(int i=0;i<20;i++){
-            byte[] lapData = m_lapData[i].getBytes();
-            int offset = gfhund.jtelemetry.f1y18.Header.getSize()+i*gfhund.jtelemetry.f1y18.LapData.getSize();
+            byte[] lapData = this.lapData[i].getBytes();
+            int offset = Header.getSize()+i*LapData.getSize();
             for(int k=0;k<lapData.length;k++){
                 ret.put(offset+k,lapData[k]);
             }

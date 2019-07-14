@@ -1,5 +1,6 @@
 package gfhund.jtelemetry.f1y18;
 
+import gfhund.jtelemetry.f1common.PacketBuilder;
 import gfhund.jtelemetry.commontelemetry.AbstractPacket;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +23,7 @@ public class F1Y2018Packets extends AbstractPackets{
         for(String packet:sPackets){
             try{
                 byte[] rawPacket = packet.getBytes();
-                AbstractPacket packetObj = PacketBuilder.parseUDPPacket(rawPacket);
+                AbstractPacket packetObj = PacketBuilder.parseUDPPacket2018(rawPacket);
                 if(packetObj != null){
                     packets.add(packetObj);
                 }

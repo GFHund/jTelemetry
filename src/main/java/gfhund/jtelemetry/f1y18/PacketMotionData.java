@@ -1,6 +1,8 @@
 package gfhund.jtelemetry.f1y18;
 
 import gfhund.jtelemetry.commontelemetry.AbstractPacket;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class PacketMotionData extends AbstractPacket{
     protected Header m_header;//0 21
@@ -78,6 +80,23 @@ public class PacketMotionData extends AbstractPacket{
     }
     public void setFrontWheelsAngle(float value){
         this.m_frontWheelsAngle = value;
+    }
+    
+    public byte[] getBytes(){
+        ByteBuffer ret = ByteBuffer.allocate(PacketCarStatusData.getSize());
+        ret.order(ByteOrder.LITTLE_ENDIAN);
+        byte[] headerData = this.m_header.getBytes();
+        for(int i=0;i<headerData.length;i++){
+            ret.put(i,headerData[i]);
+        }
+        for(int i=0;i<20;i++){
+            byte[] carStatusData = this.m_carMotionData[i].getBytes();
+            int offset = Header.getSize()+i*CarStatusData.getSize();
+            for(int k=0;k<carStatusData.length;k++){
+                ret.put(offset+k,carStatusData[k]);
+            }
+        }
+        return ret.array();
     }
 }
 

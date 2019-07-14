@@ -3,12 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package gfhund.jtelemetry.f1y19;
+package gfhund.jtelemetry.fxgui.controller;
 
 /**
  *
  * @author PhilippHolzmann
  */
-public class CarMotionData extends gfhund.jtelemetry.f1y18.CarMotionData {
-   
+public abstract class AbstractController {
+    public AbstractController(){
+        
+    }
 }

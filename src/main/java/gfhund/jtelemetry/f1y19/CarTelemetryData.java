@@ -10,12 +10,12 @@ package gfhund.jtelemetry.f1y19;
  * @author PhilippHolzmann
  */
 public class CarTelemetryData extends gfhund.jtelemetry.f1y18.CarTelemetryData {
-    protected SurfaceType surfaceType;
+    protected byte surfaceType;
     
-    public void setSurfaceType(SurfaceType type){
+    public void setSurfaceType(byte type){
         this.surfaceType = type;
     }
-    public SurfaceType getSurfaceType(){
+    public byte getSurfaceType(){
         return this.surfaceType;
     }
     

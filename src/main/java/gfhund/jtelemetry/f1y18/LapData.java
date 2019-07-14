@@ -1,27 +1,28 @@
 package gfhund.jtelemetry.f1y18;
 
+import gfhund.jtelemetry.commontelemetry.AbstractSubPackage;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class LapData {
-    protected float m_lastLapTime;//0
-    protected float m_currentLapTime;//4
-    protected float m_bestLapTime;//8
-    protected float m_sector1Time;//12
-    protected float m_sector2Time;//16
-    protected float m_lapDistance;//20
-    protected float m_totalDistance;//24
-    protected float m_safetyCarDelta;//28
-    protected byte m_carPosition;//32
-    protected byte m_currentLapNum;//33
-    protected byte m_pitStatus;//34  0 = none, 1 = pitting, 2 = in pit area
-    protected byte m_sector;//35
-    protected byte m_currentLapInvalid;//36
-    protected byte m_penalties;//37
-    protected byte m_gridPosition;//38
-    protected byte m_driverStatus;//39  Status of driver - 0 = in garage, 1 = flying lap
+public class LapData extends AbstractSubPackage{
+    protected float lastLapTime;//0
+    protected float currentLapTime;//4
+    protected float bestLapTime;//8
+    protected float sector1Time;//12
+    protected float sector2Time;//16
+    protected float lapDistance;//20
+    protected float totalDistance;//24
+    protected float safetyCarDelta;//28
+    protected byte carPosition;//32
+    protected byte currentLapNum;//33
+    protected byte pitStatus;//34  0 = none, 1 = pitting, 2 = in pit area
+    protected byte sector;//35
+    protected byte currentLapInvalid;//36
+    protected byte penalties;//37
+    protected byte gridPosition;//38
+    protected byte driverStatus;//39  Status of driver - 0 = in garage, 1 = flying lap
     // 2 = in lap, 3 = out lap, 4 = on track
-    protected byte m_resultStatus;//40 Result status - 0 = invalid, 1 = inactive, 2 = active
+    protected byte resultStatus;//40 Result status - 0 = invalid, 1 = inactive, 2 = active
     // 3 = finished, 4 = disqualified, 5 = not classified
     // 6 = retired
     public static int getSize(){
@@ -29,98 +30,98 @@ public class LapData {
     }
 
     public void setLastLapTime(float lastLapTime) {
-        this.m_lastLapTime = lastLapTime;
+        this.lastLapTime = lastLapTime;
     }
     public void setCurrentLapTime(float currentLapTime) {
-        this.m_currentLapTime = currentLapTime;
+        this.currentLapTime = currentLapTime;
     }
     public void setBestLapTime(float bestLapTime) {
-        this.m_bestLapTime = bestLapTime;
+        this.bestLapTime = bestLapTime;
     }
     public void setSector1Time(float sector1Time) {
-        this.m_sector1Time = sector1Time;
+        this.sector1Time = sector1Time;
     }
     public void setSector2Time(float sector2Time) {
-        this.m_sector2Time = sector2Time;
+        this.sector2Time = sector2Time;
     }
     public void setLapDistance(float lapDistance) {
-        this.m_lapDistance = lapDistance;
+        this.lapDistance = lapDistance;
     }
     public void setTotalDistance(float totalDistance) {
-        this.m_totalDistance = totalDistance;
+        this.totalDistance = totalDistance;
     }
     public void setSafetyCarDelta(float safetyCarDelta) {
-        this.m_safetyCarDelta = safetyCarDelta;
+        this.safetyCarDelta = safetyCarDelta;
     }
     public void setCarPosition(byte carPosition) {
-        this.m_carPosition = carPosition;
+        this.carPosition = carPosition;
     }
     public void setCurrentLapNum(byte currentLapNum){
-        this.m_currentLapNum = currentLapNum;
+        this.currentLapNum = currentLapNum;
     }
     public void setPitStatus(byte pitStatus){
-        this.m_pitStatus = pitStatus;
+        this.pitStatus = pitStatus;
     }
     public void setSector(byte sector){
-        this.m_sector = sector;
+        this.sector = sector;
     }
     public void setCurrentLapInvalid(byte currentLapInvalid){
-        this.m_currentLapInvalid = currentLapInvalid;
+        this.currentLapInvalid = currentLapInvalid;
     }
     public void setPenalties(byte penalties){
-        this.m_penalties = penalties;
+        this.penalties = penalties;
     }
     public void setGridPosition(byte gridPosition){
-        this.m_gridPosition = gridPosition;
+        this.gridPosition = gridPosition;
     }
     public void setDriverStatus(byte driverStatus){
-        this.m_driverStatus = driverStatus;
+        this.driverStatus = driverStatus;
     }
     public void setResultStatus(byte resultStatus){
-        this.m_resultStatus = resultStatus;
+        this.resultStatus = resultStatus;
     }
     
     public float getCurrentLapTime(){
-        return this.m_currentLapTime;
+        return this.currentLapTime;
     }
     public float getSector1Time(){
-        return this.m_sector1Time;
+        return this.sector1Time;
     }
     public float getSector2Time(){
-        return this.m_sector2Time;
+        return this.sector2Time;
     }
     public float getLastLapTime(){
-        return this.m_lastLapTime;
+        return this.lastLapTime;
     }
     public float getBestLapTime(){
-        return this.m_bestLapTime;
+        return this.bestLapTime;
     }
     public byte getCarPosition(){
-        return this.m_carPosition;
+        return this.carPosition;
     }
     public byte getCurrentLapNum(){
-        return this.m_currentLapNum;
+        return this.currentLapNum;
     }
     public byte[] getBytes(){
         ByteBuffer lapDataBuffer = ByteBuffer.allocate(41);
         lapDataBuffer.order(ByteOrder.LITTLE_ENDIAN);
-        lapDataBuffer.putFloat(0, m_lastLapTime);
-        lapDataBuffer.putFloat(4, m_currentLapTime);
-        lapDataBuffer.putFloat(8, m_bestLapTime);
-        lapDataBuffer.putFloat(12,m_sector1Time);
-        lapDataBuffer.putFloat(16,m_sector2Time);
-        lapDataBuffer.putFloat(20,m_lapDistance);
-        lapDataBuffer.putFloat(24, m_totalDistance);
-        lapDataBuffer.putFloat(28, m_safetyCarDelta);
-        lapDataBuffer.put(32,m_carPosition);
-        lapDataBuffer.put(33,m_currentLapNum);
-        lapDataBuffer.put(34,m_pitStatus);
-        lapDataBuffer.put(35,m_sector);
-        lapDataBuffer.put(36,m_currentLapInvalid);
-        lapDataBuffer.put(37,m_penalties);
-        lapDataBuffer.put(38,m_gridPosition);
-        lapDataBuffer.put(39,m_driverStatus);
-        lapDataBuffer.put(40,m_resultStatus);
+        lapDataBuffer.putFloat(0, lastLapTime);
+        lapDataBuffer.putFloat(4, currentLapTime);
+        lapDataBuffer.putFloat(8, bestLapTime);
+        lapDataBuffer.putFloat(12,sector1Time);
+        lapDataBuffer.putFloat(16,sector2Time);
+        lapDataBuffer.putFloat(20,lapDistance);
+        lapDataBuffer.putFloat(24, totalDistance);
+        lapDataBuffer.putFloat(28, safetyCarDelta);
+        lapDataBuffer.put(32,carPosition);
+        lapDataBuffer.put(33,currentLapNum);
+        lapDataBuffer.put(34,pitStatus);
+        lapDataBuffer.put(35,sector);
+        lapDataBuffer.put(36,currentLapInvalid);
+        lapDataBuffer.put(37,penalties);
+        lapDataBuffer.put(38,gridPosition);
+        lapDataBuffer.put(39,driverStatus);
+        lapDataBuffer.put(40,resultStatus);
         return lapDataBuffer.array();
     }
 }

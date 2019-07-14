@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package gfhund.jtelemetry.network;
+package gfhund.jtelemetry.f1y18;
 
 import gfhund.jtelemetry.commontelemetry.AbstractPacket;
 /**

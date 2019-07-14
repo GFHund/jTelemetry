@@ -10,23 +10,23 @@ import gfhund.jtelemetry.commontelemetry.AbstractPacket;
  *
  * @author PhilippHolzmann
  */
-public class PacketCarSetupData {
-    protected Header m_header19;
-    protected CarSetupData[] m_carSetup = new CarSetupData[20];
+public class PacketCarSetupData extends AbstractPacket {
+    protected Header header19;
+    protected CarSetupData[] carSetupData = new CarSetupData[20];
 
     public Header getHeader19() {
-        return m_header19;
+        return header19;
     }
 
     public void setHeader(Header m_header) {
-        this.m_header19 = m_header;
+        this.header19 = m_header;
     }
     
     public void setCarSetupData(int i,CarSetupData data){
-        this.m_carSetup[i] = data;
+        this.carSetupData[i] = data;
     }
     public CarSetupData getCarSetupData(int i){
-        return this.m_carSetup[i];
+        return this.carSetupData[i];
     }
     
     public static int getSize(){
