@@ -16,7 +16,7 @@ public class PacketBuilderTest {
     @Test
     void PacketMotionDataTest(){
         gfhund.jtelemetry.f1y19.PacketMotionData packetMotionData = new gfhund.jtelemetry.f1y19.PacketMotionData();
-        gfhund.jtelemetry.f1y19.Header header = new gfhund.jtelemetry.f1y19.Header();
+        gfhund.jtelemetry.f1y19.Header header = getHeader2019();
         
         packetMotionData.setHeader(header);
         for(int i=0;i<20;i++){
@@ -27,7 +27,10 @@ public class PacketBuilderTest {
         try{
             gfhund.jtelemetry.f1y19.PacketMotionData afterParse = 
                     (gfhund.jtelemetry.f1y19.PacketMotionData) PacketBuilder.parseUDPPacket2019(raw);
-            assertEquals(afterParse.getCarMotionData(0).getWorldForwardDirX(), packetMotionData.getCarMotionData(0).getWorldForwardDirX());
+            for(int i=0;i<20;i++){
+                assertEquals(afterParse.getCarMotionData(0).getWorldForwardDirX(), packetMotionData.getCarMotionData(0).getWorldForwardDirX());
+            }
+            
         }
         catch(ParseException e){
             System.out.println(e.getMessage());

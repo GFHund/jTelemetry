@@ -30,8 +30,12 @@ public class PacketMotionData extends AbstractPacket {
         return this.carMotionData[i];
     }
     
+    public static int getSize(){
+        return 1343;
+    }
+    
     public byte[] getBytes(){
-        ByteBuffer ret = ByteBuffer.allocate(PacketCarStatusData.getSize());
+        ByteBuffer ret = ByteBuffer.allocate(PacketMotionData.getSize());
         ret.order(ByteOrder.LITTLE_ENDIAN);
         byte[] headerData = this.header.getBytes();
         for(int i=0;i<headerData.length;i++){

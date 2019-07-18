@@ -14,6 +14,7 @@ import gfhund.jtelemetry.f1y18.PacketSessionData;
 import gfhund.jtelemetry.f1y18.PacketCarTelemetryData;
 import gfhund.jtelemetry.f1y18.F1Y2018ParseResultEvent;
 import gfhund.jtelemetry.f1y18.F1Y2018ParseThread;
+import gfhund.jtelemetry.f1y19.F1Y2019ParseThread;
 import gfhund.jtelemetry.network.GameNetworkConnection;
 import gfhund.jtelemetry.network.ReceiveEvent;
 import java.io.File;
@@ -59,7 +60,7 @@ public class LiveViewDialog extends DialogFx{
         public byte m_position;
     }
     
-    private Thread m_f1y18Thread;
+    private Thread m_f1Thread;
     private GameNetworkConnection m_networkThread;
     
     private PlayerObj[] m_plyObj;
@@ -387,10 +388,10 @@ public class LiveViewDialog extends DialogFx{
         java.util.concurrent.locks.Condition cond = lock.newCondition();
         m_networkThread = new GameNetworkConnection(lock,cond,20777,1341);
         F1Y2018ParseThread parseThread = new F1Y2018ParseThread(lock,cond);
-        if(m_f1y18Thread == null){
-            m_f1y18Thread = new Thread(parseThread);
+        if(m_f1Thread == null){
+            m_f1Thread = new Thread(parseThread);
         }
-        if(m_f1y18Thread.isAlive()){
+        if(m_f1Thread.isAlive()){
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Thread not started");
             alert.setHeaderText(null);
@@ -420,7 +421,7 @@ public class LiveViewDialog extends DialogFx{
                 parseThread.addRaw(data);
             }
         });
-        m_f1y18Thread.start();
+        m_f1Thread.start();
         m_networkThread.start();
     }
     
@@ -428,7 +429,46 @@ public class LiveViewDialog extends DialogFx{
         ReentrantLock lock = new ReentrantLock();
         java.util.concurrent.locks.Condition cond = lock.newCondition();
         m_networkThread = new GameNetworkConnection(lock,cond,20777,1341);
+        //F1Y2018ParseThread parseThread = new F1Y2018ParseThread(lock,cond);
+        F1Y2019ParseThread parseThread = new F1Y2019ParseThread(lock,cond);
+        if(m_f1Thread == null){
+            m_f1Thread = new Thread(parseThread);
+        }
+        if(m_f1Thread.isAlive()){
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Thread not started");
+            alert.setHeaderText(null);
+            alert.setContentText("Thread not started because it is already started");
+            alert.showAndWait();
+            return;
+        }
+        parseThread.addParseResultEvent(new F1Y2018ParseResultEvent() {
+            @Override
+            public void resultEvent(AbstractPacket packet) {
+                parsePackager(packet);
+            }
+        });
+        if(isRecording){
+            this.m_writer = new TelemetryWriter();
+            parseThread.addParseResultEvent(new F1Y2018ParseResultEvent() {
+                @Override
+                public void resultEvent(AbstractPacket packet) {
+                    m_writer.processPackage(packet);
+                }
+            });
+        }
+        m_networkThread.addReciveEvent(new ReceiveEvent(){
+            @Override
+            public void onReceive(byte[] data){
+                //System.out.println("Übergebe einem Consumer Thread");
+                parseThread.addRaw(data);
+            }
+        });
+        m_f1Thread.start();
+        m_networkThread.start();
     }
+    
+    
     
     public void parsePackager(AbstractPacket packet){
         //System.out.println("recived package");
@@ -490,7 +530,9 @@ public class LiveViewDialog extends DialogFx{
         this.recordingStart.setDisable(false);
         this.recordingStop.setDisable(true);
         
-        m_f1y18Thread.interrupt();
+        if(m_f1Thread.isAlive()){
+            m_f1Thread.interrupt();
+        }
         m_networkThread.interrupt();
         
         if(this.isRecording){
@@ -762,8 +804,8 @@ public class LiveViewDialog extends DialogFx{
         if(m_networkThread != null && m_networkThread.isAlive()){
             m_networkThread.interrupt();
         }
-        if(m_f1y18Thread != null && m_f1y18Thread.isAlive()){
-            m_f1y18Thread.interrupt();
+        if(m_f1Thread != null && m_f1Thread.isAlive()){
+            m_f1Thread.interrupt();
         }
     }
 }

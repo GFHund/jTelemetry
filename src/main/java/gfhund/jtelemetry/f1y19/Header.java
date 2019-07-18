@@ -36,7 +36,7 @@ public class Header extends gfhund.jtelemetry.f1y18.Header {
     }
     
     public byte[] getBytes(){
-        ByteBuffer headerBuffer = ByteBuffer.allocate(21);
+        ByteBuffer headerBuffer = ByteBuffer.allocate(Header.getSize());
         headerBuffer.order(ByteOrder.LITTLE_ENDIAN);
         headerBuffer.putShort(this.m_packetFormat);
         headerBuffer.put(2,this.m_gameMajorVersion);
