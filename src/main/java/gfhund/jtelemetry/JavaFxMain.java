@@ -8,12 +8,12 @@ package gfhund.jtelemetry;
 import gfhund.jtelemetry.data.AbstractPackets;
 import gfhund.jtelemetry.data.Timing;
 import gfhund.jtelemetry.commontelemetry.AbstractPacket;
+import gfhund.jtelemetry.f1common.F1Recording;
 import gfhund.jtelemetry.f1y18.F1Y2018Packets;
 import gfhund.jtelemetry.f1y18.F1Y2018ParseException;
 import gfhund.jtelemetry.f1y18.LapData;
 import gfhund.jtelemetry.fxgui.LiveViewDialog;
 import gfhund.jtelemetry.fxgui.TimingFx;
-import gfhund.jtelemetry.f1y18.F1Y2018ParseResultEvent;
 import gfhund.jtelemetry.f1y18.F1Y2018ParseThread;
 import gfhund.jtelemetry.network.GameNetworkConnection;
 import gfhund.jtelemetry.network.ReceiveEvent;
@@ -24,6 +24,10 @@ import gfhund.jtelemetry.f1y18.PacketSessionData;
 import gfhund.jtelemetry.fxgui.TelemetryReader;
 import gfhund.jtelemetry.fxgui.TrackView;
 import gfhund.jtelemetry.fxgui.DiagramView;
+import gfhund.jtelemetry.fxgui.FinishEvent;
+import gfhund.jtelemetry.fxgui.LoadingBarDialog;
+import gfhund.jtelemetry.fxgui.ProgressEvent;
+import gfhund.jtelemetry.fxgui.TelemetryWriter;
 import gfhund.jtelemetry.stfFormat.AbstractStfObject;
 import gfhund.jtelemetry.stfFormat.StfDocument;
 import gfhund.jtelemetry.stfFormat.StfClass;
@@ -75,12 +79,17 @@ public class JavaFxMain extends Application{
     private static LiveViewDialog m_liveViewDialog;
     private HashMap<String,StfDocument> m_documents = new HashMap<String, StfDocument>();
     
+    private MenuItem startRecordingMenuItem;
+    MenuItem stopRecordingMenuItem;
+    
     @Override
     public void start(Stage primaryStage) throws Exception {
         MenuBar menuBar = new MenuBar();
         Menu menuFile = new Menu("File");
         Menu menuView = new Menu("View");
-        menuBar.getMenus().addAll(menuFile,menuView);
+        Menu recordingView = new Menu("Recording");
+        
+        menuBar.getMenus().addAll(menuFile,menuView,recordingView);
         MenuItem openMenuItem = new MenuItem("Open");
         openMenuItem.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -97,8 +106,19 @@ public class JavaFxMain extends Application{
             }
         });
         
+        startRecordingMenuItem = new MenuItem("Start Recording");
+        startRecordingMenuItem.setOnAction((event)->{
+            startRecord();
+        });
+        stopRecordingMenuItem = new MenuItem("Stop Recording");
+        stopRecordingMenuItem.setOnAction((event) -> {
+            stopRecord(primaryStage);
+        });
+        stopRecordingMenuItem.setDisable(true);
+        
         menuFile.getItems().add(openMenuItem);
         menuView.getItems().add(liveViewMenuItem);
+        recordingView.getItems().addAll(startRecordingMenuItem,stopRecordingMenuItem);
         
         VBox layout = new VBox();
         
@@ -415,12 +435,96 @@ public class JavaFxMain extends Application{
         }
     }
 
-}
-/*
-ObservableList<XYChart.Data<Number,Number>> series = FXCollections.observableArrayList();
-        for(int i=0;i<5;i++){
-            series.add(new XYChart.Data<Number, Number>(new Float((float)i) ,new Float((float)(i*i))));
+    public void startRecord(){
+        
+        List<String> choices = new ArrayList<>();
+        String f1y18 = "Formel1 2018";
+        String f1y19 = "Formel1 2019";
+        String pc2 = "Project Cars 2";
+        choices.add(f1y19);
+        choices.add(f1y18);
+        choices.add(pc2);
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(f1y18,choices);
+        dialog.setTitle("Select Game");
+        dialog.setContentText("Select Game which you want to record");
+        Optional<String> result = dialog.showAndWait();
+        if(result.isPresent()){
+            String resultValue = result.get();
+            F1Recording.F1Games game;
+            if(resultValue.equals(f1y18)){
+                 game = F1Recording.F1Games.F1_2018;
+            }
+            else{
+                game = F1Recording.F1Games.F1_2019;
+            }
+            try{
+               
+                F1Recording recording = (F1Recording)gfhund.jtelemetry.ClassManager.get(F1Recording.class);
+                TelemetryWriter tw = (TelemetryWriter)gfhund.jtelemetry.ClassManager.get(TelemetryWriter.class);
+                
+                recording.startRecording(game).subscribe(packet -> {
+                    tw.processCommonTelemetryData(packet);
+                });
+                this.startRecordingMenuItem.setDisable(true);
+                this.stopRecordingMenuItem.setDisable(false);
+            }
+            catch(ClassManager.ClassManagerException e){
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error to get Recording Model");
+                alert.setHeaderText(null);
+                alert.setContentText("If you see this this should be an bug in this program. Error: "+e.getMessage());
+                alert.showAndWait();  
+            }
+            
         }
-        //ObservableList<XYChart.Series<Number,Number>> diagramData = FXCollections.observableArrayList();
-        diagramData.add(new LineChart.Series<>(series));
-*/
+    }
+    
+    public void stopRecord(Stage stage){
+        try{
+            F1Recording recording = (F1Recording)gfhund.jtelemetry.ClassManager.get(F1Recording.class);
+            recording.stopRecording();
+            this.startRecordingMenuItem.setDisable(false);
+            this.stopRecordingMenuItem.setDisable(true);
+        }
+        catch(ClassManager.ClassManagerException e){
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error to get Recording Model");
+            alert.setHeaderText(null);
+            alert.setContentText("If you see this this should be an bug in this program. Error: "+e.getMessage());
+            alert.showAndWait();  
+        }
+        
+        FileChooser fileDialog = new FileChooser();
+            fileDialog.setTitle("Save Data File");
+            fileDialog.getExtensionFilters().add(new FileChooser.ExtensionFilter("Zip File", "*.zip"));
+            File file = fileDialog.showSaveDialog(stage);
+            if(file != null){
+                try{
+                    TelemetryWriter tw = (TelemetryWriter)gfhund.jtelemetry.ClassManager.get(TelemetryWriter.class);
+                    LoadingBarDialog loadingBar = new LoadingBarDialog(stage);
+                    tw.addProgressListener(new ProgressEvent() {
+                        @Override
+                        public void onProgress(float progress) {
+                            loadingBar.setValue(progress);
+                        }
+                    });
+                    tw.addOnFinishListener(new FinishEvent() {
+                        @Override
+                        public void onFinish() {
+                            loadingBar.close();
+                        }
+                    });
+                    tw.closeTelemetry(file);
+                }catch(ClassManager.ClassManagerException e){
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Error to get Recording Model");
+                    alert.setHeaderText(null);
+                    alert.setContentText("If you see this this should be an bug in this program. Error: "+e.getMessage());
+                    alert.showAndWait();  
+                }
+                
+                
+            }
+    }
+    
+}

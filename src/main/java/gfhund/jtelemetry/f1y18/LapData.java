@@ -102,6 +102,9 @@ public class LapData extends AbstractSubPackage{
     public byte getCurrentLapNum(){
         return this.currentLapNum;
     }
+    public float getLapDistance(){
+        return this.lapDistance;
+    }
     public byte[] getBytes(){
         ByteBuffer lapDataBuffer = ByteBuffer.allocate(41);
         lapDataBuffer.order(ByteOrder.LITTLE_ENDIAN);

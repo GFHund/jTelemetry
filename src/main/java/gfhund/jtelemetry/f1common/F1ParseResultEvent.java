@@ -3,13 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package gfhund.jtelemetry.f1y18;
+package gfhund.jtelemetry.f1common;
 
 import gfhund.jtelemetry.commontelemetry.AbstractPacket;
+
 /**
  *
- * @author PhilippGL
+ * @author PhilippHolzmann
  */
-public abstract class F1Y2018ParseResultEvent {
+public abstract class F1ParseResultEvent {
     public abstract void resultEvent(AbstractPacket packet);
 }

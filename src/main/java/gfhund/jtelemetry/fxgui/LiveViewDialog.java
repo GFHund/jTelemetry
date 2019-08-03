@@ -5,14 +5,16 @@
  */
 package gfhund.jtelemetry.fxgui;
 
+import gfhund.jtelemetry.ClassManager;
 import gfhund.jtelemetry.commontelemetry.AbstractPacket;
+import gfhund.jtelemetry.f1common.F1Recording;
 import gfhund.jtelemetry.f1y18.LapData;
 import gfhund.jtelemetry.f1y18.PacketCarStatusData;
 import gfhund.jtelemetry.f1y18.PacketLapData;
 import gfhund.jtelemetry.f1y18.PacketParticipantsData;
 import gfhund.jtelemetry.f1y18.PacketSessionData;
 import gfhund.jtelemetry.f1y18.PacketCarTelemetryData;
-import gfhund.jtelemetry.f1y18.F1Y2018ParseResultEvent;
+
 import gfhund.jtelemetry.f1y18.F1Y2018ParseThread;
 import gfhund.jtelemetry.f1y19.F1Y2019ParseThread;
 import gfhund.jtelemetry.network.GameNetworkConnection;
@@ -372,102 +374,43 @@ public class LiveViewDialog extends DialogFx{
             this.recordingStart.setDisable(true);
             this.recordingStop.setDisable(false);
             String resultValue = result.get();
+            F1Recording.F1Games game;
+            if(resultValue.equals(f1y18)){
+                 game = F1Recording.F1Games.F1_2018;
+            }
+            else{
+                game = F1Recording.F1Games.F1_2019;
+            }
+            try{
+               
+                F1Recording recording = (F1Recording)gfhund.jtelemetry.ClassManager.get(F1Recording.class);
+                //This is Part of a 
+                /*
+                recording.startRecording(game).subscribe(packet -> {
+                    Platform.runLater(()->{
+                        
+                    });
+                });
+                */
+            }
+            catch(ClassManager.ClassManagerException e){
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error to get Recording Model");
+                alert.setHeaderText(null);
+                alert.setContentText("If you see this this should be an bug in this program. Error: "+e.getMessage());
+                alert.showAndWait();  
+            }
             
-            
+            /*
             if(resultValue.equals(f1y18)){
                 this.handleF1Y2018();
             }
             else if(resultValue.equals(f1y19)){
                 this.handleF1Y2019();
             }
+            */
         }
     }
-    
-    private void handleF1Y2018(){
-        ReentrantLock lock = new ReentrantLock();
-        java.util.concurrent.locks.Condition cond = lock.newCondition();
-        m_networkThread = new GameNetworkConnection(lock,cond,20777,1341);
-        F1Y2018ParseThread parseThread = new F1Y2018ParseThread(lock,cond);
-        if(m_f1Thread == null){
-            m_f1Thread = new Thread(parseThread);
-        }
-        if(m_f1Thread.isAlive()){
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Thread not started");
-            alert.setHeaderText(null);
-            alert.setContentText("Thread not started because it is already started");
-            alert.showAndWait();
-            return;
-        }
-        parseThread.addParseResultEvent(new F1Y2018ParseResultEvent() {
-            @Override
-            public void resultEvent(AbstractPacket packet) {
-                parsePackager(packet);
-            }
-        });
-        if(isRecording){
-            this.m_writer = new TelemetryWriter();
-            parseThread.addParseResultEvent(new F1Y2018ParseResultEvent() {
-                @Override
-                public void resultEvent(AbstractPacket packet) {
-                    m_writer.processPackage(packet);
-                }
-            });
-        }
-        m_networkThread.addReciveEvent(new ReceiveEvent(){
-            @Override
-            public void onReceive(byte[] data){
-                //System.out.println("Übergebe einem Consumer Thread");
-                parseThread.addRaw(data);
-            }
-        });
-        m_f1Thread.start();
-        m_networkThread.start();
-    }
-    
-    private void handleF1Y2019(){
-        ReentrantLock lock = new ReentrantLock();
-        java.util.concurrent.locks.Condition cond = lock.newCondition();
-        m_networkThread = new GameNetworkConnection(lock,cond,20777,1341);
-        //F1Y2018ParseThread parseThread = new F1Y2018ParseThread(lock,cond);
-        F1Y2019ParseThread parseThread = new F1Y2019ParseThread(lock,cond);
-        if(m_f1Thread == null){
-            m_f1Thread = new Thread(parseThread);
-        }
-        if(m_f1Thread.isAlive()){
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Thread not started");
-            alert.setHeaderText(null);
-            alert.setContentText("Thread not started because it is already started");
-            alert.showAndWait();
-            return;
-        }
-        parseThread.addParseResultEvent(new F1Y2018ParseResultEvent() {
-            @Override
-            public void resultEvent(AbstractPacket packet) {
-                parsePackager(packet);
-            }
-        });
-        if(isRecording){
-            this.m_writer = new TelemetryWriter();
-            parseThread.addParseResultEvent(new F1Y2018ParseResultEvent() {
-                @Override
-                public void resultEvent(AbstractPacket packet) {
-                    m_writer.processPackage(packet);
-                }
-            });
-        }
-        m_networkThread.addReciveEvent(new ReceiveEvent(){
-            @Override
-            public void onReceive(byte[] data){
-                //System.out.println("Übergebe einem Consumer Thread");
-                parseThread.addRaw(data);
-            }
-        });
-        m_f1Thread.start();
-        m_networkThread.start();
-    }
-    
     
     
     public void parsePackager(AbstractPacket packet){

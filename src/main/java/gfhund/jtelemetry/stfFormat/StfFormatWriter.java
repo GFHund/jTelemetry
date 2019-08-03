@@ -41,6 +41,26 @@ public class StfFormatWriter {
         }
         m_depth = 1;
     }
+    public StfFormatWriter(File file) throws IOException{
+        try{
+            m_fileWriterHandle = new FileWriter(file);
+        }catch(IOException e){
+            throw e;
+        }
+        
+        m_depth = 0;
+    }
+    public StfFormatWriter(File file,String rootName) throws IOException{
+        //m_fileHandle = new File(filename);
+        try{
+            m_fileWriterHandle = new FileWriter(file);
+            m_fileWriterHandle.write("["+rootName+"]{");
+        }catch(IOException e){
+            throw e;
+        }
+        m_depth = 1;
+    }
+    
     
     public void writeProperty(String propertyName,String propertyValue) throws IOException{
         try{

@@ -8,21 +8,24 @@ package gfhund.jtelemetry.f1y19;
 import gfhund.jtelemetry.commontelemetry.AbstractPacket;
 import gfhund.jtelemetry.f1common.PacketBuilder;
 import gfhund.jtelemetry.f1common.ParseException;
-import gfhund.jtelemetry.f1y18.F1Y2018ParseResultEvent;
+
+import gfhund.jtelemetry.f1common.F1ParseThread;
+import gfhund.jtelemetry.f1common.F1ParseResultEvent;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+
 /**
  *
  * @author PhilippGL
  */
-public class F1Y2019ParseThread implements Runnable {
+public class F1Y2019ParseThread extends F1ParseThread {
     private final ReentrantLock m_lock;
     private Condition m_cond;
-    private ConcurrentLinkedQueue<byte[]> m_inputQueue = new ConcurrentLinkedQueue<>();
-    private ArrayList<F1Y2018ParseResultEvent> m_events = new ArrayList<>();
+    //private ConcurrentLinkedQueue<byte[]> m_inputQueue = new ConcurrentLinkedQueue<>();
+    //private ArrayList<F1Y2018ParseResultEvent> m_events = new ArrayList<>();
     public F1Y2019ParseThread(ReentrantLock lock,Condition cond){
         this.m_lock = lock;
         this.m_cond = cond;
@@ -46,7 +49,7 @@ public class F1Y2019ParseThread implements Runnable {
                 byte[] raw = this.m_inputQueue.poll();
                 try{
                     AbstractPacket packet = PacketBuilder.parseUDPPacket2019(raw);
-                    for(F1Y2018ParseResultEvent event:this.m_events){
+                    for(F1ParseResultEvent event:this.m_events){
                         event.resultEvent(packet);
                     }
                 }catch(ParseException e){
@@ -57,6 +60,7 @@ public class F1Y2019ParseThread implements Runnable {
         }
         //return null;
     }
+    /*
     public void addRaw(byte[] raw){
         //System.out.println("Recived Raw Bytes");
         if(this.m_inputQueue == null){
@@ -68,7 +72,10 @@ public class F1Y2019ParseThread implements Runnable {
         }
         this.m_inputQueue.add(raw);
     }
+    */
+    /*
     public void addParseResultEvent(F1Y2018ParseResultEvent event){
         m_events.add(event);
     }
+    */
 }
