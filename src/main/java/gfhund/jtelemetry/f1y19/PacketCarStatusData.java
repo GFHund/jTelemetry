@@ -17,7 +17,7 @@ public class PacketCarStatusData extends AbstractPacket {
     private Header header19;
     private CarStatusData[] carStatusData = new CarStatusData[20];
 
-    public Header getHeader19() {
+    public Header getHeader() {
         return header19;
     }
 
@@ -31,13 +31,16 @@ public class PacketCarStatusData extends AbstractPacket {
     public CarStatusData getCarStatusData(int i){
         return this.carStatusData[i];
     }
+    public CarStatusData[] getCarStatusData(){
+        return this.carStatusData;
+    }
     
     public static int getSize(){
         return 1143;
     }
     /*
     public byte[] getBytes(){
-        ByteBuffer ret = ByteBuffer.allocate(gfhund.jtelemetry.f1y18.PacketCarStatusData.getSize());
+        ByteBuffer ret = ByteBuffer.allocate(gfhund.jtelemetry.f1y19.PacketCarStatusData.getSize());
         ret.order(ByteOrder.LITTLE_ENDIAN);
         byte[] headerData = this.m_header19.getBytes();
         for(int i=0;i<headerData.length;i++){

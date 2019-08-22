@@ -355,7 +355,12 @@ public class TelemetryWriter {
             int pointer = commonTelemetryBufferPointer.get(key);
             if(pointer == 0) continue;
             Date now = new Date();
-            String filename = getDateFromDatObj(now)+"_"+localBuffer[0].getLapNum()+".stf";
+            int lapNum = localBuffer[0].getLapNum();
+            String sLapNum = "" + lapNum;
+            if(lapNum < 10){
+                sLapNum = "0" + sLapNum; 
+            }
+            String filename = getDateFromDatObj(now)+"_"+sLapNum+".stf";
             File telemetry = new File("./temp/"+key+"/"+filename);
             try {
                 StfFormatWriter writer = new StfFormatWriter(telemetry, "ownTelemetry");
@@ -375,19 +380,24 @@ public class TelemetryWriter {
                 File tempDirectory = new File("./temp");
                 long totalSize= 0;
                 long totalBytesWritten=0;
-                File[] tempFiles = tempDirectory.listFiles();
-                for(int i=0;i<tempFiles.length;i++){
-                    totalSize += tempFiles[i].length();
+                ArrayList<File> tempFiles = listFiles(tempDirectory);
+                //File[] tempFiles = (File[])tempFilesList.toArray();
+                //File[] tempFiles = tempDirectory.listFiles();
+                for(int i=0;i<tempFiles.size();i++){
+                    totalSize += tempFiles.get(i).length();//tempFiles[i].length();
                 }
                 try{
                     ZipOutputStream zipStream = new ZipOutputStream(Files.newOutputStream(file.toPath()));
-                    for(int i=0;i<tempFiles.length;i++){
-                        ZipEntry zipEntry = new ZipEntry(tempFiles[i].getName());
+                    for(int i=0;i<tempFiles.size();i++){
+                        String path = tempFiles.get(i).getAbsolutePath();
+                        int pos = path.indexOf("temp");
+                        path = path.substring(pos+5);
+                        ZipEntry zipEntry = new ZipEntry(path);
                         zipStream.putNextEntry(zipEntry);
-                        FileInputStream tempFileInputStream = new FileInputStream(tempFiles[i]);
+                        FileInputStream tempFileInputStream = new FileInputStream(tempFiles.get(i));
                         DataInputStream tempFileDataInputStream = new DataInputStream(tempFileInputStream);
                         byte[] data = new byte[1000];
-                        for(int j=0;j<tempFiles[i].length();j+=1000){
+                        for(int j=0;j<tempFiles.get(i).length();j+=1000){
                             
                             int numBytesWritten = tempFileDataInputStream.read(data);
                             if(numBytesWritten<=0){
@@ -416,6 +426,22 @@ public class TelemetryWriter {
         packingThread.start();
         
     }
+    
+    private ArrayList<File> listFiles(File parentDirectory){
+        File[] childFiles = parentDirectory.listFiles();
+        ArrayList<File> ret = new ArrayList<>();
+        for(File childFile: childFiles){
+            if(childFile.isFile()){
+                ret.add(childFile);
+            }
+            else {
+                ArrayList<File> subfolderFiles = listFiles(childFile);
+                ret.addAll(subfolderFiles);
+            }
+        }
+        return ret;
+    }
+    
     public void closeTelemetry(String zipFilename){
         File file = new File(zipFilename);
         this.closeTelemetry(file);
@@ -432,6 +458,11 @@ public class TelemetryWriter {
     private HashMap<String, Integer> commonTelemetryBufferPointer = new HashMap<>();
     
     public void processCommonTelemetryData(CommonTelemetryData data){
+        String d = data.getDriverName();
+        if(d == null || d.length() <= 0){
+            return;
+        }
+        
         File tempDirectory = new File("./temp");
         if(!tempDirectory.isDirectory()){
             if(!tempDirectory.isFile()){
@@ -452,7 +483,9 @@ public class TelemetryWriter {
             }
         }
         if(!hasDirectory){
-            driverDir = new File("./temp/"+data.getDriverName());
+            String driverName = data.getDriverName();
+            driverName = driverName.trim();
+            driverDir = new File("./temp/"+driverName);
             driverDir.mkdir();
         }
         
@@ -517,10 +550,18 @@ public class TelemetryWriter {
             }
             else {
                 try {
-                    if(this.commonTelemetryBufferPointer.get(data.getDriverName()) != 0){
-                        StfFormatWriter writer = new StfFormatWriter(telemetryFile,"ownTelemetry");
+                    String driverName = data.getDriverName();
+                    if(this.commonTelemetryBufferPointer.size() <= 0 ||
+                            this.commonTelemetryBufferPointer.containsKey(driverName) == false){
+                        this.commonTelemetryBufferPointer.put(driverName, 0);
+                        this.commonTelemetryBuffer.put(driverName, new CommonTelemetryData[BUFFER_SIZE]);
+                    }
+                    int pointer = this.commonTelemetryBufferPointer.get(driverName);
+                    if(pointer != 0){
                         CommonTelemetryData[] buffer = this.commonTelemetryBuffer.get(data.getDriverName());
-                        int pointer = this.commonTelemetryBufferPointer.get(data.getDriverName());
+                        //int pointer = this.commonTelemetryBufferPointer.get(data.getDriverName());
+                        float lapTime = buffer[pointer-1].getCurrentTime();
+                        StfFormatWriter writer = new StfFormatWriter(telemetryFile,"ownTelemetry");
                         for(int i = 0;i<pointer;i++ ){
                             HashMap<String, String> telemetryHashMap = getHashMapFromCommonTelemetryData(buffer[i]);
                             writer.writePropertyClass("ownProperty"+i, telemetryHashMap);
@@ -528,10 +569,17 @@ public class TelemetryWriter {
                         writer.closeFile();
                         //this.commonTelemetryBufferPointer = 0;
                         this.commonTelemetryBufferPointer.put(data.getDriverName(),0);
+                        buffer[0] = data;
+                        this.commonTelemetryBuffer.put(data.getDriverName(), buffer);
                     }
 
                     Date now = new Date();
-                    String filename = getDateFromDatObj(now) + "_"+ data.getLapNum()+".stf";
+                    int lap = data.getLapNum();
+                    String strLap = ""+lap;
+                    if(lap < 10){
+                        strLap = "0"+lap;
+                    }
+                    String filename = getDateFromDatObj(now) + "_" + strLap + ".stf";
                     File lapFile = new File(driverDir, filename);
                     if(!lapFile.createNewFile()){
 
@@ -545,7 +593,12 @@ public class TelemetryWriter {
         else {
             try{
                 Date now = new Date();
-                String filename = getDateFromDatObj(now) + "_"+ data.getLapNum()+".stf";
+                int lap = data.getLapNum();
+                String sLap = ""+lap;
+                if(lap < 10){
+                    sLap = "0" + sLap;
+                }
+                String filename = getDateFromDatObj(now) + "_"+ sLap+".stf";
                 File lapFile = new File(driverDir, filename);
                 if(!lapFile.createNewFile()){
 
@@ -558,10 +611,10 @@ public class TelemetryWriter {
         }
         
     }
-    //files has the format yyyyMMddHHmm-lap.stf
+    //files has the format yyyyMMddHHmm_lap.stf
     private int getLapNumFromFilename(String filename){
-        String relevantPart = filename.substring(bufferPointer);
-        String[] parts = relevantPart.split("-");
+        String relevantPart = filename.substring(0,15);
+        String[] parts = relevantPart.split("_");
         if(parts.length == 2 ){
             try{
                 int lap = Integer.parseInt(parts[1]);
@@ -574,8 +627,8 @@ public class TelemetryWriter {
         return -1;
     }
     private Date getDateFromFilename(String filename){
-        String relevantPart = filename.substring(bufferPointer);
-        String[] parts = relevantPart.split("-");
+        String relevantPart = filename.substring(0,15);
+        String[] parts = relevantPart.split("_");
         if(parts.length == 2 ) {
             try{
                 SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");

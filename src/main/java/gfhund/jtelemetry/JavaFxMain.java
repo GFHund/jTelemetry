@@ -8,6 +8,8 @@ package gfhund.jtelemetry;
 import gfhund.jtelemetry.data.AbstractPackets;
 import gfhund.jtelemetry.data.Timing;
 import gfhund.jtelemetry.commontelemetry.AbstractPacket;
+import gfhund.jtelemetry.commontelemetry.CommonLapManager;
+import gfhund.jtelemetry.commontelemetry.LapIdentificationObject;
 import gfhund.jtelemetry.f1common.F1Recording;
 import gfhund.jtelemetry.f1y18.F1Y2018Packets;
 import gfhund.jtelemetry.f1y18.F1Y2018ParseException;
@@ -28,6 +30,7 @@ import gfhund.jtelemetry.fxgui.FinishEvent;
 import gfhund.jtelemetry.fxgui.LoadingBarDialog;
 import gfhund.jtelemetry.fxgui.ProgressEvent;
 import gfhund.jtelemetry.fxgui.TelemetryWriter;
+import gfhund.jtelemetry.fxgui.FileOpenDialog;
 import gfhund.jtelemetry.stfFormat.AbstractStfObject;
 import gfhund.jtelemetry.stfFormat.StfDocument;
 import gfhund.jtelemetry.stfFormat.StfClass;
@@ -54,6 +57,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.*;
 import java.lang.Float;
 import java.util.HashMap;
+import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 
 /**
@@ -122,7 +126,7 @@ public class JavaFxMain extends Application{
         
         VBox layout = new VBox();
         
-        Scene scene = new Scene(layout,1920,1000);
+        Scene scene = new Scene(layout,1024,768);
 
         HBox firstRow = new HBox();
         
@@ -223,18 +227,31 @@ public class JavaFxMain extends Application{
         primaryStage.show();
     }
     public void fileOpenAction(Stage stage){
+        FileOpenDialog dia = new FileOpenDialog(stage);
+        dia.registerSaveHandler(()->{
+            CommonLapManager lapManager;
+            try{
+                lapManager = (CommonLapManager)gfhund.jtelemetry.ClassManager.get(CommonLapManager.class);
+            }catch(ClassManager.ClassManagerException e){
+                return;
+            }
+            LapIdentificationObject[] keys = lapManager.getIds();
+            for(LapIdentificationObject key: keys){
+                TimingFx obj = new TimingFx();
+                obj.setLapNum(key.getLapNum());
+                this.m_timings.add(obj);
+            }
+        });
+        return;
+        /*
         FileChooser fileDialog = new FileChooser();
         fileDialog.setTitle("Open Data File");
         fileDialog.getExtensionFilters().add(new FileChooser.ExtensionFilter("F1 Telemetry File", "*.zip"));
         File file = fileDialog.showOpenDialog(stage);
-        //JFileChooser fileDialog = new JFileChooser();
-        //fileDialog.setFileFilter(new FileNameExtensionFilter("Formel1 2018",".f1data"));
-        //int state = fileDialog.showOpenDialog(null);
+        
         if(file!=null){
-            //File file = fileDialog.getSelectedFile();
             long fileSize = file.length();
             if(fileSize<=0){
-                //JOptionPane.showMessageDialog(null, "Datei ist kleiner gleich 0", "Falsche Datei größe", JOptionPane.ERROR_MESSAGE);
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Falsche Datei größe");
                 alert.setHeaderText(null);
@@ -243,10 +260,8 @@ public class JavaFxMain extends Application{
                 return;
             }
             TelemetryReader reader = new TelemetryReader();
-            //HashMap<String,StfDocument> documents = reader.read(file);
             StfDocument doc = reader.read(file, "ownTelemetry.stf");
             StfClass rootClass = (StfClass)doc.getChild(0);
-            //StfClass rootClass = (StfClass)documents.get("ownTelemetry.stf").getChild(0);
             StfClass dataClass = (StfClass)rootClass.getChild(0);
             String[] properties = dataClass.getChildPropertyName();
             this.m_properties.addAll(properties);
@@ -269,9 +284,9 @@ public class JavaFxMain extends Application{
                 
             }
             this.m_sessions.addAll(sessions);
-            //m_documents = documents;
             m_documents.put("ownTelemetry.stf", doc);
         }
+        */
     }
     
     public void startLiveViewDialog(Stage stage){
@@ -511,7 +526,10 @@ public class JavaFxMain extends Application{
                     tw.addOnFinishListener(new FinishEvent() {
                         @Override
                         public void onFinish() {
-                            loadingBar.close();
+                            Platform.runLater(()->{
+                                loadingBar.close();
+                            });
+                            
                         }
                     });
                     tw.closeTelemetry(file);

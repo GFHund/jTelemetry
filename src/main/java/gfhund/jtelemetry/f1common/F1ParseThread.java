@@ -21,9 +21,13 @@ public abstract class F1ParseThread implements Runnable {
     
     protected ArrayList<F1ParseResultEvent> m_events = new ArrayList<>();
     protected ConcurrentLinkedQueue<byte[]> m_inputQueue = new ConcurrentLinkedQueue<>();
+    protected ArrayList<OnThreadInterruptEvent> m_interruptEvents = new ArrayList<>();
     
     public void addParseResultEvent(F1ParseResultEvent event){
         m_events.add(event);
+    }
+    public void addOnInterruptResultEvent(OnThreadInterruptEvent event){
+        m_interruptEvents.add(event);
     }
     
     public void addRaw(byte[] raw){
@@ -36,5 +40,9 @@ public abstract class F1ParseThread implements Runnable {
             return;
         }
         this.m_inputQueue.add(raw);
+    }
+    
+    public interface OnThreadInterruptEvent{
+        public void onThreadInterrupt();
     }
 }

@@ -105,6 +105,42 @@ public class LapData extends AbstractSubPackage{
     public float getLapDistance(){
         return this.lapDistance;
     }
+    public float getTotalDistance(){
+        return this.totalDistance;
+    }
+
+    public float getSafetyCarDelta() {
+        return safetyCarDelta;
+    }
+
+    public byte getPitStatus() {
+        return pitStatus;
+    }
+
+    public byte getSector() {
+        return sector;
+    }
+
+    public byte getCurrentLapInvalid() {
+        return currentLapInvalid;
+    }
+
+    public byte getPenalties() {
+        return penalties;
+    }
+
+    public byte getGridPosition() {
+        return gridPosition;
+    }
+
+    public byte getDriverStatus() {
+        return driverStatus;
+    }
+
+    public byte getResultStatus() {
+        return resultStatus;
+    }
+    
     public byte[] getBytes(){
         ByteBuffer lapDataBuffer = ByteBuffer.allocate(41);
         lapDataBuffer.order(ByteOrder.LITTLE_ENDIAN);

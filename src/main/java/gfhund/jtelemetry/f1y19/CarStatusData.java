@@ -22,7 +22,7 @@ public class CarStatusData extends gfhund.jtelemetry.f1y18.CarStatusData {
         return this.fuelRemainingLaps;
     }
     
-    public void setFuelRaminingLaps(float remainingLaps){
+    public void setFuelRemainingLaps(float remainingLaps){
         this.fuelRemainingLaps = remainingLaps;
     }
     
@@ -38,7 +38,7 @@ public class CarStatusData extends gfhund.jtelemetry.f1y18.CarStatusData {
     }
     
     public byte[] getBytes(){
-        ByteBuffer ret = ByteBuffer.allocate(gfhund.jtelemetry.f1y18.CarStatusData.getSize());
+        ByteBuffer ret = ByteBuffer.allocate(gfhund.jtelemetry.f1y19.CarStatusData.getSize());
         ret.order(ByteOrder.LITTLE_ENDIAN);
         ret.put(tractionControl);
         ret.put(antiLockBrakes);

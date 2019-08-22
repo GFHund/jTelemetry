@@ -32,18 +32,28 @@ public class PacketParticipantsData extends AbstractPacket {
     public void setNumCars(byte m_numCars) {
         this.numCars = m_numCars;
     }
-    
+    /**
+     * @deprecated 
+     * @param i
+     * @param data 
+     */
     public void setParticipantData(int i,ParticipantData data){
+        this.participants[i] = data;
+    }
+    public void setParticipants(int i, ParticipantData data){
         this.participants[i] = data;
     }
     public ParticipantData getParticipant(int i){
         return this.participants[i];
     }
+    public ParticipantData[] getParticipants(){
+        return this.participants;
+    }
     public static int getSize(){
         return 1102;
     }
     public byte[] getBytes(){
-        ByteBuffer ret = ByteBuffer.allocate(gfhund.jtelemetry.f1y18.PacketParticipantsData.getSize());
+        ByteBuffer ret = ByteBuffer.allocate(gfhund.jtelemetry.f1y19.PacketParticipantsData.getSize());
         ret.order(ByteOrder.LITTLE_ENDIAN);
         byte[] headerData = header19.getBytes();
         for(int i=0;i<headerData.length;i++){

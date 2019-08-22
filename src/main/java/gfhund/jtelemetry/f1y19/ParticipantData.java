@@ -23,7 +23,7 @@ public class ParticipantData extends gfhund.jtelemetry.f1y18.ParticipantData {
     }
     
     public byte[] getBytes(){
-        ByteBuffer ret = ByteBuffer.allocate(gfhund.jtelemetry.f1y18.ParticipantData.getSize());
+        ByteBuffer ret = ByteBuffer.allocate(gfhund.jtelemetry.f1y19.ParticipantData.getSize());
         ret.order(ByteOrder.LITTLE_ENDIAN);
         ret.put(aiControlled);
         ret.put(driverId);

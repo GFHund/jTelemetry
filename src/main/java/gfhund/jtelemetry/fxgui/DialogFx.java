@@ -15,7 +15,7 @@ import javafx.stage.WindowEvent;
  * @author PhilippGL
  */
 public abstract class DialogFx {
-    Stage dialogStage;
+    protected Stage dialogStage;
     
     public DialogFx(Stage parent){
         dialogStage = new Stage();

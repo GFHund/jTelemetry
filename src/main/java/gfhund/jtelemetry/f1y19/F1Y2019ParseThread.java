@@ -39,6 +39,9 @@ public class F1Y2019ParseThread extends F1ParseThread {
             try{
                 m_cond.await();
             }catch(InterruptedException e){
+                for(OnThreadInterruptEvent event: this.m_interruptEvents){
+                    event.onThreadInterrupt();
+                }
                 Thread.currentThread().interrupt();
                 break;
             }
@@ -53,6 +56,7 @@ public class F1Y2019ParseThread extends F1ParseThread {
                         event.resultEvent(packet);
                     }
                 }catch(ParseException e){
+                    System.out.println(e.getMessage());
                     continue;
                 }
                 
@@ -60,6 +64,7 @@ public class F1Y2019ParseThread extends F1ParseThread {
         }
         //return null;
     }
+    
     /*
     public void addRaw(byte[] raw){
         //System.out.println("Recived Raw Bytes");

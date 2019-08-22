@@ -163,10 +163,17 @@ public class PacketSessionData extends AbstractPacket{
     public void setMarshalZones(MarshalZone[] m_marshalZones) {
         this.marshalZones = m_marshalZones;
     }
+    /**
+     * @deprecated 
+     * @param i
+     * @param marshalZone 
+     */
     public void setMarshalZone(int i,MarshalZone marshalZone){
         this.marshalZones[i] = marshalZone;
     }
-    
+    public void setMarshalZones(int i,MarshalZone marshalZone){
+        this.marshalZones[i] = marshalZone;
+    }
 
     public void setSafetyCarStatus(byte m_safetyCarStatus) {
         this.safetyCarStatus = m_safetyCarStatus;
@@ -174,6 +181,38 @@ public class PacketSessionData extends AbstractPacket{
 
     public void setNetworkGame(byte m_networkGame) {
         this.networkGame = m_networkGame;
+    }
+
+    public byte getPitSpeedLimit() {
+        return pitSpeedLimit;
+    }
+
+    public byte getGamePaused() {
+        return gamePaused;
+    }
+
+    public byte getIsSpectating() {
+        return isSpectating;
+    }
+
+    public byte getSpectatorCarIndex() {
+        return spectatorCarIndex;
+    }
+
+    public byte getSliProNativeSupport() {
+        return sliProNativeSupport;
+    }
+
+    public MarshalZone[] getMarshalZones() {
+        return marshalZones;
+    }
+
+    public byte getSafetyCarStatus() {
+        return safetyCarStatus;
+    }
+
+    public byte getNetworkGame() {
+        return networkGame;
     }
     
     

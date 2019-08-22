@@ -25,6 +25,14 @@ public class MarshalZone extends AbstractSubPackage{
         ret.putFloat(zoneFlag);
         return ret.array();
     }
+
+    public float getZoneStart() {
+        return zoneStart;
+    }
+
+    public float getZoneFlag() {
+        return zoneFlag;
+    }
     
    
 }

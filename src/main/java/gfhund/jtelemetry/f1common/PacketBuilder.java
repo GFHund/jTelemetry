@@ -436,8 +436,12 @@ public class PacketBuilder{
             Object ret = constructor.newInstance();
             //int offset = 0;
                 for(PacketFields fieldName: fieldNames){
-                    Field f = c.getDeclaredField(fieldName.getName());
-                    String typeName = f.getType().getName();
+                    //Field f = c.getDeclaredField(fieldName.getName());
+                    String methodName = "get"+fieldName.getName().substring(0, 1).toUpperCase()+fieldName.getName().substring(1);
+                    Method m = c.getMethod(methodName, (Class[])null);
+                    //String typeName = f.getType().getName();
+                    String typeName = m.getReturnType().getName();
+                    
                     if(typeName.startsWith("[")){
                         if(typeName.equalsIgnoreCase("[B")){
                             for(int i=0;i<fieldName.getLength();i++){
@@ -470,7 +474,8 @@ public class PacketBuilder{
                             }
                         }
                         else{
-                            String typeNameWoPrefix = typeName.substring(1);
+                            String typeNameWoPrefix = typeName.substring(2);
+                            typeNameWoPrefix = typeNameWoPrefix.substring(0, typeNameWoPrefix.length()-1);
                             for(int i=0;i<fieldName.getLength();i++){
                                 Class subC = Class.forName(typeNameWoPrefix);
                                 PacketFields[] subFields = getFields(subC.getName());
@@ -479,7 +484,6 @@ public class PacketBuilder{
                                 getArraySetterMethod(c, fieldName.getName(), subC).invoke(ret, i, obj);
                                 offset += size;
                             }
-                            
                         }
                     }
                     else if(typeName.equalsIgnoreCase("byte")){
@@ -524,13 +528,18 @@ public class PacketBuilder{
                 }
                 return ret;
         }
-        catch(NoSuchMethodException|
-                ClassNotFoundException|
+        catch(      ClassNotFoundException|
                     InstantiationException|
-                    NoSuchFieldException|
                     IllegalAccessException|
-                    InvocationTargetException e){
-                throw new ParseException(retClass, e.getMessage());
+                    InvocationTargetException|
+                NoSuchMethodException e){
+                String message = e.getMessage();
+                StackTraceElement[] stacktrace = e.getStackTrace();
+                for(StackTraceElement element : stacktrace){
+                    message += "\n"+element.toString();
+                }
+
+                throw new ParseException(retClass, message);
             }
     }
     
@@ -559,7 +568,7 @@ public class PacketBuilder{
 */
         
         String methodName = "set" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-        return c.getMethod(methodName, java.lang.Integer.class, paramType);  
+        return c.getMethod(methodName, int.class, paramType);  
     }
     
     private static Method getSizeMethod(Class c)throws NoSuchMethodException {
@@ -734,7 +743,7 @@ public class PacketBuilder{
         map.put("gfhund.jtelemetry.f1y19.CarTelemetryData",CarTelemetryFields);
         
         PacketFields[] PacketCarStatusDataFields = {
-            new PacketFields("header19"),
+            new PacketFields("header"),
             new PacketFields("carStatusData",20)
         };
         map.put("gfhund.jtelemetry.f1y19.PacketCarStatusData",PacketCarStatusDataFields);

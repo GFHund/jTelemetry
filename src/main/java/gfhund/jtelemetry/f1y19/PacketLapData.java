@@ -30,6 +30,9 @@ public class PacketLapData extends AbstractPacket {
     public LapData getLapData(int index){
         return this.lapData[index];
     }
+    public LapData[] getLapData(){
+        return this.lapData;
+    }
     
     public byte[] getBytes(){
         ByteBuffer ret = ByteBuffer.allocate(841);

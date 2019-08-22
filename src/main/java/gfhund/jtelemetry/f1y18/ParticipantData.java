@@ -64,6 +64,11 @@ public class ParticipantData extends AbstractSubPackage{
     public void setName(String name){
         this.name = name;
     }
+
+    public byte getNationality() {
+        return nationality;
+    }
+    
     public static int getSize(){
         return 53;
     }

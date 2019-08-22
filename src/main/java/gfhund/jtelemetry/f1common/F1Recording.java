@@ -23,6 +23,7 @@ import javafx.scene.control.Alert;
 import io.reactivex.Flowable;
 import io.reactivex.FlowableEmitter;
 import io.reactivex.FlowableOnSubscribe;
+import java.io.File;
 
 /**
  *
@@ -43,9 +44,16 @@ public class F1Recording {
     //private Queue<AbstractPacket> m_packetQueue = new Queue<AbstractPacket>();
     
     public Flowable<CommonTelemetryData> startRecording(F1Games game){
+        File tempDir = new File("./temp");
+        for(File child: tempDir.listFiles()){
+            for(File childFile:child.listFiles()){
+                childFile.delete();
+            }
+            child.delete();
+        }
         
         Flowable<CommonTelemetryData> source;
-        
+        recordingStarted = true;
         source = Flowable.create(new FlowableOnSubscribe<CommonTelemetryData>() {
             @Override
             public void subscribe(FlowableEmitter<CommonTelemetryData> fe) throws Exception {
@@ -94,6 +102,10 @@ public class F1Recording {
                         
                     }
                 });
+                
+                parseThread.addOnInterruptResultEvent(() -> {
+                    fe.onComplete();
+                });
                 m_networkThread.addReciveEvent(new ReceiveEvent(){
                     @Override
                     public void onReceive(byte[] data){
@@ -103,7 +115,7 @@ public class F1Recording {
                 });
                 m_f1Thread.start();
                 m_networkThread.start();
-                recordingStarted = true;
+                
             }
         }, BackpressureStrategy.LATEST);
         
@@ -111,6 +123,7 @@ public class F1Recording {
     }
     
     public void stopRecording(){
+        
         if(!recordingStarted){
             return;
         }
@@ -136,13 +149,15 @@ public class F1Recording {
         } else if(packet instanceof gfhund.jtelemetry.f1y18.PacketLapData){
             gfhund.jtelemetry.f1y18.PacketLapData lapDataPacket = 
                     (gfhund.jtelemetry.f1y18.PacketLapData) packet;
+            boolean isAllReady = true;
             for(int i=0;i<currentData.length;i++){
                 currentData[i].setDistance(lapDataPacket.getLapData(i).getLapDistance());
                 currentData[i].setLapNum(lapDataPacket.getLapData(i).getCurrentLapNum());
                 currentData[i].setCurrentTime(lapDataPacket.getLapData(i).getCurrentLapTime());
                 currentData[i].setCarIndex((short)i);
+                isAllReady = isAllReady && currentData[i].isReadyToSave();
             }
-            return true;
+            return isAllReady;
         } else if(packet instanceof gfhund.jtelemetry.f1y18.PacketEventData) {
             //
         } else if(packet instanceof gfhund.jtelemetry.f1y18.PacketParticipantsData){
@@ -172,26 +187,30 @@ public class F1Recording {
         } else if(packet instanceof gfhund.jtelemetry.f1y19.PacketMotionData) {
             gfhund.jtelemetry.f1y19.PacketMotionData motionDataPacket = 
                     (gfhund.jtelemetry.f1y19.PacketMotionData) packet;
+            boolean isAllReady = true;
             for(int i=0;i<currentData.length;i++){
                 float x = motionDataPacket.getCarMotionData(i).getWorldPositionX();
                 float y = motionDataPacket.getCarMotionData(i).getWorldPositionX();
                 float z = motionDataPacket.getCarMotionData(i).getWorldPositionX();
                 currentData[i].setPos(new Vector3D(x,y,z));
                 currentData[i].setCarIndex((short)i);
+                isAllReady = isAllReady && currentData[i].isReadyToSave();
             }
-            return true;
+            return isAllReady;
         } else if(packet instanceof gfhund.jtelemetry.f1y19.PacketSessionData) {
             //
         } else if(packet instanceof gfhund.jtelemetry.f1y19.PacketLapData) {
             gfhund.jtelemetry.f1y19.PacketLapData lapDataPacket = 
                     (gfhund.jtelemetry.f1y19.PacketLapData) packet;
+            boolean isAllReady = true;
             for(int i=0;i<currentData.length;i++){
                 currentData[i].setDistance(lapDataPacket.getLapData(i).getLapDistance());
                 currentData[i].setLapNum(lapDataPacket.getLapData(i).getCurrentLapNum());
                 currentData[i].setCurrentTime(lapDataPacket.getLapData(i).getCurrentLapTime());
                 currentData[i].setCarIndex((short)i);
+                isAllReady = isAllReady && currentData[i].isReadyToSave();
             }
-            return true;
+            return isAllReady;
         } else if(packet instanceof gfhund.jtelemetry.f1y19.PacketEventData){
             //
         } else if(packet instanceof gfhund.jtelemetry.f1y19.PacketParticipantsData){

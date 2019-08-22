@@ -22,6 +22,7 @@ public class ClassManager {
             if(ret == null) {
                 Constructor c = className.getConstructor();
                 ret = c.newInstance();
+                loadedClasses.put(className.getName(), ret);
             }
             return ret;
         } catch (InstantiationException|IllegalAccessException|InvocationTargetException|NoSuchMethodException e){

@@ -12,17 +12,17 @@ import gfhund.jtelemetry.Vector3D;
  * @author PhilippHolzmann
  */
 public class CommonTelemetryData{
-    private short speed;
-    private short rpm;
-    private byte gear;
-    private byte throttle;
-    private byte brake;
-    private float distance;//distance between current Position and Startline
-    private float currentTime;//time since this round starts;
-    private short carIndex;
-    private String driverName;
-    private short lapNum;
-    private Vector3D pos;
+    private short speed = 0;
+    private short rpm = 0;
+    private byte gear = 0;
+    private byte throttle = 0;
+    private byte brake = 0;
+    private float distance = 0;//distance between current Position and Startline
+    private float currentTime = 0;//time since this round starts;
+    private short carIndex = 0;
+    private String driverName = "";
+    private short lapNum = 0;
+    private Vector3D pos = new Vector3D(0, 0, 0);
     
     public short getSpeed() {
         return speed;
@@ -93,6 +93,7 @@ public class CommonTelemetryData{
     }
 
     public void setDriverName(String driverName) {
+        driverName = driverName.trim();
         this.driverName = driverName;
     }
 
@@ -112,5 +113,11 @@ public class CommonTelemetryData{
         this.pos = pos;
     }
     
-    
+    public boolean isReadyToSave(){
+        //boolean ret = true;
+        if(this.driverName == null){
+            return false;
+        }
+        return true;
+    }
 }
