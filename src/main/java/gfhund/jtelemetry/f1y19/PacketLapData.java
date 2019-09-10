@@ -33,9 +33,11 @@ public class PacketLapData extends AbstractPacket {
     public LapData[] getLapData(){
         return this.lapData;
     }
-    
+    public static int getSize(){
+        return 843;
+    }
     public byte[] getBytes(){
-        ByteBuffer ret = ByteBuffer.allocate(841);
+        ByteBuffer ret = ByteBuffer.allocate(getSize());
         ret.order(ByteOrder.LITTLE_ENDIAN);
         byte[] headerData = this.header.getBytes();
         for(int i =0;i<headerData.length;i++){

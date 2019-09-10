@@ -60,13 +60,20 @@ public class TelemetryReader {
             ZipFile zipFile = new ZipFile(file);
             for(ZipEntry entry : Collections.list(zipFile.entries())){
                 String name = entry.getName();
-                String[] pathParts = name.split("/");
-                ret.add(pathParts[0]);
+                String nameBea = name.replace('\\', '/');
+                String[] pathParts = nameBea.split("/");
+                if(!ret.contains(pathParts[0])){
+                    ret.add(pathParts[0]);
+                }
             }
         }catch(IOException e){
             return (String[])ret.toArray();
         }
-        return (String[])ret.toArray();
+        String[] sRet = new String[ret.size()];
+        for(int i=0;i<ret.size();i++){
+            sRet[i] = ret.get(i);
+        }
+        return sRet;
     }
     public int[] getPlayerLaps(File file,String playername,Date date){
         ArrayList<Integer> ret = new ArrayList<>();
@@ -74,12 +81,16 @@ public class TelemetryReader {
             ZipFile zipFile = new ZipFile(file);
             for(ZipEntry entry: Collections.list(zipFile.entries())){
                 String name = entry.getName();
-                String[] pathParts = name.split("/");
-                Date fileDate = getDateFromFilename(pathParts[pathParts.length-1]);
-                if(fileDate.equals(date)){
-                    int lapNum = getLapNumFromFilename(pathParts[pathParts.length-1]);
-                    ret.add(lapNum);
+                String nameBea = name.replace('\\', '/');
+                String[] pathParts = nameBea.split("/");
+                if(pathParts[0].equals(playername)){
+                    Date fileDate = getDateFromFilename(pathParts[pathParts.length-1]);
+                    if(fileDate.equals(date)){
+                        int lapNum = getLapNumFromFilename(pathParts[pathParts.length-1]);
+                        ret.add(lapNum);
+                    }
                 }
+                
             }
         }catch(IOException e){
             
@@ -98,14 +109,22 @@ public class TelemetryReader {
             ZipFile zipFile = new ZipFile(file);
             for(ZipEntry entry: Collections.list(zipFile.entries())){
                 String name = entry.getName();
-                String[] pathParts = name.split("/");
-                Date date = getDateFromFilename(pathParts[pathParts.length-1]);
-                ret.add(date);
+                String nameBea = name.replace('\\', '/');
+                String[] pathParts = nameBea.split("/");
+                if(pathParts[0].equals(playername)){
+                    Date date = getDateFromFilename(pathParts[pathParts.length-1]);
+                    ret.add(date);
+                }
             }
         }catch(IOException e){
             
         }
-        return (Date[]) ret.toArray();
+        Date[] dateRet = new Date[ret.size()];
+        for(int i=0;i<ret.size();i++){
+            dateRet[i] = ret.get(i);
+        }
+        return dateRet;
+        //return (Date[]) ret.toArray();
     }
     
     /**
@@ -120,7 +139,9 @@ public class TelemetryReader {
             ZipFile zipFile = new ZipFile(file);
             //ArrayList<ZipEntry> entries = Collections.list(zipFile.entries());
             for(ZipEntry entry : Collections.list(zipFile.entries())){
-                if(entry.getName().equals(filename)){
+                String filePath = entry.getName();
+                filePath = filePath.replace('\\', '/');
+                if(filePath.equals(filename)){
                     InputStream stream = zipFile.getInputStream(entry);
                     StfDocument doc = reader.read(stream,entry.getSize());
                     return doc;
@@ -136,8 +157,8 @@ public class TelemetryReader {
     
     //files has the format yyyyMMddHHmm-lap.stf
     private int getLapNumFromFilename(String filename){
-        String relevantPart = filename.substring(filename.length()-19,15);//12 for date +1 + 2 for lap
-        String[] parts = relevantPart.split("-");
+        String relevantPart = filename.substring(filename.length()-19,filename.length()-4);//12 for date +1 + 2 for lap
+        String[] parts = relevantPart.split("_");
         if(parts.length == 2 ){
             try{
                 int lap = Integer.parseInt(parts[1]);
@@ -150,8 +171,8 @@ public class TelemetryReader {
         return -1;
     }
     private Date getDateFromFilename(String filename){
-        String relevantPart = filename.substring(filename.length()-19,15);
-        String[] parts = relevantPart.split("-");
+        String relevantPart = filename.substring(filename.length()-19,filename.length()-4);
+        String[] parts = relevantPart.split("_");
         if(parts.length == 2 ) {
             try{
                 SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");

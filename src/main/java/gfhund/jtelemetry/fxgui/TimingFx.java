@@ -5,6 +5,7 @@
  */
 package gfhund.jtelemetry.fxgui;
 
+import gfhund.jtelemetry.commontelemetry.LapIdentificationObject;
 import javafx.beans.property.FloatProperty;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -14,6 +15,7 @@ import gfhund.jtelemetry.data.Timing;
  * @author PhilippGL
  */
 public class TimingFx {
+    private LapIdentificationObject lapId;
     private final SimpleIntegerProperty lapNum;
     private final SimpleFloatProperty lapTime;
     private final SimpleFloatProperty sector1Time;
@@ -39,6 +41,13 @@ public class TimingFx {
         this.sector3Time = new SimpleFloatProperty(timing.getSector3Time());
         this.sector4Time = new SimpleFloatProperty(timing.getSector4Time());
         this.sector5Time = new SimpleFloatProperty(timing.getSector5Time());
+    }
+    
+    public LapIdentificationObject getLapIdentificationObject(){
+        return this.lapId;
+    }
+    public void setLapIdentificationObject(LapIdentificationObject lapId){
+        this.lapId = lapId;
     }
 
     public int getLapNum(){

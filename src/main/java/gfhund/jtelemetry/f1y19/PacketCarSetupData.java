@@ -5,6 +5,8 @@
  */
 package gfhund.jtelemetry.f1y19;
 import gfhund.jtelemetry.commontelemetry.AbstractPacket;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 /**
  *
@@ -18,7 +20,7 @@ public class PacketCarSetupData extends AbstractPacket {
         return header19;
     }
 
-    public void setHeader(Header m_header) {
+    public void setHeader19(Header m_header) {
         this.header19 = m_header;
     }
     
@@ -28,8 +30,28 @@ public class PacketCarSetupData extends AbstractPacket {
     public CarSetupData getCarSetupData(int i){
         return this.carSetupData[i];
     }
+    public CarSetupData[] getCarSetupData(){
+        return this.carSetupData;
+    }
     
     public static int getSize(){
-        return 842;
+        return 843;
+    }
+    
+    public byte[] getBytes(){
+        ByteBuffer ret = ByteBuffer.allocate(getSize());
+        ret.order(ByteOrder.LITTLE_ENDIAN);
+        byte[] headerData = this.header19.getBytes();
+        for(int i=0;i<headerData.length;i++){
+            ret.put(i,headerData[i]);
+        }
+        for(int i=0;i<20;i++){
+            byte[] carStatusData = this.carSetupData[i].getBytes();
+            int offset = gfhund.jtelemetry.f1y18.Header.getSize()+i*CarSetupData.getSize();
+            for(int k=0;k<carStatusData.length;k++){
+                ret.put(offset+k,carStatusData[k]);
+            }
+        }
+        return ret.array();
     }
 }

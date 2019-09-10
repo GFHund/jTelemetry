@@ -46,8 +46,8 @@ public class FileOpenDialog extends DialogFx {
     private TableView<RoundSelection> selectedRounds;
     private Button moveRight;
     private Button moveLeft;
-    private ObservableList<RoundSelection> availableRoundsList = FXCollections.observableArrayList();
-    private ObservableList<RoundSelection> selectedRoundsList = FXCollections.observableArrayList();
+    private ObservableList<RoundSelection> availableRoundsList;// = FXCollections.observableArrayList();
+    private ObservableList<RoundSelection> selectedRoundsList;// = FXCollections.observableArrayList();
     private Button saveBtn;
     private Button cancelBtn;
     private ArrayList<SaveEventHandler> eventHandler;
@@ -55,6 +55,7 @@ public class FileOpenDialog extends DialogFx {
     
     public FileOpenDialog(Stage stage) {
         super(stage);
+        this.eventHandler = new ArrayList<>();
     }
 
     
@@ -81,6 +82,7 @@ public class FileOpenDialog extends DialogFx {
         TableColumn availableRoundsTiming = new TableColumn("Zeit");
         availableRoundsTiming.setCellValueFactory(new PropertyValueFactory<Timing,Integer>("time"));
         availableRounds.getColumns().addAll(availableRoundsPlayer,availableRoundsLapNum,availableRoundsTiming);
+        availableRoundsList = FXCollections.observableArrayList();
         availableRounds.setItems(availableRoundsList);
         
         moveRight = new Button(">>");
@@ -96,6 +98,7 @@ public class FileOpenDialog extends DialogFx {
         TableColumn selectedRoundsTiming = new TableColumn("Zeit");
         selectedRoundsTiming.setCellValueFactory(new PropertyValueFactory<Timing,Integer>("time"));
         selectedRounds.getColumns().addAll(selectedRoundsPlayer,selectedRoundsLapNum,selectedRoundsTiming);
+        selectedRoundsList = FXCollections.observableArrayList();
         selectedRounds.setItems(selectedRoundsList);
 
         HBox selectRound = new HBox(availableRounds,moveLeft,moveRight,selectedRounds);
@@ -142,13 +145,14 @@ public class FileOpenDialog extends DialogFx {
                         data.setLapNum(lapNum);
                         data.setTime(0.0f);
                         data.setZipFile(this.pathField.getText());
+                        data.setDateDriven(roundDate);
                         availableRoundsList.add(data);
                     }
                 }
             }
-            StfDocument doc = tr.read(file, "ownTelemetry.stf");
-            StfClass rootClass = (StfClass)doc.getChild(0);
-            StfClass dataClass = (StfClass)rootClass.getChild(0);
+            //StfDocument doc = tr.read(file, "ownTelemetry.stf");//
+            //StfClass rootClass = (StfClass)doc.getChild(0);
+            //StfClass dataClass = (StfClass)rootClass.getChild(0);
         }catch(ClassManager.ClassManagerException e){
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Falsche Datei größe");
@@ -160,9 +164,9 @@ public class FileOpenDialog extends DialogFx {
     }
     
     //Move left means user select round for analysis
-    private void moveLeft(){
+    private void moveRight(){
         ObservableList<RoundSelection> selectedRounds = availableRounds.getSelectionModel().getSelectedItems();
-        selectedRounds.addAll(selectedRounds);
+        selectedRoundsList.addAll(selectedRounds);
         CommonLapManager lapManager;
         try{
             lapManager = (CommonLapManager)gfhund.jtelemetry.ClassManager.get(CommonLapManager.class);
@@ -184,7 +188,7 @@ public class FileOpenDialog extends DialogFx {
     }
     
     //Move right means user select round to remove it from the analysis
-    private void moveRight(){
+    private void moveLeft(){
         ObservableList<RoundSelection> roundsSelection = selectedRounds.getSelectionModel().getSelectedItems();
         availableRoundsList.addAll(roundsSelection);
         CommonLapManager lapManager;
@@ -219,7 +223,7 @@ public class FileOpenDialog extends DialogFx {
     
     
     
-    private class RoundSelection{
+    public class RoundSelection{
         private final SimpleStringProperty player;
         private final SimpleIntegerProperty lapNum;
         private final SimpleFloatProperty time;

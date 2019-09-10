@@ -55,6 +55,7 @@ public class LapIdentificationObject {
         cal.setTime(dateLapDriven);
         
         int month = cal.get(GregorianCalendar.MONTH);
+        month++;
         String sMonth = "" + month;
         if(month < 10) sMonth = "0"+month;
         

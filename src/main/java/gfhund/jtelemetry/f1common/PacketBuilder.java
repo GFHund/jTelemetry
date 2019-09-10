@@ -28,8 +28,11 @@ import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class PacketBuilder{
+    private static final Logger logging = Logger.getLogger(PacketBuilder.class.getName());
     public static AbstractPacket parseUDPPacket2018(byte[] rawPacket) throws F1Y2018ParseException{
         
         Header packetHeader = getHeader(rawPacket);
@@ -336,28 +339,59 @@ public class PacketBuilder{
     }
     
     private static int getInt(byte[] raw,int position){
-        ByteBuffer converter = ByteBuffer.wrap(raw,position,4);
-        converter = converter.order(ByteOrder.LITTLE_ENDIAN);
-        return converter.getInt();
+        try{
+            ByteBuffer converter = ByteBuffer.wrap(raw,position,4);
+            converter = converter.order(ByteOrder.LITTLE_ENDIAN);
+            return converter.getInt();
+        }
+        catch(IndexOutOfBoundsException e){
+            logging.log(Level.WARNING, "Out of Bounds Exception in getInt. Position: "+position+" ArrayLength: "+raw.length, e);
+            return 0;
+        }
     }
     private static short getShort(byte[] raw,int position){
-        ByteBuffer converter = ByteBuffer.wrap(raw,position,2);
-        converter = converter.order(ByteOrder.LITTLE_ENDIAN);
-        return converter.getShort();
+        try{
+            ByteBuffer converter = ByteBuffer.wrap(raw,position,2);
+            converter = converter.order(ByteOrder.LITTLE_ENDIAN);
+            return converter.getShort();
+        }
+        catch(IndexOutOfBoundsException e){
+            logging.log(Level.WARNING, "Out of Bounds Exception in getInt. Position: "+position+" ArrayLength: "+raw.length, e);
+            return 0;
+        }
+        
     }
     private static float getFloat(byte[] raw,int position){
-        ByteBuffer converter = ByteBuffer.wrap(raw,position,4);
-        converter = converter.order(ByteOrder.LITTLE_ENDIAN);
-        return converter.getFloat();
+        try{
+            ByteBuffer converter = ByteBuffer.wrap(raw,position,4);
+            converter = converter.order(ByteOrder.LITTLE_ENDIAN);
+            return converter.getFloat();
+        }
+        catch(IndexOutOfBoundsException e){
+            logging.log(Level.WARNING, "Out of Bounds Exception in getInt. Position: "+position+" ArrayLength: "+raw.length, e);
+            return 0;
+        }
     }
     private static long getLong(byte[] raw,int position){
-        ByteBuffer converter = ByteBuffer.wrap(raw,position,8);
-        converter = converter.order(ByteOrder.LITTLE_ENDIAN);
-        return converter.getLong();
+        try{
+            ByteBuffer converter = ByteBuffer.wrap(raw,position,8);
+            converter = converter.order(ByteOrder.LITTLE_ENDIAN);
+            return converter.getLong();
+        }
+        catch(IndexOutOfBoundsException e){
+            logging.log(Level.WARNING, "Out of Bounds Exception in getInt. Position: "+position+" ArrayLength: "+raw.length, e);
+            return 0;
+        }
     }
     private static String getString(byte[] raw,int position){
-        String ret = new String(raw, position, 48);
-        return ret;
+        try{
+            String ret = new String(raw, position, 48);
+            return ret;
+        }
+        catch(IndexOutOfBoundsException e){
+            logging.log(Level.WARNING, "Out of Bounds Exception in getInt. Position: "+position+" ArrayLength: "+raw.length, e);
+            return "";
+        }
     }
     
     
@@ -726,9 +760,9 @@ public class PacketBuilder{
         
         PacketFields[] CarTelemetryFields = {
             new PacketFields("speed"),
-            new PacketFields("throttle"),
-            new PacketFields("steer"),
-            new PacketFields("brake"),
+            new PacketFields("fThrottle"),
+            new PacketFields("fSteer"),
+            new PacketFields("fBrake"),
             new PacketFields("clutch"),
             new PacketFields("gear"),
             new PacketFields("engineRPM"),
@@ -738,7 +772,7 @@ public class PacketBuilder{
             new PacketFields("tyresSurfaceTemperature",4),
             new PacketFields("tyresInnerTemperature",4),
             new PacketFields("engineTemperature"),
-            new PacketFields("surfaceType"),
+            new PacketFields("surfaceType",4),
         };
         map.put("gfhund.jtelemetry.f1y19.CarTelemetryData",CarTelemetryFields);
         

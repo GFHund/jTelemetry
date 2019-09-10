@@ -9,6 +9,7 @@ import gfhund.jtelemetry.data.AbstractPackets;
 import gfhund.jtelemetry.data.Timing;
 import gfhund.jtelemetry.commontelemetry.AbstractPacket;
 import gfhund.jtelemetry.commontelemetry.CommonLapManager;
+import gfhund.jtelemetry.commontelemetry.CommonTelemetryData;
 import gfhund.jtelemetry.commontelemetry.LapIdentificationObject;
 import gfhund.jtelemetry.f1common.F1Recording;
 import gfhund.jtelemetry.f1y18.F1Y2018Packets;
@@ -26,6 +27,7 @@ import gfhund.jtelemetry.f1y18.PacketSessionData;
 import gfhund.jtelemetry.fxgui.TelemetryReader;
 import gfhund.jtelemetry.fxgui.TrackView;
 import gfhund.jtelemetry.fxgui.DiagramView;
+import gfhund.jtelemetry.fxgui.DiagramViewGroup;
 import gfhund.jtelemetry.fxgui.FinishEvent;
 import gfhund.jtelemetry.fxgui.LoadingBarDialog;
 import gfhund.jtelemetry.fxgui.ProgressEvent;
@@ -75,6 +77,7 @@ public class JavaFxMain extends Application{
     private AbstractPackets m_packetManager;
     private TableView<TimingFx> table = new TableView<>();
     TrackView trackView;
+    DiagramViewGroup diaGroup;
     ListView<String> list;
     ListView<String> sessionList;
     
@@ -88,6 +91,131 @@ public class JavaFxMain extends Application{
     
     @Override
     public void start(Stage primaryStage) throws Exception {
+        VBox layout = new VBox();
+        createMenu(primaryStage,layout);
+        
+        Scene scene = new Scene(layout,1024,1000);
+        HBox content = new HBox();
+        VBox firstColumn = new VBox();
+        
+        table.setEditable(true);
+        table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        table.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<TimingFx>(){
+            @Override
+            public void onChanged(ListChangeListener.Change<? extends TimingFx> c){
+                selectRounds();
+            }
+        });
+        
+        TableColumn lapNum = new TableColumn("Lap Num");
+        lapNum.setCellValueFactory(new PropertyValueFactory<Timing,Integer>("lapNum"));
+        
+        TableColumn lapTime = new TableColumn("Lap Time");
+        lapTime.setCellValueFactory(new PropertyValueFactory<Timing,Float>("lapTime"));
+        
+        TableColumn sector1Time = new TableColumn("Sector 1");
+        sector1Time.setCellValueFactory(new PropertyValueFactory<Timing,Float>("sector1Time"));
+        
+        TableColumn sector2Time = new TableColumn("Sector 2");
+        sector2Time.setCellValueFactory(new PropertyValueFactory<Timing,Float>("sector2Time"));
+        table.setItems(m_timings);
+        table.getColumns().addAll(lapNum,lapTime,sector1Time,sector2Time);
+        firstColumn.getChildren().add(table);
+        
+        
+        trackView = new TrackView();
+        trackView.setData(trackRounds);
+        firstColumn.getChildren().add(trackView);
+        
+        diaGroup = new DiagramViewGroup();
+        content.getChildren().addAll(firstColumn,diaGroup);
+        layout.getChildren().addAll(content);
+
+        //HBox firstRow = new HBox();
+        
+        /*
+        list = new ListView<String>();
+        list.setItems(this.m_properties);
+        list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        list.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<String>() {
+            @Override
+            public void onChanged(ListChangeListener.Change<? extends String> c) {
+                selectRounds();
+                //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            }
+        });
+        firstRow.getChildren().add(list);
+        */
+        
+        /*
+        NumberAxis xAxis = new NumberAxis();
+        NumberAxis yAxis = new NumberAxis();
+        LineChart<Number,Number> diagramm = new LineChart<>(xAxis,yAxis);
+        firstRow.getChildren().add(diagramm);
+        ObservableList<XYChart.Data<Number,Number>> series = FXCollections.observableArrayList();
+        for(int i=0;i<5;i++){
+            series.add(new XYChart.Data<Number, Number>(new Float((float)i) ,new Float((float)(i*i))));
+        }
+        //ObservableList<XYChart.Series<Number,Number>> diagramData = FXCollections.observableArrayList();
+        diagramData.add(new LineChart.Series<>(series));
+        diagramm.setData(diagramData);
+        diagramm.setCreateSymbols(false);
+        */
+        
+        
+        /*
+        DiagramView diaView = new DiagramView();
+        DiagramView.DiagrammLine newDiaLine = new DiagramView.DiagrammLine();
+        for(int i=0;i<5;i++){
+            newDiaLine.addTrackPoint(new DiagramView.DiagrammPoint(i, i*i));
+        }
+        diaView.setData(newDiagramData);
+        newDiagramData.add(newDiaLine);
+        
+        firstRow.getChildren().add(diaView);
+        */
+        
+        //HBox secondRow = new HBox();
+        /*
+        sessionList = new ListView<String>();
+        sessionList.setItems(this.m_sessions);
+        sessionList.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<String>() {
+            @Override
+            public void onChanged(ListChangeListener.Change<? extends String> c) {
+                selectSession();
+            }
+        });
+        secondRow.getChildren().add(sessionList);
+        */
+        
+        
+        
+        //m_timings.addListener(new Lis);
+        /*
+        table.setItems(m_timings);
+        table.getColumns().addAll(lapNum,lapTime,sector1Time,sector2Time);
+        secondRow.getChildren().add(table);
+        layout.getChildren().addAll(firstRow,secondRow);
+        */
+        
+        //layout.a
+        //ObservableList<Timing> 
+        primaryStage.setScene(scene);
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                if(m_networkThread != null && m_networkThread.isAlive()){
+                    m_networkThread.interrupt();
+                }
+                if(m_f1y18Thread != null && m_f1y18Thread.isAlive()){
+                    m_f1y18Thread.interrupt();
+                }
+            }
+        });
+        primaryStage.show();
+    }
+    
+    private void createMenu(Stage primaryStage, Pane pane) {
         MenuBar menuBar = new MenuBar();
         Menu menuFile = new Menu("File");
         Menu menuView = new Menu("View");
@@ -124,108 +252,9 @@ public class JavaFxMain extends Application{
         menuView.getItems().add(liveViewMenuItem);
         recordingView.getItems().addAll(startRecordingMenuItem,stopRecordingMenuItem);
         
-        VBox layout = new VBox();
-        
-        Scene scene = new Scene(layout,1024,768);
-
-        HBox firstRow = new HBox();
-        
-        list = new ListView<String>();
-        list.setItems(this.m_properties);
-        list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        list.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<String>() {
-            @Override
-            public void onChanged(ListChangeListener.Change<? extends String> c) {
-                selectRounds();
-                //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-        });
-        firstRow.getChildren().add(list);
-        
-        NumberAxis xAxis = new NumberAxis();
-        NumberAxis yAxis = new NumberAxis();
-        LineChart<Number,Number> diagramm = new LineChart<>(xAxis,yAxis);
-        firstRow.getChildren().add(diagramm);
-        ObservableList<XYChart.Data<Number,Number>> series = FXCollections.observableArrayList();
-        for(int i=0;i<5;i++){
-            series.add(new XYChart.Data<Number, Number>(new Float((float)i) ,new Float((float)(i*i))));
-        }
-        //ObservableList<XYChart.Series<Number,Number>> diagramData = FXCollections.observableArrayList();
-        diagramData.add(new LineChart.Series<>(series));
-        diagramm.setData(diagramData);
-        diagramm.setCreateSymbols(false);
-        
-        trackView = new TrackView();
-        trackView.setData(trackRounds);
-        firstRow.getChildren().add(trackView);
-        
-        DiagramView diaView = new DiagramView();
-        DiagramView.DiagrammLine newDiaLine = new DiagramView.DiagrammLine();
-        for(int i=0;i<5;i++){
-            newDiaLine.addTrackPoint(new DiagramView.DiagrammPoint(i, i*i));
-        }
-        diaView.setData(newDiagramData);
-        newDiagramData.add(newDiaLine);
-        
-        firstRow.getChildren().add(diaView);
-        
-        HBox secondRow = new HBox();
-        
-        sessionList = new ListView<String>();
-        sessionList.setItems(this.m_sessions);
-        sessionList.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<String>() {
-            @Override
-            public void onChanged(ListChangeListener.Change<? extends String> c) {
-                selectSession();
-            }
-        });
-        secondRow.getChildren().add(sessionList);
-        
-        table.setEditable(true);
-        table.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        table.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<TimingFx>(){
-            @Override
-            public void onChanged(ListChangeListener.Change<? extends TimingFx> c){
-                selectRounds();
-            }
-        });
-        
-        
-        TableColumn lapNum = new TableColumn("Lap Num");
-        lapNum.setCellValueFactory(new PropertyValueFactory<Timing,Integer>("lapNum"));
-        
-        TableColumn lapTime = new TableColumn("Lap Time");
-        lapTime.setCellValueFactory(new PropertyValueFactory<Timing,Float>("lapTime"));
-        
-        TableColumn sector1Time = new TableColumn("Sector 1");
-        sector1Time.setCellValueFactory(new PropertyValueFactory<Timing,Float>("sector1Time"));
-        
-        TableColumn sector2Time = new TableColumn("Sector 2");
-        sector2Time.setCellValueFactory(new PropertyValueFactory<Timing,Float>("sector2Time"));
-        
-        //m_timings.addListener(new Lis);
-        
-        table.setItems(m_timings);
-        table.getColumns().addAll(lapNum,lapTime,sector1Time,sector2Time);
-        secondRow.getChildren().add(table);
-        layout.getChildren().addAll(menuBar,firstRow,secondRow);
-        
-        //layout.a
-        //ObservableList<Timing> 
-        primaryStage.setScene(scene);
-        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent event) {
-                if(m_networkThread != null && m_networkThread.isAlive()){
-                    m_networkThread.interrupt();
-                }
-                if(m_f1y18Thread != null && m_f1y18Thread.isAlive()){
-                    m_f1y18Thread.interrupt();
-                }
-            }
-        });
-        primaryStage.show();
+        pane.getChildren().addAll(menuBar);
     }
+    
     public void fileOpenAction(Stage stage){
         FileOpenDialog dia = new FileOpenDialog(stage);
         dia.registerSaveHandler(()->{
@@ -239,6 +268,7 @@ public class JavaFxMain extends Application{
             for(LapIdentificationObject key: keys){
                 TimingFx obj = new TimingFx();
                 obj.setLapNum(key.getLapNum());
+                obj.setLapIdentificationObject(key);
                 this.m_timings.add(obj);
             }
         });
@@ -370,9 +400,19 @@ public class JavaFxMain extends Application{
     
     public void selectRounds(){
         ObservableList<TimingFx> selectedRounds = table.getSelectionModel().getSelectedItems();
-        ObservableList<String> selectedProperties = list.getSelectionModel().getSelectedItems();
-        String selectedItem = sessionList.getSelectionModel().getSelectedItem();
+        CommonLapManager lapManager;
+        try{
+            lapManager = (CommonLapManager)gfhund.jtelemetry.ClassManager.get(CommonLapManager.class);
+        }catch(ClassManager.ClassManagerException e){
+            return;
+        }
+        for(TimingFx selectedRows: selectedRounds){
+            LapIdentificationObject id = selectedRows.getLapIdentificationObject();
+            ArrayList<CommonTelemetryData> telemetryData = lapManager.getLapData(id);
+            this.diaGroup.addTelemetryData(telemetryData);
+        }
         
+        /*
         StfDocument doc = this.m_documents.get("ownTelemetry.stf");
         StfClass rootClass = (StfClass) doc.getChild(0);
         AbstractStfObject[] children = rootClass.getChildren();
@@ -416,6 +456,7 @@ public class JavaFxMain extends Application{
             
         }
 */
+        /*
         diagramData.clear();
         newDiagramData.clear();
         for(TimingFx rounds:selectedRounds){
@@ -448,6 +489,7 @@ public class JavaFxMain extends Application{
                 newDiagramData.add(line);
             }
         }
+*/
     }
 
     public void startRecord(){

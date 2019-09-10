@@ -11,7 +11,7 @@ import gfhund.jtelemetry.Vector3D;
  *
  * @author PhilippHolzmann
  */
-public class CommonTelemetryData{
+public class CommonTelemetryData implements Cloneable{
     private short speed = 0;
     private short rpm = 0;
     private byte gear = 0;
@@ -120,4 +120,13 @@ public class CommonTelemetryData{
         }
         return true;
     }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        CommonTelemetryData ret = (CommonTelemetryData)super.clone(); //To change body of generated methods, choose Tools | Templates.
+        ret.setPos((Vector3D)this.pos.clone());
+        return ret;
+    }
+    
+    
 }

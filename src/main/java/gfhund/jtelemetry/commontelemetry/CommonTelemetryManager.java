@@ -25,7 +25,7 @@ public class CommonTelemetryManager {
 
     public CommonTelemetryManager(LapIdentificationObject id) {
         this.id = id;
-        
+        lapData = new ArrayList<>();
     }
     
     public void addLapData(CommonTelemetryData data){
@@ -47,8 +47,8 @@ public class CommonTelemetryManager {
                     sLapNum = "0"+sLapNum;
                 }
                 File zipFile = new File(this.id.getZipFile());
-                StfDocument doc = tr.read(zipFile, this.id.getPlayer()+"/"+this.id.getFilenameDate()+"-"+sLapNum+".stf");
-                AbstractStfObject obj = doc.getChild(iLapNum);
+                StfDocument doc = tr.read(zipFile, this.id.getPlayer()+"/"+this.id.getFilenameDate()+"_"+sLapNum+".stf");
+                AbstractStfObject obj = doc.getChild(0);
                 StfClass rootClass = (obj instanceof StfClass)?(StfClass)obj:null;
                 if(rootClass != null){
                     AbstractStfObject[] children = rootClass.getChildren();

@@ -75,23 +75,44 @@ public class CarTelemetryData extends AbstractSubPackage{
     public byte getRevLightsPercent(){
         return this.revLightsPercent;
     }
+    @Deprecated
     public void setBrakeTemperature(int i,short temperature){
+        this.brakesTemperature[i] = temperature;
+    }
+    public void setBrakesTemperature(int i,short temperature){
         this.brakesTemperature[i] = temperature;
     }
     public short getBrakeTemperature(int i){
         return this.brakesTemperature[i];
     }
+    public short[] getBrakesTemperature(){
+        return this.brakesTemperature;
+    }
+    @Deprecated
     public void setTyreSurfaceTemperature(int i,short temperature){
+        this.tyresSurfaceTemperature[i] = temperature;
+    }
+    public void setTyresSurfaceTemperature(int i,short temperature){
         this.tyresSurfaceTemperature[i] = temperature;
     }
     public short getTyreSurfaceTemperature(int i){
         return this.tyresSurfaceTemperature[i];
     }
+    public short[] getTyresSurfaceTemperature(){
+        return this.tyresSurfaceTemperature;
+    }
+    @Deprecated
     public void setTyreInnerTemperature(int i,short temperature){
+        this.tyresInnerTemperature[i] = temperature;
+    }
+    public void setTyresInnerTemperature(int i,short temperature) {
         this.tyresInnerTemperature[i] = temperature;
     }
     public short getTyreInnerTemperature(int i){
         return this.tyresInnerTemperature[i];
+    }
+    public short[] getTyresInnerTemperature(){
+        return this.tyresInnerTemperature;
     }
     public void setEngineTemperature(short temperature){
         this.engineTemperature = temperature;

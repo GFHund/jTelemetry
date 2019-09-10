@@ -29,6 +29,9 @@ public class PacketMotionData extends AbstractPacket {
     public CarMotionData getCarMotionData(int i){
         return this.carMotionData[i];
     }
+    public CarMotionData[] getCarMotionData(){
+        return this.carMotionData;
+    }
     
     public static int getSize(){
         return 1343;

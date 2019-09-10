@@ -24,6 +24,13 @@ import io.reactivex.Flowable;
 import io.reactivex.FlowableEmitter;
 import io.reactivex.FlowableOnSubscribe;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -34,6 +41,7 @@ public class F1Recording {
     private GameNetworkConnection m_networkThread;
     private CommonTelemetryData[] currentData = new CommonTelemetryData[20];
     private boolean recordingStarted = false;
+    private static final Logger logging = Logger.getLogger(F1Recording.class.getName());
     
     public F1Recording(){
         for(int i=0;i<currentData.length;i++){
@@ -46,8 +54,11 @@ public class F1Recording {
     public Flowable<CommonTelemetryData> startRecording(F1Games game){
         File tempDir = new File("./temp");
         for(File child: tempDir.listFiles()){
-            for(File childFile:child.listFiles()){
-                childFile.delete();
+            File[] dirs = child.listFiles();
+            if(dirs != null){
+                for(File childFile:child.listFiles()){
+                    childFile.delete();
+                }
             }
             child.delete();
         }
@@ -94,7 +105,18 @@ public class F1Recording {
                     public void resultEvent(AbstractPacket packet) {
                         //parsePackager(packet);
                         if(processPacket(packet)){
+                            for(int i=0;i < currentData.length;i++){
+                                fe.onNext(currentData[i]);
+                                CommonTelemetryData temp = currentData[i];
+                                try{
+                                    currentData[i] = (CommonTelemetryData)temp.clone();
+                                }catch(CloneNotSupportedException e){
+                                    logging.log(Level.WARNING, e.getMessage(), e);
+                                }
+                                
+                            }
                             for(CommonTelemetryData data: currentData){
+                                //System.out.println("Distance: "+data.getDistance());
                                 fe.onNext(data);
                             }
                             
@@ -203,6 +225,7 @@ public class F1Recording {
             gfhund.jtelemetry.f1y19.PacketLapData lapDataPacket = 
                     (gfhund.jtelemetry.f1y19.PacketLapData) packet;
             boolean isAllReady = true;
+            //System.out.println("LapDistance: "+lapDataPacket.getLapData(0).getLapDistance());
             for(int i=0;i<currentData.length;i++){
                 currentData[i].setDistance(lapDataPacket.getLapData(i).getLapDistance());
                 currentData[i].setLapNum(lapDataPacket.getLapData(i).getCurrentLapNum());
@@ -222,7 +245,20 @@ public class F1Recording {
             }
             return false;
         } else if(packet instanceof gfhund.jtelemetry.f1y19.PacketCarSetupData){
-            //
+            gfhund.jtelemetry.f1y19.PacketCarSetupData packetSetup = (gfhund.jtelemetry.f1y19.PacketCarSetupData) packet;
+            File setupData = new File("SetupData.raw");
+            byte[] raw = packetSetup.getBytes();
+            try{
+                java.io.FileOutputStream stream = new FileOutputStream(setupData);
+                stream.write(raw);
+                stream.close();
+            }
+            catch(FileNotFoundException e){
+                System.out.println(e.getMessage());
+            }catch(IOException e){
+                System.out.println(e.getMessage());
+            }
+            
         } else if(packet instanceof gfhund.jtelemetry.f1y19.PacketCarTelemetryData) {
             gfhund.jtelemetry.f1y19.PacketCarTelemetryData telemetryDataPacket = 
                     (gfhund.jtelemetry.f1y19.PacketCarTelemetryData) packet;

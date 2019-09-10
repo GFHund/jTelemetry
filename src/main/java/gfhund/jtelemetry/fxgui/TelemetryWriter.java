@@ -16,6 +16,7 @@ import gfhund.jtelemetry.f1y18.PacketCarTelemetryData;
 import gfhund.jtelemetry.f1y18.PacketLapData;
 import gfhund.jtelemetry.f1y18.PacketMotionData;
 import gfhund.jtelemetry.f1y18.PacketParticipantsData;
+import gfhund.jtelemetry.helper.Utility;
 import gfhund.jtelemetry.stfFormat.StfFormatWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -149,7 +150,7 @@ public class TelemetryWriter {
         }
     }
     
-    private static final int BUFFER_SIZE = 1000;
+    private static final int BUFFER_SIZE = 100000;
     
     private TelemetryValue[] buffer = new TelemetryValue[BUFFER_SIZE];
     private int bufferPointer = 0;
@@ -361,7 +362,7 @@ public class TelemetryWriter {
                 sLapNum = "0" + sLapNum; 
             }
             String filename = getDateFromDatObj(now)+"_"+sLapNum+".stf";
-            File telemetry = new File("./temp/"+key+"/"+filename);
+            File telemetry = new File("./temp/"+Utility.handlePlayerName(key)+"/"+filename);
             try {
                 StfFormatWriter writer = new StfFormatWriter(telemetry, "ownTelemetry");
                 for(int i = 0;i< pointer;i++){
@@ -477,33 +478,38 @@ public class TelemetryWriter {
         boolean hasDirectory = false;
         File driverDir = null;
         for(File dir: driverDirs){
-            if(dir.getName().equals(data.getDriverName())){
+            if( dir.getName().equals(Utility.handlePlayerName( data.getDriverName() )) ){
                 driverDir = dir;
                 hasDirectory = true;
             }
         }
         if(!hasDirectory){
-            String driverName = data.getDriverName();
+            String driverName = Utility.handlePlayerName(data.getDriverName());
             driverName = driverName.trim();
             driverDir = new File("./temp/"+driverName);
             driverDir.mkdir();
         }
         
         File[] lapFiles = driverDir.listFiles();
-        
-        for(int i=0;i<lapFiles.length;i++){
-            for(int j=i+1;j<lapFiles.length;j++){
-                int value = lapFiles[i].getName().compareTo(lapFiles[j].getName());
-                if(value > 0){
-                    File temp = lapFiles[i];
-                    lapFiles[i] = lapFiles[j];
-                    lapFiles[j] = temp;
+        if(lapFiles != null){
+            for(int i=0;i<lapFiles.length;i++){
+                for(int j=i+1;j<lapFiles.length;j++){
+                    int value = lapFiles[i].getName().compareTo(lapFiles[j].getName());
+                    if(value > 0){
+                        File temp = lapFiles[i];
+                        lapFiles[i] = lapFiles[j];
+                        lapFiles[j] = temp;
+                    }
                 }
             }
         }
         
+        boolean hasLapFiles = lapFiles != null;
+        if(hasLapFiles){
+            hasLapFiles = lapFiles.length != 0;
+        }
         
-        if(lapFiles.length != 0){
+        if(hasLapFiles){
             String name;
             int lastLap;
             Date dateRound;
@@ -530,26 +536,41 @@ public class TelemetryWriter {
                 dateRound = dateLast;
                 telemetryFile = lapFiles[lapFiles.length-1];
             }
+            
             if(lastLap == data.getLapNum()){
                 //this.commonTelemetryBuffer[this.commonTelemetryBufferPointer] = data;
                 CommonTelemetryData[] buffer;
                 int pointer;
                 if(this.commonTelemetryBuffer.containsKey(data.getDriverName())){
+                    //System.out.println(data.getDriverName() + " lese Buffer");
                     buffer = this.commonTelemetryBuffer.get(data.getDriverName());
                     pointer = this.commonTelemetryBufferPointer.get(data.getDriverName()).intValue();
+                    //System.out.println(data.getDriverName() + " pointer: "+pointer);
                 }
                 else {
+                    //System.out.println(data.getDriverName() + " Erstelle neuen Buffer");
                     buffer = new CommonTelemetryData[BUFFER_SIZE];
                     pointer = 0;
                 }
+                //System.out.println(data.getDriverName()+" LapDistance: " + data.getDistance());
+                //System.out.println(" Pointer:" + pointer);
                 buffer[pointer] = data;
                 pointer++;
+                //System.out.println(data.getDriverName()+" LapDistance: " + buffer[pointer-1].getDistance());
+                
+                /*if(pointer > 1)
+                {
+                    System.out.println("Previous Data"+data.getDriverName()+" LapDistance: " + buffer[pointer-2].getDistance());
+                }*/
+                
+                //System.out.println(" Pointer:" + pointer);
                 //this.commonTelemetryBufferPointer++;
                 this.commonTelemetryBuffer.put(data.getDriverName(), buffer);
                 this.commonTelemetryBufferPointer.put(data.getDriverName(), pointer);
             }
             else {
                 try {
+                    //String driverName = Utility.handlePlayerName(data.getDriverName());
                     String driverName = data.getDriverName();
                     if(this.commonTelemetryBufferPointer.size() <= 0 ||
                             this.commonTelemetryBufferPointer.containsKey(driverName) == false){
@@ -557,12 +578,15 @@ public class TelemetryWriter {
                         this.commonTelemetryBuffer.put(driverName, new CommonTelemetryData[BUFFER_SIZE]);
                     }
                     int pointer = this.commonTelemetryBufferPointer.get(driverName);
+                    System.out.println(data.getDriverName()+" pointer: "+ pointer);
                     if(pointer != 0){
                         CommonTelemetryData[] buffer = this.commonTelemetryBuffer.get(data.getDriverName());
                         //int pointer = this.commonTelemetryBufferPointer.get(data.getDriverName());
                         float lapTime = buffer[pointer-1].getCurrentTime();
                         StfFormatWriter writer = new StfFormatWriter(telemetryFile,"ownTelemetry");
                         for(int i = 0;i<pointer;i++ ){
+                            //System.out.println("Writing: "+data.getDriverName()+" LapDistance: " + buffer[i].getDistance());
+                            //System.out.println(" Pointer:" + i);
                             HashMap<String, String> telemetryHashMap = getHashMapFromCommonTelemetryData(buffer[i]);
                             writer.writePropertyClass("ownProperty"+i, telemetryHashMap);
                         }
@@ -591,23 +615,24 @@ public class TelemetryWriter {
             }
         }
         else {
-            try{
-                Date now = new Date();
-                int lap = data.getLapNum();
-                String sLap = ""+lap;
-                if(lap < 10){
-                    sLap = "0" + sLap;
-                }
-                String filename = getDateFromDatObj(now) + "_"+ sLap+".stf";
-                File lapFile = new File(driverDir, filename);
-                if(!lapFile.createNewFile()){
-
-                }
+            Date now = new Date();
+            int lap = data.getLapNum();
+            String sLap = ""+lap;
+            if(lap < 10){
+                sLap = "0" + sLap;
             }
-            catch(IOException e){
+            String filename = getDateFromDatObj(now) + "_"+ sLap+".stf";
+            File lapFile = new File(driverDir, filename);
+            try{
+                if(!lapFile.createNewFile()){
+                    System.out.println(lap);
+                }
+            }catch(IOException e){
+                System.out.println(e.getMessage());
+                System.out.println(filename);
+                System.out.println(driverDir.getAbsolutePath());
                 logging.log(Level.WARNING, "Fehler beim Schreiben der eigenen Telemetrie Datei", e);
             }
-            
         }
         
     }

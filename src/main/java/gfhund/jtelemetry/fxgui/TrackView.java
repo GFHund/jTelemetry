@@ -30,6 +30,7 @@ import javafx.scene.Group;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.ClosePath;
 import javafx.scene.shape.PathElement;
+import javafx.scene.shape.Rectangle;
 
 /**
  *
@@ -51,7 +52,9 @@ public class TrackView extends Region {
         setCache(false);
         setPrefWidth(200);
         setPrefHeight(200);
-        drawArea.getChildren().addAll(line);
+        Rectangle rect = new Rectangle(0, 0, WIDTH, HEIGHT);
+        rect.setFill(javafx.scene.paint.Color.WHITE);
+        drawArea.getChildren().addAll(rect,line);
         m_pane.getChildren().add(drawArea);
         getChildren().add(m_pane);
         

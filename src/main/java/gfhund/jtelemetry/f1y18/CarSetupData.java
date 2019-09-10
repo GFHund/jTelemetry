@@ -1,20 +1,22 @@
 package gfhund.jtelemetry.f1y18;
 
 import gfhund.jtelemetry.commontelemetry.AbstractSubPackage;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class CarSetupData extends AbstractSubPackage{
-    protected byte frontWing;
-    protected byte rearWing;
-    protected byte onThrottle;
-    protected byte offThrottle;
-    protected float frontCamber;
-    protected float rearCamber;
-    protected float frontToe;
-    protected float rearToe;
-    protected byte frontSuspension; 
-    protected byte rearSuspension;
-    protected byte frontAntiRollBar;
-    protected byte rearAntiRollBar;
+    protected byte frontWing;//0
+    protected byte rearWing;//1
+    protected byte onThrottle;//2
+    protected byte offThrottle;//3
+    protected float frontCamber;//4
+    protected float rearCamber;//8
+    protected float frontToe;//12
+    protected float rearToe;//16
+    protected byte frontSuspension; //20
+    protected byte rearSuspension;//21
+    protected byte frontAntiRollBar;//22
+    protected byte rearAntiRollBar;//2
     protected byte frontSuspensionHeight;
     protected byte rearSuspensionHeight;
     protected byte breakPressure;
@@ -184,5 +186,35 @@ public class CarSetupData extends AbstractSubPackage{
         this.fuelLoad = fuelLoad;
     }
     
+    public static int getSize(){
+        return 41;
+    }
     
+    public byte[] getBytes(){
+        ByteBuffer ret = ByteBuffer.allocate(getSize());
+        ret.order(ByteOrder.LITTLE_ENDIAN);
+        ret.put(frontWing);
+        ret.put(rearWing);
+        ret.put(onThrottle);
+        ret.put(offThrottle);
+        ret.putFloat(frontCamber);
+        ret.putFloat(rearCamber);
+        ret.putFloat(frontToe);
+        ret.putFloat(rearToe);
+        ret.put(frontSuspension);
+        
+        ret.put(rearSuspension);
+        ret.put(frontAntiRollBar);
+        ret.put(rearAntiRollBar);
+        ret.put(frontSuspensionHeight);
+        ret.put(rearSuspensionHeight);
+        ret.put(breakPressure);
+        ret.put(breakBias);
+        ret.putFloat(frontTyrePressure);
+        ret.putFloat(rearTyrePressure);
+        ret.put(ballast);
+        ret.putFloat(fuelLoad);
+        
+        return ret.array();
+    }
 }

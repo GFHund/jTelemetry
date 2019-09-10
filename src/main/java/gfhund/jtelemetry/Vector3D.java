@@ -9,7 +9,7 @@ package gfhund.jtelemetry;
  *
  * @author PhilippHolzmann
  */
-public class Vector3D {
+public class Vector3D implements Cloneable {
     private float x;
     private float y;
     private float z;
@@ -47,4 +47,11 @@ public class Vector3D {
     public String toString(){
         return "{x:"+getX()+",y:"+getY()+",z:"+getZ()+"}";
     }
+
+    @Override
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone(); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    
 }

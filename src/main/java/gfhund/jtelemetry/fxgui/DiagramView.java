@@ -5,6 +5,7 @@
  */
 package gfhund.jtelemetry.fxgui;
 
+import gfhund.jtelemetry.commontelemetry.CommonTelemetryData;
 import java.util.ArrayList;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -39,7 +40,7 @@ import javafx.scene.shape.Rectangle;
  * @author PhilippGL
  */
 public class DiagramView extends Region{
-    private ObservableList<DiagrammLine> m_data;
+    private ObservableList<DiagrammLine> m_data = null;
     private Group drawArea = new Group();
     //private ScrollPane m_pane = new ScrollPane();
     private Pane m_pane = new Pane();
@@ -50,15 +51,17 @@ public class DiagramView extends Region{
     private Line bottomLine;
     private Line[] diagrammValueLines;
     private Line[] diagrammXValuesLines;
+    private Line[] diagrammOrientationLines;//Lines which should indicate the value at some point
     private Path[] diagramm;
     ScrollBar bar;
     private Text[] legendY;
     private Text[] legendX;
     private Text[] lineDesc;
     
-    private static int PREF_WIDTH = 470;
-    private static int PREF_HEIGHT = 350;
+    private static int PREF_WIDTH = 670;
+    private static int PREF_HEIGHT = 190;
     private static int PADDING = 60;
+    private static int PADDING_Y = 25;
     private static int LINE_VALUE_DISTANCE = 15;
     private static int LINE_VALUE_X_DISTANCE = 30;
     private static int LINE_VALUE_LENGTH = 5;
@@ -66,28 +69,35 @@ public class DiagramView extends Region{
     private static int TEXT_WIDTH = 30;
     
     private int zoomValue = 100;
+    private ParameterMode parameterMode;
     
     public DiagramView(){
         setCache(false);
         setPrefWidth(DiagramView.PREF_WIDTH);
         setPrefHeight(DiagramView.PREF_HEIGHT);
         
+        parameterMode = ParameterMode.SPEED;
+        
         VBox verticallyBox = new VBox();
         
         //both y axis and the bottom x axis
-        rightLine = new Line(DiagramView.PREF_WIDTH - DiagramView.PADDING, DiagramView.PADDING, DiagramView.PREF_WIDTH - DiagramView.PADDING, DiagramView.PREF_HEIGHT-DiagramView.PADDING);
+        rightLine = new Line(DiagramView.PREF_WIDTH - DiagramView.PADDING, DiagramView.PADDING_Y, DiagramView.PREF_WIDTH - DiagramView.PADDING, DiagramView.PREF_HEIGHT-DiagramView.PADDING_Y);
         rightLine.setStroke(Color.GREEN);
-        leftLine = new Line(DiagramView.PADDING,DiagramView.PADDING,DiagramView.PADDING,DiagramView.PREF_HEIGHT - DiagramView.PADDING);
+        leftLine = new Line(DiagramView.PADDING,DiagramView.PADDING_Y,DiagramView.PADDING,DiagramView.PREF_HEIGHT - DiagramView.PADDING_Y);
         leftLine.setStroke(Color.RED);
-        bottomLine = new Line(DiagramView.PADDING,DiagramView.PREF_HEIGHT - DiagramView.PADDING,DiagramView.PREF_WIDTH - DiagramView.PADDING,DiagramView.PREF_HEIGHT - DiagramView.PADDING);
+        bottomLine = new Line(DiagramView.PADDING,DiagramView.PREF_HEIGHT - DiagramView.PADDING_Y,DiagramView.PREF_WIDTH - DiagramView.PADDING,DiagramView.PREF_HEIGHT - DiagramView.PADDING_Y);
         
         //calculation for the y legend
-        int drawHeight = PREF_HEIGHT - 2*PADDING;
+        int drawHeight = PREF_HEIGHT - 2*PADDING_Y;
         int numLines = drawHeight / LINE_VALUE_DISTANCE;
         diagrammValueLines = new Line[numLines];
+        diagrammOrientationLines = new Line[numLines];
         for(int i=1;i <=diagrammValueLines.length;i++){
-            int yPos = (PREF_HEIGHT - PADDING)-i*LINE_VALUE_DISTANCE;
+            int yPos = (PREF_HEIGHT - PADDING_Y)-i*LINE_VALUE_DISTANCE;
             diagrammValueLines[i-1] = new Line(PADDING, yPos, PADDING - LINE_VALUE_LENGTH, yPos);
+            
+            diagrammOrientationLines[i-1] = new Line(PADDING,yPos,PREF_WIDTH - PADDING, yPos);
+            diagrammOrientationLines[i-1].setStroke(Color.LIGHTGRAY);
         }
         //calculations for the x legend
         int drawXWidth = PREF_WIDTH - 2 * PADDING;
@@ -98,9 +108,9 @@ public class DiagramView extends Region{
         for(int i=0;i<numXLines;i++){
             diagrammXValuesLines[i] = new Line(
                     PADDING+i*LINE_VALUE_X_DISTANCE,
-                    PREF_HEIGHT-PADDING,
+                    PREF_HEIGHT-PADDING_Y,
                     PADDING+i*LINE_VALUE_X_DISTANCE,
-                    PREF_HEIGHT - PADDING + LINE_VALUE_LENGTH
+                    PREF_HEIGHT - PADDING_Y + LINE_VALUE_LENGTH
             );
         }
         
@@ -127,41 +137,32 @@ public class DiagramView extends Region{
         boolean isFirst = true;
         for(int i=0 ;i<5;i++){
             if(isFirst){
-                diagramm[0].getElements().add(new MoveTo(50, 50));
+                diagramm[0].getElements().add(new MoveTo(PADDING, PREF_HEIGHT-PADDING_Y-5));
                 isFirst = false;
             }
             else{
-                diagramm[0].getElements().add(new LineTo(50 + i*10, 50));
+                diagramm[0].getElements().add(new LineTo(PADDING + i*10, PREF_HEIGHT-PADDING_Y-5));
             }
         }
         
         this.legendY = new Text[drawHeight / LINE_VALUE_DISTANCE];
         for(int i=0;i<legendY.length;i++){
-            legendY[i] = new Text(PADDING - TEXT_WIDTH, (legendY.length - i)*LINE_VALUE_DISTANCE + PADDING, "" + i);
+            //legendY[i] = new Text(PADDING - TEXT_WIDTH, (legendY.length - i)*LINE_VALUE_DISTANCE + PADDING, "" + i);
+            legendY[i] = new Text(PADDING - TEXT_WIDTH, (PREF_HEIGHT - PADDING_Y) - i*LINE_VALUE_DISTANCE + 5 , "" + i);
         }
         
         
         this.legendX = new Text[numXLines];
         for(int i=0;i<legendX.length;i++){
-            legendX[i] = new Text(PADDING + i*LINE_VALUE_X_DISTANCE,(PREF_HEIGHT - PADDING) + TEXT_HEIGHT + LINE_VALUE_LENGTH,""+i);
+            legendX[i] = new Text(PADDING + i*LINE_VALUE_X_DISTANCE,(PREF_HEIGHT - PADDING_Y) + TEXT_HEIGHT + LINE_VALUE_LENGTH,""+i);
         }
         
-        
-        //verticallyBox.getChildren().add(diagramm);
-        //verticallyBox.getChildren().add(bar);
-        //verticallyBox.getChildren().addAll(rightLine,leftLine,bottomLine);
-        //verticallyBox.getChildren().add(rightLine);
-        //verticallyBox.getChildren().add(leftLine);
-        //verticallyBox.getChildren().add(bottomLine);
-        //m_pane.setContent(diagramm);
-        //m_pane.setPrefSize(200, 200);
-        
-        //drawArea.getChildren().addAll(verticallyBox);
         Rectangle rect = new Rectangle(0, 0, PREF_WIDTH, PREF_HEIGHT);
         rect.setFill(Color.WHITE);
         drawArea.getChildren().add(rect);
         drawArea.getChildren().addAll(rightLine,leftLine,bottomLine);
         drawArea.getChildren().addAll(this.diagrammValueLines);
+        drawArea.getChildren().addAll(this.diagrammOrientationLines);
         drawArea.getChildren().addAll(legendY);
         drawArea.getChildren().addAll(diagrammXValuesLines);
         drawArea.getChildren().addAll(legendX);
@@ -174,12 +175,6 @@ public class DiagramView extends Region{
                 onScroll(event.getDeltaY());
             }
         });
-        
-        //m_pane.getChildren().add(drawArea);
-        //m_pane.getChildren().add(bar);
-        
-        //getChildren().add(m_pane);
-
         
         m_vBox.getChildren().add(drawArea);
         m_vBox.getChildren().add(bar);
@@ -247,7 +242,6 @@ public class DiagramView extends Region{
             double scrollBarValue = bar.getValue();
             xMin = (float)scrollBarValue;
             xMax = (float)(scrollBarValue + bar.getVisibleAmount());
-            
         }
         else{
             this.bar.setVisibleAmount(xMax - xMin);
@@ -257,7 +251,7 @@ public class DiagramView extends Region{
         //Choose the best Fitting Y Axis
         float minRangeYAxis;
         float maxRangeYAxis;
-        int drawHeight = PREF_HEIGHT - 2*PADDING;
+        int drawHeight = PREF_HEIGHT - 2*PADDING_Y;
         float multiplierSteps = yMax / this.legendY.length;
         float steps = drawHeight / yMax ;
         for(int i=0;i<this.legendY.length;i++){
@@ -283,7 +277,7 @@ public class DiagramView extends Region{
                     continue;
                 }
                 float posX = PADDING + ((point.posX*stepsX)-xOffset);
-                float posY = (PADDING + drawHeight) - point.posY * steps;
+                float posY = (PADDING_Y + drawHeight) - point.posY * steps;
                 if(isFirst){
                     isFirst = false;
                     pathElements.add(new MoveTo(posX,posY));
@@ -327,6 +321,51 @@ public class DiagramView extends Region{
             }
         });
     }
+    public void setParameterMode(ParameterMode mode){
+        parameterMode = mode;
+    }
+    public void addData(ArrayList<CommonTelemetryData> data){
+        if(m_data == null){
+            m_data = FXCollections.observableArrayList();
+        }
+        
+        DiagrammLine newLine = new DiagrammLine();
+        for(CommonTelemetryData date:data){
+            DiagrammPoint point;
+            float value = 0;
+            switch(parameterMode){
+                case SPEED:{
+                    value = date.getSpeed();
+                    break;
+                }
+                case BREAK:{
+                    value = date.getBrake();
+                    break;
+                }
+                case GEAR:{
+                    value = date.getGear();
+                    break;
+                }
+                case RPM:{
+                    value = date.getRpm();
+                    break;
+                }
+                case THROTTLE:{
+                    value = date.getThrottle();
+                }
+            }
+            point = new DiagrammPoint(date.getDistance(), value);
+            newLine.addTrackPoint(point);
+        }
+        m_data.add(newLine);
+        redraw();
+    }
+    
+    public void clearData(){
+        if(m_data != null){
+            m_data.clear();
+        }
+    }
     
     protected void onScroll(double deltaY){
         //System.out.println(""+deltaY);
@@ -343,7 +382,10 @@ public class DiagramView extends Region{
         if(this.zoomValue <= 0) {
             this.zoomValue = 0;
         }
-        redraw();
+        if(m_data != null){
+            redraw();
+        }
+        
     }
     
     public static class DiagrammLine{
@@ -392,6 +434,19 @@ public class DiagramView extends Region{
 
         public void setPosY(float posY) {
             this.posY = posY;
+        }
+    }
+    
+    public enum ParameterMode{
+        SPEED((byte)0),
+        THROTTLE((byte)1),
+        BREAK((byte)2),
+        RPM((byte)3),
+        GEAR((byte)4);
+        
+        byte value;
+        ParameterMode(byte value){
+            this.value = value;
         }
     }
 }
