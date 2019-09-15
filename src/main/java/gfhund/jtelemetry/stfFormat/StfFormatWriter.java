@@ -92,6 +92,52 @@ public class StfFormatWriter {
         }
     }
     
+    public void writeStfDocument(StfDocument doc) throws IOException{
+        AbstractStfObject[] children = doc.getChildren();
+        //AbstractStfObject child = doc.getChild(0);
+        String fileContent = "";
+        for(AbstractStfObject child: children){
+            if(child instanceof StfClass){
+                StfClass childClass = (StfClass) child;
+                fileContent += writeStfClass(childClass);
+            }
+            else if(child instanceof StfProperty){//This shouldn't be the case
+                StfProperty childProperty = (StfProperty)child;
+                fileContent += writeStfProperty(childProperty);
+            }
+        }
+        try{
+            m_fileWriterHandle.write(fileContent);
+            m_fileWriterHandle.close();
+        }catch(IOException e){
+            throw e;
+        }
+        
+        
+        
+    }
+    private String writeStfClass(StfClass cls){
+        String fileContent = "["+cls.getPropertyName()+"]{";
+        AbstractStfObject[] aObj =  cls.getChildren();
+        for(AbstractStfObject obj: aObj){
+            if(obj instanceof StfClass){
+                StfClass propertyCls = (StfClass)obj;
+                fileContent += writeStfClass(propertyCls);
+            }
+            else if(obj instanceof StfProperty){
+                StfProperty pro = (StfProperty)obj;
+                fileContent += writeStfProperty(pro);
+            }
+        }
+        fileContent+="}";
+        return fileContent;
+    }
+    
+    private String writeStfProperty(StfProperty prop){
+        String strToWrite = "["+prop.getPropertyName()+"]="+prop.getValue();
+        return strToWrite;
+    }
+    
     public void closePropertyClass()throws IOException{
         try{
             this.m_fileWriterHandle.write("}");

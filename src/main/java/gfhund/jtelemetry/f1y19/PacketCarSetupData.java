@@ -47,7 +47,7 @@ public class PacketCarSetupData extends AbstractPacket {
         }
         for(int i=0;i<20;i++){
             byte[] carStatusData = this.carSetupData[i].getBytes();
-            int offset = gfhund.jtelemetry.f1y18.Header.getSize()+i*CarSetupData.getSize();
+            int offset = gfhund.jtelemetry.f1y19.Header.getSize()+i*CarSetupData.getSize();
             for(int k=0;k<carStatusData.length;k++){
                 ret.put(offset+k,carStatusData[k]);
             }

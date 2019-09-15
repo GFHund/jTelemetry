@@ -32,6 +32,7 @@ public class CarTelemetryData extends gfhund.jtelemetry.f1y18.CarTelemetryData {
 
     public void setFThrottle(float fSpeed) {
         this.fThrottle = fSpeed;
+        //System.out.println("Setting Throttle: "+fSpeed);
     }
 
     public float getFSteer() {

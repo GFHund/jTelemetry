@@ -8,6 +8,7 @@ package gfhund.jtelemetry.f1common;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  *
  * @author PhilippHolzmann
@@ -28,6 +29,7 @@ public class PacketBuilderTest {
         try{
             gfhund.jtelemetry.f1y19.PacketMotionData afterParse = 
                     (gfhund.jtelemetry.f1y19.PacketMotionData) PacketBuilder.parseUDPPacket2019(raw);
+            assertEquals(afterParse.getHeader().getPlayerCarIndex(),packetMotionData.getHeader().getPlayerCarIndex());
             for(int i=0;i<20;i++){
                 assertEquals(afterParse.getCarMotionData(0).getWorldForwardDirX(), packetMotionData.getCarMotionData(0).getWorldForwardDirX());
             }
@@ -50,6 +52,7 @@ public class PacketBuilderTest {
         try{
             gfhund.jtelemetry.f1y19.PacketLapData afterParse = 
                     (gfhund.jtelemetry.f1y19.PacketLapData) PacketBuilder.parseUDPPacket2019(raw);
+            assertEquals(afterParse.getHeader().getPlayerCarIndex(),dummyPacket.getHeader().getPlayerCarIndex());
             for(int i=0;i<20;i++){
                 assertEquals(afterParse.getLapData(i).getDriverStatus(), dummyPacket.getLapData(i).getDriverStatus());
                 assertEquals(afterParse.getLapData(i).getLapDistance(), dummyPacket.getLapData(i).getLapDistance());
@@ -58,6 +61,7 @@ public class PacketBuilderTest {
         }
         catch(ParseException e){
             System.out.println(e.getMessage());
+            assertTrue(true);
         }
     }
     
@@ -74,6 +78,7 @@ public class PacketBuilderTest {
         try{
             gfhund.jtelemetry.f1y19.PacketCarTelemetryData afterParse = 
                     (gfhund.jtelemetry.f1y19.PacketCarTelemetryData) PacketBuilder.parseUDPPacket2019(raw);
+            assertEquals(afterParse.getHeader19().getPlayerCarIndex(),dummyPacket.getHeader19().getPlayerCarIndex());
             for(int i=0;i<20;i++){
                 assertEquals(afterParse.getCarTelemetryData(i).getEngineTemperature(), dummyPacket.getCarTelemetryData(i).getEngineTemperature());
                 assertEquals(afterParse.getCarTelemetryData(i).getSpeed(), dummyPacket.getCarTelemetryData(i).getSpeed());
@@ -85,7 +90,32 @@ public class PacketBuilderTest {
         }
         catch(ParseException e){
             System.out.println(e.getMessage());
+            assertTrue(true);
         }
+    }
+    
+    @Test
+    public void PacketCarSetupTest(){
+        gfhund.jtelemetry.f1y19.PacketCarSetupData dummyPacket = new gfhund.jtelemetry.f1y19.PacketCarSetupData();
+        gfhund.jtelemetry.f1y19.Header header = getHeader2019((byte)5);
+        dummyPacket.setHeader19(header);
+        for(int i=0;i<20;i++) {
+            dummyPacket.setCarSetupData(i, this.getCarSetupData());
+        }
+        byte[] raw = dummyPacket.getBytes();
+        try{
+            gfhund.jtelemetry.f1y19.PacketCarSetupData afterParse = 
+                    (gfhund.jtelemetry.f1y19.PacketCarSetupData) PacketBuilder.parseUDPPacket2019(raw);
+            assertEquals(afterParse.getHeader19().getPlayerCarIndex(),dummyPacket.getHeader19().getPlayerCarIndex());
+            for(int i=0;i<20;i++){
+                assertEquals(afterParse.getCarSetupData(i).getFrontWing(), dummyPacket.getCarSetupData(i).getFrontWing());
+            }
+        }
+        catch(ParseException e){
+            System.out.println(e.getMessage());
+            assertTrue(true);
+        }
+                
     }
     
     gfhund.jtelemetry.f1y19.CarMotionData getCarMotionData2019(int index){
@@ -172,6 +202,31 @@ public class PacketBuilderTest {
         ret.setTyresSurfaceTemperature(1, (byte)101);
         ret.setTyresSurfaceTemperature(2, (byte)102);
         ret.setTyresSurfaceTemperature(3, (byte)103);
+        return ret;
+    }
+    
+    gfhund.jtelemetry.f1y19.CarSetupData getCarSetupData(){
+        gfhund.jtelemetry.f1y19.CarSetupData ret = new gfhund.jtelemetry.f1y19.CarSetupData();
+        ret.setBallast((byte)1);
+        ret.setBreakBias((byte)60);
+        ret.setBreakPressure((byte)80);
+        ret.setFrontAntiRollBar((byte)5);
+        ret.setFrontCamber(7.0f);
+        ret.setFrontSuspension((byte)5);
+        ret.setFrontSuspensionHeight((byte)6);
+        ret.setFrontToe(2.0f);
+        ret.setFrontTyrePressure(22.0f);
+        ret.setFrontWing((byte)10);
+        ret.setFuelLoad(30.0f);
+        ret.setOffThrottle((byte)75);
+        ret.setOnThrottle((byte)80);
+        ret.setRearAntiRollBar((byte)7);
+        ret.setRearCamber(5.0f);
+        ret.setRearSuspension((byte)8);
+        ret.setRearSuspensionHeight((byte)9);
+        ret.setRearToe(3.0f);
+        ret.setRearTyrePressure(23.0f);
+        ret.setRearWing((byte)11);
         return ret;
     }
     

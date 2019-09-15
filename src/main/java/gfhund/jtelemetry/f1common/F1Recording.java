@@ -5,9 +5,11 @@
  */
 package gfhund.jtelemetry.f1common;
 
+import gfhund.jtelemetry.ClassManager;
 import gfhund.jtelemetry.Vector3D;
 import gfhund.jtelemetry.commontelemetry.AbstractPacket;
 import gfhund.jtelemetry.commontelemetry.CommonTelemetryData;
+import gfhund.jtelemetry.data.Settings;
 
 import gfhund.jtelemetry.f1y19.F1Y2019ParseThread;
 
@@ -41,6 +43,7 @@ public class F1Recording {
     private GameNetworkConnection m_networkThread;
     private CommonTelemetryData[] currentData = new CommonTelemetryData[20];
     private boolean recordingStarted = false;
+    private int playerCarIndex;
     private static final Logger logging = Logger.getLogger(F1Recording.class.getName());
     
     public F1Recording(){
@@ -71,7 +74,7 @@ public class F1Recording {
                 //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                 ReentrantLock lock = new ReentrantLock();
                 java.util.concurrent.locks.Condition cond = lock.newCondition();
-                m_networkThread = new GameNetworkConnection(lock,cond,20777,1341);
+                m_networkThread = new GameNetworkConnection(lock,cond,20777,1347);
                 //F1Y2018ParseThread parseThread = new F1Y2018ParseThread(lock,cond);
                 F1ParseThread parseThread;
                 switch(game){
@@ -104,21 +107,51 @@ public class F1Recording {
                     @Override
                     public void resultEvent(AbstractPacket packet) {
                         //parsePackager(packet);
+                        
                         if(processPacket(packet)){
-                            for(int i=0;i < currentData.length;i++){
-                                fe.onNext(currentData[i]);
-                                CommonTelemetryData temp = currentData[i];
-                                try{
-                                    currentData[i] = (CommonTelemetryData)temp.clone();
-                                }catch(CloneNotSupportedException e){
-                                    logging.log(Level.WARNING, e.getMessage(), e);
-                                }
-                                
+                            Settings set = null;
+                            try{
+                                set = (Settings)gfhund.jtelemetry.ClassManager.get(Settings.class);
+                            }catch(ClassManager.ClassManagerException e){
+                                logging.log(Level.WARNING, "Could not find Class Setting.", e);
                             }
+                            String recordingType = set.getValue("f1RecordingType","0");
+                            Boolean bRecoringType = true;
+                            try{
+                                int iRecordingType = Integer.parseInt(recordingType);
+                                bRecoringType = (iRecordingType == 0)?true:false;
+                            }catch(NumberFormatException e){
+                                logging.log(Level.WARNING, "Could not parse \"f1RecordingType\" to integer.", e);
+                            }
+                            if(bRecoringType){
+                                fe.onNext(currentData[playerCarIndex]);
+                                CommonTelemetryData temp = currentData[playerCarIndex];
+                                    try{
+                                        currentData[playerCarIndex] = (CommonTelemetryData)temp.clone();
+                                    }catch(CloneNotSupportedException e){
+                                        logging.log(Level.WARNING, e.getMessage(), e);
+                                    }
+                            }
+                            else{
+                                for(int i=0;i < currentData.length;i++){
+                                    fe.onNext(currentData[i]);
+
+                                    CommonTelemetryData temp = currentData[i];
+                                    try{
+                                        currentData[i] = (CommonTelemetryData)temp.clone();
+                                    }catch(CloneNotSupportedException e){
+                                        logging.log(Level.WARNING, e.getMessage(), e);
+                                    }
+
+                                }
+                            }
+                            
+                            /*
                             for(CommonTelemetryData data: currentData){
                                 //System.out.println("Distance: "+data.getDistance());
                                 fe.onNext(data);
                             }
+                            */
                             
                         }
                         
@@ -157,6 +190,7 @@ public class F1Recording {
         if(packet instanceof gfhund.jtelemetry.f1y18.PacketMotionData){
             gfhund.jtelemetry.f1y18.PacketMotionData motionDataPacket = 
                     (gfhund.jtelemetry.f1y18.PacketMotionData) packet;
+            playerCarIndex = motionDataPacket.getHeader().getPlayerCarIndex();
             for(int i=0;i<currentData.length;i++){
                 float x = motionDataPacket.getCarMotionData(i).getWorldPositionX();
                 float y = motionDataPacket.getCarMotionData(i).getWorldPositionX();
@@ -171,6 +205,7 @@ public class F1Recording {
         } else if(packet instanceof gfhund.jtelemetry.f1y18.PacketLapData){
             gfhund.jtelemetry.f1y18.PacketLapData lapDataPacket = 
                     (gfhund.jtelemetry.f1y18.PacketLapData) packet;
+            playerCarIndex = lapDataPacket.getHeader().getPlayerCarIndex();
             boolean isAllReady = true;
             for(int i=0;i<currentData.length;i++){
                 currentData[i].setDistance(lapDataPacket.getLapData(i).getLapDistance());
@@ -185,6 +220,7 @@ public class F1Recording {
         } else if(packet instanceof gfhund.jtelemetry.f1y18.PacketParticipantsData){
             gfhund.jtelemetry.f1y18.PacketParticipantsData participantsDataPacket = 
                     (gfhund.jtelemetry.f1y18.PacketParticipantsData) packet;
+            playerCarIndex = participantsDataPacket.getHeader().getPlayerCarIndex();
             for(int i=0;i<currentData.length;i++){
                 currentData[i].setDriverName(participantsDataPacket.getParticipant(i).getName());
                 currentData[i].setCarIndex((short)i);
@@ -195,6 +231,7 @@ public class F1Recording {
         } else if(packet instanceof gfhund.jtelemetry.f1y18.PacketCarTelemetryData) {
             gfhund.jtelemetry.f1y18.PacketCarTelemetryData telemetryDataPacket = 
                     (gfhund.jtelemetry.f1y18.PacketCarTelemetryData) packet;
+            playerCarIndex = telemetryDataPacket.getHeader().getPlayerCarIndex();
             for(int i=0;i<currentData.length;i++){
                 currentData[i].setSpeed(telemetryDataPacket.getCarTelemetryData(i).getSpeed());
                 currentData[i].setBrake(telemetryDataPacket.getCarTelemetryData(i).getBrake());
@@ -210,6 +247,7 @@ public class F1Recording {
             gfhund.jtelemetry.f1y19.PacketMotionData motionDataPacket = 
                     (gfhund.jtelemetry.f1y19.PacketMotionData) packet;
             boolean isAllReady = true;
+            playerCarIndex = motionDataPacket.getHeader().getPlayerCarIndex();
             for(int i=0;i<currentData.length;i++){
                 float x = motionDataPacket.getCarMotionData(i).getWorldPositionX();
                 float y = motionDataPacket.getCarMotionData(i).getWorldPositionX();
@@ -225,6 +263,7 @@ public class F1Recording {
             gfhund.jtelemetry.f1y19.PacketLapData lapDataPacket = 
                     (gfhund.jtelemetry.f1y19.PacketLapData) packet;
             boolean isAllReady = true;
+            playerCarIndex = lapDataPacket.getHeader().getPlayerCarIndex();
             //System.out.println("LapDistance: "+lapDataPacket.getLapData(0).getLapDistance());
             for(int i=0;i<currentData.length;i++){
                 currentData[i].setDistance(lapDataPacket.getLapData(i).getLapDistance());
@@ -239,6 +278,7 @@ public class F1Recording {
         } else if(packet instanceof gfhund.jtelemetry.f1y19.PacketParticipantsData){
             gfhund.jtelemetry.f1y19.PacketParticipantsData participantsDataPacket = 
                     (gfhund.jtelemetry.f1y19.PacketParticipantsData) packet;
+            playerCarIndex = participantsDataPacket.getHeader19().getPlayerCarIndex();
             for(int i=0;i<currentData.length;i++){
                 currentData[i].setDriverName(participantsDataPacket.getParticipant(i).getName());
                 currentData[i].setCarIndex((short)i);
@@ -246,6 +286,7 @@ public class F1Recording {
             return false;
         } else if(packet instanceof gfhund.jtelemetry.f1y19.PacketCarSetupData){
             gfhund.jtelemetry.f1y19.PacketCarSetupData packetSetup = (gfhund.jtelemetry.f1y19.PacketCarSetupData) packet;
+            playerCarIndex = packetSetup.getHeader19().getPlayerCarIndex();
             File setupData = new File("SetupData.raw");
             byte[] raw = packetSetup.getBytes();
             try{
@@ -262,10 +303,15 @@ public class F1Recording {
         } else if(packet instanceof gfhund.jtelemetry.f1y19.PacketCarTelemetryData) {
             gfhund.jtelemetry.f1y19.PacketCarTelemetryData telemetryDataPacket = 
                     (gfhund.jtelemetry.f1y19.PacketCarTelemetryData) packet;
+            playerCarIndex = telemetryDataPacket.getHeader19().getPlayerCarIndex();
+            System.out.println("PlayerCarIndex:"+playerCarIndex);
+            System.out.println("Throttle: "+telemetryDataPacket.getCarTelemetryData(playerCarIndex).getFThrottle());
+            System.out.println("Break: "+telemetryDataPacket.getCarTelemetryData(playerCarIndex).getFBrake());
+            System.out.println("Speed: "+telemetryDataPacket.getCarTelemetryData(playerCarIndex).getSpeed());
             for(int i=0;i<currentData.length;i++){
                 currentData[i].setSpeed(telemetryDataPacket.getCarTelemetryData(i).getSpeed());
-                currentData[i].setBrake(telemetryDataPacket.getCarTelemetryData(i).getBrake());
-                currentData[i].setThrottle(telemetryDataPacket.getCarTelemetryData(i).getThrottle());
+                currentData[i].setBrake((byte)(telemetryDataPacket.getCarTelemetryData(i).getFBrake()*100));
+                currentData[i].setThrottle((byte)(telemetryDataPacket.getCarTelemetryData(i).getFThrottle()*100));
                 currentData[i].setRpm(telemetryDataPacket.getCarTelemetryData(i).getEngineRPM());
                 currentData[i].setGear(telemetryDataPacket.getCarTelemetryData(i).getGear());
                 currentData[i].setCarIndex((short)i);

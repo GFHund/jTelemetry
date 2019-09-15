@@ -16,6 +16,11 @@ public class StfDocument extends StfClass {
         super("root");
     }
     
+    /**
+     * Every Document has one root class. Because of this, this method returns an empty string
+     * @param propertyPath
+     * @return 
+     */
     public String getProperty(String propertyPath){
         return "";
     }

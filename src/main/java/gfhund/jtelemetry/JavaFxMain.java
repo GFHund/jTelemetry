@@ -33,6 +33,7 @@ import gfhund.jtelemetry.fxgui.LoadingBarDialog;
 import gfhund.jtelemetry.fxgui.ProgressEvent;
 import gfhund.jtelemetry.fxgui.TelemetryWriter;
 import gfhund.jtelemetry.fxgui.FileOpenDialog;
+import gfhund.jtelemetry.fxgui.SettingsDialog;
 import gfhund.jtelemetry.stfFormat.AbstractStfObject;
 import gfhund.jtelemetry.stfFormat.StfDocument;
 import gfhund.jtelemetry.stfFormat.StfClass;
@@ -131,75 +132,6 @@ public class JavaFxMain extends Application{
         content.getChildren().addAll(firstColumn,diaGroup);
         layout.getChildren().addAll(content);
 
-        //HBox firstRow = new HBox();
-        
-        /*
-        list = new ListView<String>();
-        list.setItems(this.m_properties);
-        list.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-        list.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<String>() {
-            @Override
-            public void onChanged(ListChangeListener.Change<? extends String> c) {
-                selectRounds();
-                //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-        });
-        firstRow.getChildren().add(list);
-        */
-        
-        /*
-        NumberAxis xAxis = new NumberAxis();
-        NumberAxis yAxis = new NumberAxis();
-        LineChart<Number,Number> diagramm = new LineChart<>(xAxis,yAxis);
-        firstRow.getChildren().add(diagramm);
-        ObservableList<XYChart.Data<Number,Number>> series = FXCollections.observableArrayList();
-        for(int i=0;i<5;i++){
-            series.add(new XYChart.Data<Number, Number>(new Float((float)i) ,new Float((float)(i*i))));
-        }
-        //ObservableList<XYChart.Series<Number,Number>> diagramData = FXCollections.observableArrayList();
-        diagramData.add(new LineChart.Series<>(series));
-        diagramm.setData(diagramData);
-        diagramm.setCreateSymbols(false);
-        */
-        
-        
-        /*
-        DiagramView diaView = new DiagramView();
-        DiagramView.DiagrammLine newDiaLine = new DiagramView.DiagrammLine();
-        for(int i=0;i<5;i++){
-            newDiaLine.addTrackPoint(new DiagramView.DiagrammPoint(i, i*i));
-        }
-        diaView.setData(newDiagramData);
-        newDiagramData.add(newDiaLine);
-        
-        firstRow.getChildren().add(diaView);
-        */
-        
-        //HBox secondRow = new HBox();
-        /*
-        sessionList = new ListView<String>();
-        sessionList.setItems(this.m_sessions);
-        sessionList.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<String>() {
-            @Override
-            public void onChanged(ListChangeListener.Change<? extends String> c) {
-                selectSession();
-            }
-        });
-        secondRow.getChildren().add(sessionList);
-        */
-        
-        
-        
-        //m_timings.addListener(new Lis);
-        /*
-        table.setItems(m_timings);
-        table.getColumns().addAll(lapNum,lapTime,sector1Time,sector2Time);
-        secondRow.getChildren().add(table);
-        layout.getChildren().addAll(firstRow,secondRow);
-        */
-        
-        //layout.a
-        //ObservableList<Timing> 
         primaryStage.setScene(scene);
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
@@ -230,6 +162,11 @@ public class JavaFxMain extends Application{
             }
         });
         
+        MenuItem settingMenuItem = new MenuItem("Settings");
+        settingMenuItem.setOnAction((event)->{
+            new SettingsDialog(primaryStage);
+        });
+        
         MenuItem liveViewMenuItem = new MenuItem("Live View");
         liveViewMenuItem.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -248,7 +185,7 @@ public class JavaFxMain extends Application{
         });
         stopRecordingMenuItem.setDisable(true);
         
-        menuFile.getItems().add(openMenuItem);
+        menuFile.getItems().addAll(openMenuItem,settingMenuItem);
         menuView.getItems().add(liveViewMenuItem);
         recordingView.getItems().addAll(startRecordingMenuItem,stopRecordingMenuItem);
         
@@ -273,50 +210,7 @@ public class JavaFxMain extends Application{
             }
         });
         return;
-        /*
-        FileChooser fileDialog = new FileChooser();
-        fileDialog.setTitle("Open Data File");
-        fileDialog.getExtensionFilters().add(new FileChooser.ExtensionFilter("F1 Telemetry File", "*.zip"));
-        File file = fileDialog.showOpenDialog(stage);
         
-        if(file!=null){
-            long fileSize = file.length();
-            if(fileSize<=0){
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Falsche Datei größe");
-                alert.setHeaderText(null);
-                alert.setContentText("Datei ist kleiner gleich 0");
-                alert.showAndWait();
-                return;
-            }
-            TelemetryReader reader = new TelemetryReader();
-            StfDocument doc = reader.read(file, "ownTelemetry.stf");
-            StfClass rootClass = (StfClass)doc.getChild(0);
-            StfClass dataClass = (StfClass)rootClass.getChild(0);
-            String[] properties = dataClass.getChildPropertyName();
-            this.m_properties.addAll(properties);
-            AbstractStfObject[] children = rootClass.getChildren();
-            ArrayList<String> sessions = new ArrayList<>();
-            for(AbstractStfObject obj:children){
-                
-                if(obj instanceof StfClass){
-                    String sessionIdentifier = ((StfClass) obj).getChildPropertyValue("sessionUid");
-                    boolean bFound = false;
-                    for(int i=0;i<sessions.size();i++){
-                        if(sessions.get(i).compareTo(sessionIdentifier)==0){
-                            bFound = true;
-                        }
-                    }
-                    if(!bFound){
-                        sessions.add(sessionIdentifier);
-                    }
-                }
-                
-            }
-            this.m_sessions.addAll(sessions);
-            m_documents.put("ownTelemetry.stf", doc);
-        }
-        */
     }
     
     public void startLiveViewDialog(Stage stage){
@@ -374,8 +268,6 @@ public class JavaFxMain extends Application{
 
                             }
                         }
-                            
-                        
                     }
                     else{
                         try{
@@ -406,90 +298,12 @@ public class JavaFxMain extends Application{
         }catch(ClassManager.ClassManagerException e){
             return;
         }
+        this.diaGroup.clearTelemetryData();
         for(TimingFx selectedRows: selectedRounds){
             LapIdentificationObject id = selectedRows.getLapIdentificationObject();
             ArrayList<CommonTelemetryData> telemetryData = lapManager.getLapData(id);
             this.diaGroup.addTelemetryData(telemetryData);
         }
-        
-        /*
-        StfDocument doc = this.m_documents.get("ownTelemetry.stf");
-        StfClass rootClass = (StfClass) doc.getChild(0);
-        AbstractStfObject[] children = rootClass.getChildren();
-        
-        if(selectedRounds.size() >= 1){
-            this.trackRounds.clear();
-            for(TimingFx rounds : selectedRounds){
-                ObservableList<TrackView.TrackPoint> points = FXCollections.observableArrayList();
-                
-                TrackView.TrackRound  trackRounds = new TrackView.TrackRound();
-                for(AbstractStfObject obj: children){
-                    try{
-                        String sLapNum = ((StfClass)obj).getChildPropertyValue("lap");
-                        String sessionIdentifier = ((StfClass) obj).getChildPropertyValue("sessionUid");
-                        int iLapNum = Integer.parseInt(sLapNum);
-                        if( selectedItem.equals(sessionIdentifier) && iLapNum == rounds.getLapNum()){
-                            String sPosX = ((StfClass)obj).getChildPropertyValue("posX");
-                            String sPosZ = ((StfClass)obj).getChildPropertyValue("posZ");
-                            float fPosX = Float.parseFloat(sPosX);
-                            float fPosZ = Float.parseFloat(sPosZ);
-                            points.add(new TrackView.TrackPoint(fPosX, fPosZ));
-                        }
-                    }catch(NumberFormatException e){
-                        
-                    }
-                }
-                trackRounds.setData(points);
-                this.trackRounds.add(trackRounds);
-            }
-        }
-        
-        if(selectedRounds.size() <=0 || selectedProperties.size() <= 0){
-            return;
-        }
-        
-        
-        //ObservableList<XYChart.Data<Number,Number>>[] series;
-        //series = new ObservableList<XYChart.Data<Number, Number>>[5];
-        /*
-        for(AbstractStfObject obj: children){
-            
-        }
-*/
-        /*
-        diagramData.clear();
-        newDiagramData.clear();
-        for(TimingFx rounds:selectedRounds){
-            for(String property: selectedProperties){
-                ObservableList<XYChart.Data<Number,Number>> series = FXCollections.observableArrayList();
-                ObservableList<DiagramView.DiagrammPoint> points = FXCollections.observableArrayList();
-                for(AbstractStfObject obj: children){
-                    try{
-                        String sLapNum = ((StfClass)obj).getChildPropertyValue("lap");
-                        String sessionIdentifier = ((StfClass) obj).getChildPropertyValue("sessionUid");
-                        int iLapNum = Integer.parseInt(sLapNum);
-                        if(selectedItem.equals(sessionIdentifier) && iLapNum == rounds.getLapNum()){
-                            String lapTime = ((StfClass)obj).getChildPropertyValue("currentLapTime");
-                            String propertyTrim = property.trim();
-                            String selectedProperty = ((StfClass)obj).getChildPropertyValue(propertyTrim);
-                            float fLapTime = Float.parseFloat(lapTime);
-                            float fProperty = Float.parseFloat(selectedProperty);//I dont know the datatype. So i use float because all other datatype should be covered
-                            series.add(new XYChart.Data<Number,Number>(new Float(fLapTime),new Float(fProperty)));
-                            points.add(new DiagramView.DiagrammPoint(fLapTime, fProperty));
-                        }
-                    }catch(NumberFormatException e){
-                        
-                    }
-                }
-                LineChart.Series<Number,Number> temp = new LineChart.Series<>(series);
-                temp.setName("Runde "+rounds.getLapNum());
-                diagramData.add(temp);
-                DiagramView.DiagrammLine line = new DiagramView.DiagrammLine();
-                line.setData(points);
-                newDiagramData.add(line);
-            }
-        }
-*/
     }
 
     public void startRecord(){

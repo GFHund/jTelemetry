@@ -21,6 +21,10 @@ import gfhund.jtelemetry.f1y18.ParticipantData;
 import gfhund.jtelemetry.f1y18.SessionType;
 import gfhund.jtelemetry.f1y18.TrackID;
 import gfhund.jtelemetry.f1y18.Weather;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -30,6 +34,8 @@ import java.nio.ByteOrder;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class PacketBuilder{
     private static final Logger logging = Logger.getLogger(PacketBuilder.class.getName());
@@ -369,6 +375,7 @@ public class PacketBuilder{
         }
         catch(IndexOutOfBoundsException e){
             logging.log(Level.WARNING, "Out of Bounds Exception in getInt. Position: "+position+" ArrayLength: "+raw.length, e);
+            System.out.println("Returning 0");
             return 0;
         }
     }
@@ -384,8 +391,10 @@ public class PacketBuilder{
         }
     }
     private static String getString(byte[] raw,int position){
+        Charset charset = StandardCharsets.UTF_8;
         try{
-            String ret = new String(raw, position, 48);
+            String ret = charset.decode(ByteBuffer.wrap(raw, position, 48)).toString();
+            //String ret = new String(raw, position, 48);
             return ret;
         }
         catch(IndexOutOfBoundsException e){
@@ -427,6 +436,18 @@ public class PacketBuilder{
                 return (gfhund.jtelemetry.f1y19.PacketCarSetupData) parseByteArray(gfhund.jtelemetry.f1y19.PacketCarSetupData.class.getName(),rawPacket,packetCarSetupFields);
             case 6:
             //return getTelemetryData(rawPacket, packetHeader);
+                /*
+                try{
+                    File f = new File("./RawTelemetry.raw");
+                    java.io.FileOutputStream stream = new FileOutputStream(f);
+                    stream.write(rawPacket);
+                    stream.close();
+                }catch(IOException e){
+                    System.out.println(e.getMessage());
+                }
+                */
+                
+                
                 PacketFields[] packetCarTelemetryFields = getFields(gfhund.jtelemetry.f1y19.PacketCarTelemetryData.class.getName());
                 return (gfhund.jtelemetry.f1y19.PacketCarTelemetryData) parseByteArray(gfhund.jtelemetry.f1y19.PacketCarTelemetryData.class.getName(),rawPacket,packetCarTelemetryFields);
             case 7:

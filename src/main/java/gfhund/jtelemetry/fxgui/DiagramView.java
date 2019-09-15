@@ -324,6 +324,7 @@ public class DiagramView extends Region{
     public void setParameterMode(ParameterMode mode){
         parameterMode = mode;
     }
+    @Deprecated
     public void addData(ArrayList<CommonTelemetryData> data){
         if(m_data == null){
             m_data = FXCollections.observableArrayList();
