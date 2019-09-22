@@ -10,6 +10,7 @@ import javafx.beans.property.FloatProperty;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import gfhund.jtelemetry.data.Timing;
+import javafx.beans.property.SimpleStringProperty;
 /**
  *
  * @author PhilippGL
@@ -23,6 +24,7 @@ public class TimingFx {
     private final SimpleFloatProperty sector3Time;
     private final SimpleFloatProperty sector4Time;
     private final SimpleFloatProperty sector5Time;
+    private final SimpleStringProperty playerName;
     
     public TimingFx(){
         this.lapNum = new SimpleIntegerProperty(0);
@@ -32,6 +34,7 @@ public class TimingFx {
         this.sector3Time = new SimpleFloatProperty(0.0f);
         this.sector4Time = new SimpleFloatProperty(0.0f);
         this.sector5Time = new SimpleFloatProperty(0.0f);
+        this.playerName = new SimpleStringProperty("");
     }
     public TimingFx(Timing timing){
         this.lapNum = new SimpleIntegerProperty(timing.getLapNum());
@@ -41,6 +44,7 @@ public class TimingFx {
         this.sector3Time = new SimpleFloatProperty(timing.getSector3Time());
         this.sector4Time = new SimpleFloatProperty(timing.getSector4Time());
         this.sector5Time = new SimpleFloatProperty(timing.getSector5Time());
+        this.playerName = new SimpleStringProperty("");
     }
     
     public LapIdentificationObject getLapIdentificationObject(){
@@ -100,5 +104,10 @@ public class TimingFx {
         this.sector5Time.set(value);
     }
     
-    
+    public void setPlayerName(String playerName){
+        this.playerName.set(playerName);
+    }
+    public String getPlayerName(){
+        return this.playerName.get();
+    }
 }

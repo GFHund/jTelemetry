@@ -103,7 +103,10 @@ public class SettingsDialog extends DialogFx {
         HBox buttonContainer = new HBox();
         
         Button saveButton = new Button("Save");
-        saveButton.setOnAction((event)->{});
+        saveButton.setOnAction((event)->{
+            onSaveClicked();
+            this.dialogStage.close();
+        });
         Button cancelButton = new Button("Cancel");
         cancelButton.setOnAction((event)->{this.dialogStage.close();});
         

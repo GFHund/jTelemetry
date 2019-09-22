@@ -59,8 +59,10 @@ public class DiagramView extends Region{
     private Text[] lineDesc;
     
     private static int PREF_WIDTH = 670;
-    private static int PREF_HEIGHT = 190;
+    private static int PREF_HEIGHT = 170;
     private static int PADDING = 60;
+    private static int PADDING_Y_TOP = 10;
+    private static int PADDING_Y_BOTTOM = 25;
     private static int PADDING_Y = 25;
     private static int LINE_VALUE_DISTANCE = 15;
     private static int LINE_VALUE_X_DISTANCE = 30;
@@ -81,19 +83,19 @@ public class DiagramView extends Region{
         VBox verticallyBox = new VBox();
         
         //both y axis and the bottom x axis
-        rightLine = new Line(DiagramView.PREF_WIDTH - DiagramView.PADDING, DiagramView.PADDING_Y, DiagramView.PREF_WIDTH - DiagramView.PADDING, DiagramView.PREF_HEIGHT-DiagramView.PADDING_Y);
+        rightLine = new Line(DiagramView.PREF_WIDTH - DiagramView.PADDING, DiagramView.PADDING_Y_TOP, DiagramView.PREF_WIDTH - DiagramView.PADDING, DiagramView.PREF_HEIGHT-DiagramView.PADDING_Y_BOTTOM);
         rightLine.setStroke(Color.GREEN);
-        leftLine = new Line(DiagramView.PADDING,DiagramView.PADDING_Y,DiagramView.PADDING,DiagramView.PREF_HEIGHT - DiagramView.PADDING_Y);
+        leftLine = new Line(DiagramView.PADDING,DiagramView.PADDING_Y_TOP,DiagramView.PADDING,DiagramView.PREF_HEIGHT - DiagramView.PADDING_Y_BOTTOM);
         leftLine.setStroke(Color.RED);
-        bottomLine = new Line(DiagramView.PADDING,DiagramView.PREF_HEIGHT - DiagramView.PADDING_Y,DiagramView.PREF_WIDTH - DiagramView.PADDING,DiagramView.PREF_HEIGHT - DiagramView.PADDING_Y);
+        bottomLine = new Line(DiagramView.PADDING,DiagramView.PREF_HEIGHT - DiagramView.PADDING_Y_BOTTOM,DiagramView.PREF_WIDTH - DiagramView.PADDING,DiagramView.PREF_HEIGHT - DiagramView.PADDING_Y_BOTTOM);
         
         //calculation for the y legend
-        int drawHeight = PREF_HEIGHT - 2*PADDING_Y;
+        int drawHeight = PREF_HEIGHT - (PADDING_Y_TOP+PADDING_Y_BOTTOM);
         int numLines = drawHeight / LINE_VALUE_DISTANCE;
         diagrammValueLines = new Line[numLines];
         diagrammOrientationLines = new Line[numLines];
         for(int i=1;i <=diagrammValueLines.length;i++){
-            int yPos = (PREF_HEIGHT - PADDING_Y)-i*LINE_VALUE_DISTANCE;
+            int yPos = (PREF_HEIGHT - PADDING_Y_BOTTOM)-i*LINE_VALUE_DISTANCE;
             diagrammValueLines[i-1] = new Line(PADDING, yPos, PADDING - LINE_VALUE_LENGTH, yPos);
             
             diagrammOrientationLines[i-1] = new Line(PADDING,yPos,PREF_WIDTH - PADDING, yPos);
@@ -129,7 +131,7 @@ public class DiagramView extends Region{
         });
         
         diagramm = new Path[10];
-        Color[] colors = {Color.BLACK,Color.LIGHTBLUE,Color.GREEN,Color.ORANGE,Color.BROWN,Color.BLUEVIOLET,Color.CYAN,Color.DEEPPINK,Color.INDIGO,Color.CADETBLUE};
+        Color[] colors = {Color.BLACK,Color.ORANGERED,Color.GREEN,Color.ORANGE,Color.BROWN,Color.BLUEVIOLET,Color.CYAN,Color.DEEPPINK,Color.INDIGO,Color.CADETBLUE};
         for(int i=0;i<diagramm.length;i++){
             diagramm[i] = new Path();
             diagramm[i].setStroke(colors[i]);
@@ -137,24 +139,24 @@ public class DiagramView extends Region{
         boolean isFirst = true;
         for(int i=0 ;i<5;i++){
             if(isFirst){
-                diagramm[0].getElements().add(new MoveTo(PADDING, PREF_HEIGHT-PADDING_Y-5));
+                diagramm[0].getElements().add(new MoveTo(PADDING, PREF_HEIGHT-PADDING_Y_BOTTOM-5));
                 isFirst = false;
             }
             else{
-                diagramm[0].getElements().add(new LineTo(PADDING + i*10, PREF_HEIGHT-PADDING_Y-5));
+                diagramm[0].getElements().add(new LineTo(PADDING + i*10, PREF_HEIGHT-PADDING_Y_BOTTOM-5));
             }
         }
         
         this.legendY = new Text[drawHeight / LINE_VALUE_DISTANCE];
         for(int i=0;i<legendY.length;i++){
             //legendY[i] = new Text(PADDING - TEXT_WIDTH, (legendY.length - i)*LINE_VALUE_DISTANCE + PADDING, "" + i);
-            legendY[i] = new Text(PADDING - TEXT_WIDTH, (PREF_HEIGHT - PADDING_Y) - i*LINE_VALUE_DISTANCE + 5 , "" + i);
+            legendY[i] = new Text(PADDING - TEXT_WIDTH, (PREF_HEIGHT - PADDING_Y_BOTTOM) - i*LINE_VALUE_DISTANCE + 5 , "" + i);
         }
         
         
         this.legendX = new Text[numXLines];
         for(int i=0;i<legendX.length;i++){
-            legendX[i] = new Text(PADDING + i*LINE_VALUE_X_DISTANCE,(PREF_HEIGHT - PADDING_Y) + TEXT_HEIGHT + LINE_VALUE_LENGTH,""+i);
+            legendX[i] = new Text(PADDING + i*LINE_VALUE_X_DISTANCE,(PREF_HEIGHT - PADDING_Y_BOTTOM) + TEXT_HEIGHT + LINE_VALUE_LENGTH,""+i);
         }
         
         Rectangle rect = new Rectangle(0, 0, PREF_WIDTH, PREF_HEIGHT);
@@ -251,7 +253,7 @@ public class DiagramView extends Region{
         //Choose the best Fitting Y Axis
         float minRangeYAxis;
         float maxRangeYAxis;
-        int drawHeight = PREF_HEIGHT - 2*PADDING_Y;
+        int drawHeight = PREF_HEIGHT - (PADDING_Y_TOP + PADDING_Y_BOTTOM);
         float multiplierSteps = yMax / this.legendY.length;
         float steps = drawHeight / yMax ;
         for(int i=0;i<this.legendY.length;i++){
@@ -277,7 +279,7 @@ public class DiagramView extends Region{
                     continue;
                 }
                 float posX = PADDING + ((point.posX*stepsX)-xOffset);
-                float posY = (PADDING_Y + drawHeight) - point.posY * steps;
+                float posY = (PADDING_Y_TOP + drawHeight) - point.posY * steps;
                 if(isFirst){
                     isFirst = false;
                     pathElements.add(new MoveTo(posX,posY));

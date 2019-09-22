@@ -108,19 +108,26 @@ public class JavaFxMain extends Application{
             }
         });
         
+        TableColumn playerName = new TableColumn("Player Name");
+        playerName.setCellValueFactory(new PropertyValueFactory<Timing,String>("playerName"));
+        
         TableColumn lapNum = new TableColumn("Lap Num");
         lapNum.setCellValueFactory(new PropertyValueFactory<Timing,Integer>("lapNum"));
         
         TableColumn lapTime = new TableColumn("Lap Time");
         lapTime.setCellValueFactory(new PropertyValueFactory<Timing,Float>("lapTime"));
-        
+        /*
         TableColumn sector1Time = new TableColumn("Sector 1");
         sector1Time.setCellValueFactory(new PropertyValueFactory<Timing,Float>("sector1Time"));
         
         TableColumn sector2Time = new TableColumn("Sector 2");
         sector2Time.setCellValueFactory(new PropertyValueFactory<Timing,Float>("sector2Time"));
+*/
         table.setItems(m_timings);
-        table.getColumns().addAll(lapNum,lapTime,sector1Time,sector2Time);
+        table.getColumns().add(playerName);
+        table.getColumns().add(lapNum);
+        table.getColumns().add(lapTime);
+        //table.getColumns().addAll(lapNum,lapTime,sector1Time,sector2Time);
         firstColumn.getChildren().add(table);
         
         
@@ -205,6 +212,7 @@ public class JavaFxMain extends Application{
             for(LapIdentificationObject key: keys){
                 TimingFx obj = new TimingFx();
                 obj.setLapNum(key.getLapNum());
+                obj.setPlayerName(key.getPlayer());
                 obj.setLapIdentificationObject(key);
                 this.m_timings.add(obj);
             }
@@ -216,6 +224,7 @@ public class JavaFxMain extends Application{
     public void startLiveViewDialog(Stage stage){
         m_liveViewDialog = new LiveViewDialog(stage);
     }
+    
     
     public void selectSession(){
         this.m_timings.clear();
@@ -303,7 +312,19 @@ public class JavaFxMain extends Application{
             LapIdentificationObject id = selectedRows.getLapIdentificationObject();
             ArrayList<CommonTelemetryData> telemetryData = lapManager.getLapData(id);
             this.diaGroup.addTelemetryData(telemetryData);
+            
+            trackRounds.clear();
+            TrackView.TrackRound trackRound = new TrackView.TrackRound();
+            for(CommonTelemetryData data: telemetryData){
+                TrackView.TrackPoint p = new TrackView.TrackPoint(data.getPos().getX(),data.getPos().getY());
+                System.out.println("X: "+data.getPos().getX());
+                System.out.println("Y: "+data.getPos().getY());
+                System.out.println("Z: "+data.getPos().getZ());
+                trackRound.addTrackPoint(p);
+            }
+            trackRounds.add(trackRound);
         }
+        
     }
 
     public void startRecord(){

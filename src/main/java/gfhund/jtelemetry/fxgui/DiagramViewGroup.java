@@ -11,6 +11,7 @@ import javafx.scene.layout.VBox;
 import java.util.ArrayList;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 
 /**
  *
@@ -45,6 +46,7 @@ public class DiagramViewGroup extends Region{
         diagrams[4].setData(data4);
         
         VBox layout = new VBox();
+        layout.setSpacing(20);
         layout.getChildren().addAll(diagrams);
         getChildren().add(layout);
     }

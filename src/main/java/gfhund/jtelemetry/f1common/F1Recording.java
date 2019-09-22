@@ -250,8 +250,8 @@ public class F1Recording {
             playerCarIndex = motionDataPacket.getHeader().getPlayerCarIndex();
             for(int i=0;i<currentData.length;i++){
                 float x = motionDataPacket.getCarMotionData(i).getWorldPositionX();
-                float y = motionDataPacket.getCarMotionData(i).getWorldPositionX();
-                float z = motionDataPacket.getCarMotionData(i).getWorldPositionX();
+                float y = motionDataPacket.getCarMotionData(i).getWorldPositionY();
+                float z = motionDataPacket.getCarMotionData(i).getWorldPositionZ();
                 currentData[i].setPos(new Vector3D(x,y,z));
                 currentData[i].setCarIndex((short)i);
                 isAllReady = isAllReady && currentData[i].isReadyToSave();
@@ -304,10 +304,6 @@ public class F1Recording {
             gfhund.jtelemetry.f1y19.PacketCarTelemetryData telemetryDataPacket = 
                     (gfhund.jtelemetry.f1y19.PacketCarTelemetryData) packet;
             playerCarIndex = telemetryDataPacket.getHeader19().getPlayerCarIndex();
-            System.out.println("PlayerCarIndex:"+playerCarIndex);
-            System.out.println("Throttle: "+telemetryDataPacket.getCarTelemetryData(playerCarIndex).getFThrottle());
-            System.out.println("Break: "+telemetryDataPacket.getCarTelemetryData(playerCarIndex).getFBrake());
-            System.out.println("Speed: "+telemetryDataPacket.getCarTelemetryData(playerCarIndex).getSpeed());
             for(int i=0;i<currentData.length;i++){
                 currentData[i].setSpeed(telemetryDataPacket.getCarTelemetryData(i).getSpeed());
                 currentData[i].setBrake((byte)(telemetryDataPacket.getCarTelemetryData(i).getFBrake()*100));

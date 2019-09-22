@@ -25,6 +25,7 @@ import javafx.animation.Transition;
 import javafx.util.Duration;
 import com.sun.javafx.scene.DirtyBits;
 import java.util.ArrayList;
+import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.scene.Group;
 import javafx.scene.layout.Pane;
@@ -198,7 +199,8 @@ public class TrackView extends Region {
     }
     
     public static class TrackRound{
-        ObservableList<TrackPoint> rounds;
+        ObservableList<TrackPoint> rounds = FXCollections.observableArrayList();
+
         public void addTrackPoint(TrackPoint point){
             rounds.add(point);
         }

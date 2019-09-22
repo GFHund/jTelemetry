@@ -18,8 +18,11 @@ public class StfClass extends AbstractStfObject {
     }
     //--------------------------------------------------------------
     public AbstractStfObject getObject(String name){
+        
         for(AbstractStfObject obj: objects){
-            if(obj.getPropertyName().equals(name)){
+            String objPropertyName = obj.getPropertyName();
+            objPropertyName = objPropertyName.trim();            
+            if(objPropertyName.equalsIgnoreCase(name)){
                 return obj;
             }
         }
