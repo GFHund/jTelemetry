@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Side;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 
 /**
  *
@@ -48,7 +51,20 @@ public class DiagramViewGroup extends Region{
         VBox layout = new VBox();
         layout.setSpacing(20);
         layout.getChildren().addAll(diagrams);
-        getChildren().add(layout);
+        
+        TabPane pane = new TabPane();
+        pane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        pane.setSide(Side.BOTTOM);
+        
+        Tab driveData = new Tab("Fahrdaten");
+        driveData.setContent(layout);
+        
+        Tab ersData = new Tab("Ers");
+        Tab tyreInnerData = new Tab("Reifen Innen Temp");
+        Tab tyreSurfaceData = new Tab("Reifen Oberfläche Temp");
+        pane.getTabs().addAll(driveData,ersData,tyreInnerData,tyreSurfaceData);
+        
+        getChildren().add(pane);
     }
     
     public void clearTelemetryData(){

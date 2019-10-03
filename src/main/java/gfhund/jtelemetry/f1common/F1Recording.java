@@ -300,6 +300,7 @@ public class F1Recording {
                 System.out.println(e.getMessage());
             }
             
+            
         } else if(packet instanceof gfhund.jtelemetry.f1y19.PacketCarTelemetryData) {
             gfhund.jtelemetry.f1y19.PacketCarTelemetryData telemetryDataPacket = 
                     (gfhund.jtelemetry.f1y19.PacketCarTelemetryData) packet;
@@ -311,10 +312,27 @@ public class F1Recording {
                 currentData[i].setRpm(telemetryDataPacket.getCarTelemetryData(i).getEngineRPM());
                 currentData[i].setGear(telemetryDataPacket.getCarTelemetryData(i).getGear());
                 currentData[i].setCarIndex((short)i);
+                currentData[i].setTyreInnerTempFL(telemetryDataPacket.getCarTelemetryData(i).getTyreInnerTemperature(2));
+                currentData[i].setTyreInnerTempFR(telemetryDataPacket.getCarTelemetryData(i).getTyreInnerTemperature(3));
+                currentData[i].setTyreInnerTempRR(telemetryDataPacket.getCarTelemetryData(i).getTyreInnerTemperature(1));
+                currentData[i].setTyreInnerTempRL(telemetryDataPacket.getCarTelemetryData(i).getTyreInnerTemperature(0));
+                currentData[i].setTyreSurfaceTempFL(telemetryDataPacket.getCarTelemetryData(i).getTyreSurfaceTemperature(2));
+                currentData[i].setTyreSurfaceTempFR(telemetryDataPacket.getCarTelemetryData(i).getTyreSurfaceTemperature(3));
+                currentData[i].setTyreSurfaceTempRR(telemetryDataPacket.getCarTelemetryData(i).getTyreSurfaceTemperature(1));
+                currentData[i].setTyreSurfaceTempRL(telemetryDataPacket.getCarTelemetryData(i).getTyreSurfaceTemperature(0));
+                
             }
             return false;
         } else if(packet instanceof gfhund.jtelemetry.f1y19.PacketCarStatusData){
-            //
+            gfhund.jtelemetry.f1y19.PacketCarStatusData statusData = 
+                    (gfhund.jtelemetry.f1y19.PacketCarStatusData) packet;
+            for(int i=0;i<currentData.length;i++){
+                currentData[i].setErsDeployMode(statusData.getCarStatusData(i).getErsDeployMode());
+                currentData[i].setErsDeployed(statusData.getCarStatusData(i).getErsDeployedThisLap());
+                currentData[i].setErsHarvestMGUH(statusData.getCarStatusData(i).getErsHarvestedThisLapMGUH());
+                currentData[i].setErsHarvestMGUK(statusData.getCarStatusData(i).getErsHarvestedThisLapMGUK());
+                currentData[i].setErsStoreEngergy(statusData.getCarStatusData(i).getErsStoreEnergy());
+            }
         }
         return false;
     }

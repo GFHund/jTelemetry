@@ -538,33 +538,20 @@ public class TelemetryWriter {
             }
             
             if(lastLap == data.getLapNum()){
-                //this.commonTelemetryBuffer[this.commonTelemetryBufferPointer] = data;
                 CommonTelemetryData[] buffer;
                 int pointer;
                 if(this.commonTelemetryBuffer.containsKey(data.getDriverName())){
-                    //System.out.println(data.getDriverName() + " lese Buffer");
                     buffer = this.commonTelemetryBuffer.get(data.getDriverName());
                     pointer = this.commonTelemetryBufferPointer.get(data.getDriverName()).intValue();
-                    //System.out.println(data.getDriverName() + " pointer: "+pointer);
                 }
                 else {
-                    //System.out.println(data.getDriverName() + " Erstelle neuen Buffer");
                     buffer = new CommonTelemetryData[BUFFER_SIZE];
                     pointer = 0;
                 }
-                //System.out.println(data.getDriverName()+" LapDistance: " + data.getDistance());
-                //System.out.println(" Pointer:" + pointer);
+
                 buffer[pointer] = data;
                 pointer++;
-                //System.out.println(data.getDriverName()+" LapDistance: " + buffer[pointer-1].getDistance());
-                
-                /*if(pointer > 1)
-                {
-                    System.out.println("Previous Data"+data.getDriverName()+" LapDistance: " + buffer[pointer-2].getDistance());
-                }*/
-                
-                //System.out.println(" Pointer:" + pointer);
-                //this.commonTelemetryBufferPointer++;
+
                 this.commonTelemetryBuffer.put(data.getDriverName(), buffer);
                 this.commonTelemetryBufferPointer.put(data.getDriverName(), pointer);
             }
@@ -578,7 +565,6 @@ public class TelemetryWriter {
                         this.commonTelemetryBuffer.put(driverName, new CommonTelemetryData[BUFFER_SIZE]);
                     }
                     int pointer = this.commonTelemetryBufferPointer.get(driverName);
-                    System.out.println(data.getDriverName()+" pointer: "+ pointer);
                     if(pointer != 0){
                         CommonTelemetryData[] buffer = this.commonTelemetryBuffer.get(data.getDriverName());
                         //int pointer = this.commonTelemetryBufferPointer.get(data.getDriverName());
@@ -680,6 +666,19 @@ public class TelemetryWriter {
         ret.put("Rpm", "" + data.getRpm());
         ret.put("Speed", "" + data.getSpeed());
         ret.put("Throttle", "" + data.getThrottle());
+        ret.put("ErsDeployMode",""+data.getErsDeployMode());
+        ret.put("ErsDeployed",""+data.getErsDeployed());
+        ret.put("ErsMGUH",""+data.getErsHarvestMGUH());
+        ret.put("ErsMGUK",""+data.getErsHarvestMGUK());
+        ret.put("ErsStoreEnergy", "" + data.getErsStoreEngergy());
+        ret.put("TyreInnerTempFL", "" + data.getTyreInnerTempFL());
+        ret.put("TyreInnerTempFR", "" + data.getTyreInnerTempFR());
+        ret.put("TyreInnerTempRR", "" + data.getTyreInnerTempRR());
+        ret.put("TyreInnerTempRL", "" + data.getTyreInnerTempRL());
+        ret.put("TyreSurfaceTempFL", "" + data.getTyreSurfaceTempFL());
+        ret.put("TyreSurfaceTempFR", "" + data.getTyreSurfaceTempFR());
+        ret.put("TyreSurfaceTempRR", "" + data.getTyreSurfaceTempRR());
+        ret.put("TyreSurfaceTempRL", "" + data.getTyreSurfaceTempRL());
         return ret;
     }
     private String getDateFromDatObj(Date date) {

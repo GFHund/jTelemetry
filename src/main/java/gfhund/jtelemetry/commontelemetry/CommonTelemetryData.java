@@ -23,6 +23,19 @@ public class CommonTelemetryData implements Cloneable{
     private String driverName = "";
     private short lapNum = 0;
     private Vector3D pos = new Vector3D(0, 0, 0);
+    private short tyreSurfaceTempFR;//Front Right
+    private short tyreSurfaceTempFL;//Front Left
+    private short tyreSurfaceTempRR;//Rear Right
+    private short tyreSurfaceTempRL;//Rear Left
+    private short tyreInnerTempFR;//Front Right
+    private short tyreInnerTempFL;//Front Left
+    private short tyreInnerTempRR;//Rear Right
+    private short tyreInnerTempRL;//Rear Left
+    private byte ersDeployMode;
+    private float ersHarvestMGUK;//Energie aus vom Bremsen wiedergewinnen
+    private float ersHarvestMGUH;//Energie aus den Abgasen wiedergewinnen
+    private float ersDeployed;
+    private float ersStoreEngergy;//Gesamt Batterie stand
     
     public short getSpeed() {
         return speed;
@@ -112,6 +125,112 @@ public class CommonTelemetryData implements Cloneable{
     public void setPos(Vector3D pos) {
         this.pos = pos;
     }
+
+    public short getTyreSurfaceTempFR() {
+        return tyreSurfaceTempFR;
+    }
+
+    public void setTyreSurfaceTempFR(short tyreSurfaceTempFR) {
+        this.tyreSurfaceTempFR = tyreSurfaceTempFR;
+    }
+
+    public short getTyreSurfaceTempFL() {
+        return tyreSurfaceTempFL;
+    }
+
+    public void setTyreSurfaceTempFL(short tyreSurfaceTempFL) {
+        this.tyreSurfaceTempFL = tyreSurfaceTempFL;
+    }
+
+    public short getTyreSurfaceTempRR() {
+        return tyreSurfaceTempRR;
+    }
+
+    public void setTyreSurfaceTempRR(short tyreSurfaceTempRR) {
+        this.tyreSurfaceTempRR = tyreSurfaceTempRR;
+    }
+
+    public short getTyreSurfaceTempRL() {
+        return tyreSurfaceTempRL;
+    }
+
+    public void setTyreSurfaceTempRL(short tyreSurfaceTempRL) {
+        this.tyreSurfaceTempRL = tyreSurfaceTempRL;
+    }
+
+    public short getTyreInnerTempFR() {
+        return tyreInnerTempFR;
+    }
+
+    public void setTyreInnerTempFR(short tyreInnerTempFR) {
+        this.tyreInnerTempFR = tyreInnerTempFR;
+    }
+
+    public short getTyreInnerTempFL() {
+        return tyreInnerTempFL;
+    }
+
+    public void setTyreInnerTempFL(short tyreInnerTempFL) {
+        this.tyreInnerTempFL = tyreInnerTempFL;
+    }
+
+    public short getTyreInnerTempRR() {
+        return tyreInnerTempRR;
+    }
+
+    public void setTyreInnerTempRR(short tyreInnerTempRR) {
+        this.tyreInnerTempRR = tyreInnerTempRR;
+    }
+
+    public short getTyreInnerTempRL() {
+        return tyreInnerTempRL;
+    }
+
+    public void setTyreInnerTempRL(short tyreInnerTempRL) {
+        this.tyreInnerTempRL = tyreInnerTempRL;
+    }
+
+    public byte getErsDeployMode() {
+        return ersDeployMode;
+    }
+
+    public void setErsDeployMode(byte ersDeployMode) {
+        this.ersDeployMode = ersDeployMode;
+    }
+
+    public float getErsHarvestMGUK() {
+        return ersHarvestMGUK;
+    }
+
+    public void setErsHarvestMGUK(float ersHarvestMGUK) {
+        this.ersHarvestMGUK = ersHarvestMGUK;
+    }
+
+    public float getErsHarvestMGUH() {
+        return ersHarvestMGUH;
+    }
+
+    public void setErsHarvestMGUH(float ersHarvestMGUH) {
+        this.ersHarvestMGUH = ersHarvestMGUH;
+    }
+
+    public float getErsDeployed() {
+        return ersDeployed;
+    }
+
+    public void setErsDeployed(float ersDeployed) {
+        this.ersDeployed = ersDeployed;
+    }
+
+    public float getErsStoreEngergy() {
+        return ersStoreEngergy;
+    }
+
+    public void setErsStoreEngergy(float ersStoreEngergy) {
+        this.ersStoreEngergy = ersStoreEngergy;
+    }
+    
+    
     
     public boolean isReadyToSave(){
         //boolean ret = true;

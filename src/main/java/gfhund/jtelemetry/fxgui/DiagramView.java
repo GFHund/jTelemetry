@@ -34,6 +34,7 @@ import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.PathElement;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.input.MouseEvent;
 
 /**
  *
@@ -57,6 +58,7 @@ public class DiagramView extends Region{
     private Text[] legendY;
     private Text[] legendX;
     private Text[] lineDesc;
+    private Line mouseOverLine;
     
     private static int PREF_WIDTH = 670;
     private static int PREF_HEIGHT = 170;
@@ -72,6 +74,11 @@ public class DiagramView extends Region{
     
     private int zoomValue = 100;
     private ParameterMode parameterMode;
+    
+    private float xMin = 0;
+    private float xMax = 0;
+    private float stepsX = 0;
+    private ArrayList<OnSelectValue> onSelectValueListener = new ArrayList<>();
     
     public DiagramView(){
         setCache(false);
@@ -115,7 +122,13 @@ public class DiagramView extends Region{
                     PREF_HEIGHT - PADDING_Y + LINE_VALUE_LENGTH
             );
         }
-        
+        mouseOverLine = new Line(
+                DiagramView.PADDING, 
+                DiagramView.PADDING_Y_TOP, 
+                DiagramView.PADDING, 
+                DiagramView.PREF_HEIGHT-PADDING_Y_BOTTOM
+        );
+        mouseOverLine.setVisible(false);
         
         bar = new ScrollBar();
         bar.setMinWidth(PREF_WIDTH);
@@ -161,9 +174,11 @@ public class DiagramView extends Region{
         
         Rectangle rect = new Rectangle(0, 0, PREF_WIDTH, PREF_HEIGHT);
         rect.setFill(Color.WHITE);
+        
         drawArea.getChildren().add(rect);
         drawArea.getChildren().addAll(rightLine,leftLine,bottomLine);
         drawArea.getChildren().addAll(this.diagrammValueLines);
+        drawArea.getChildren().add(mouseOverLine);
         drawArea.getChildren().addAll(this.diagrammOrientationLines);
         drawArea.getChildren().addAll(legendY);
         drawArea.getChildren().addAll(diagrammXValuesLines);
@@ -176,6 +191,10 @@ public class DiagramView extends Region{
                 //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                 onScroll(event.getDeltaY());
             }
+        });
+        drawArea.setOnMouseMoved((MouseEvent eh)->{
+            
+            this.onMouseOver(eh.getX(),eh.getY());
         });
         
         m_vBox.getChildren().add(drawArea);
@@ -211,8 +230,8 @@ public class DiagramView extends Region{
         }
         //for(int i=0;i<d)
         
-        float xMax = Float.MIN_VALUE;
-        float xMin = Float.MAX_VALUE;
+        xMax = Float.MIN_VALUE;
+        xMin = Float.MAX_VALUE;
         float yMax = Float.MIN_VALUE;
         float yMin = Float.MAX_VALUE;
         for(DiagrammLine round:m_data){
@@ -234,7 +253,7 @@ public class DiagramView extends Region{
         this.bar.setMax(xMax);
         this.bar.setMin(xMin);
         
-        if(this.zoomValue <100){
+        if(this.zoomValue < 100){
             float delta = xMax - xMin;
             float remainingLength = delta * ((float)this.zoomValue / 100.0f);
             float deltaMinMax = delta - remainingLength;
@@ -262,7 +281,7 @@ public class DiagramView extends Region{
         
         //get X value
         float drawXWidth = PREF_WIDTH - 2 * PADDING;
-        float stepsX = drawXWidth / (xMax - xMin) ;
+        stepsX = drawXWidth / (xMax - xMin) ;
         float multiplierXSteps = (xMax - xMin) / this.legendX.length;
         for(int i=0;i<this.legendX.length;i++){
             float temp = xMin + multiplierXSteps * (i+1);
@@ -291,26 +310,6 @@ public class DiagramView extends Region{
             diagramm[i].getElements().addAll(pathElements);
             i++;
         }
-        /*
-        for(TrackView.TrackRound round:m_data){
-            Boolean isFirst = true;
-            ArrayList<PathElement> pathElements = new ArrayList<>();
-            for(TrackView.TrackPoint point:round.rounds){
-                float posX = (point.posX - xMin)*scalingX;
-                float posY = (point.posY - yMin)*scalingY;
-                if(isFirst){
-                    isFirst = false;
-                    
-                    pathElements.add(new MoveTo(posX, posY));
-                }
-                else{
-                    pathElements.add(new LineTo(posX, posY));
-                }
-            }
-            pathElements.add(new ClosePath());
-            line.getElements().addAll(pathElements);
-        }
-*/
         
     }
     
@@ -326,6 +325,7 @@ public class DiagramView extends Region{
     public void setParameterMode(ParameterMode mode){
         parameterMode = mode;
     }
+    
     @Deprecated
     public void addData(ArrayList<CommonTelemetryData> data){
         if(m_data == null){
@@ -387,8 +387,38 @@ public class DiagramView extends Region{
         }
         if(m_data != null){
             redraw();
+        }   
+    }
+    
+    protected void onMouseOver(double x, double y){
+        if(x > DiagramView.PADDING && x < (DiagramView.PREF_WIDTH - DiagramView.PADDING) ){
+            if(y > DiagramView.PADDING_Y_TOP && y < DiagramView.PREF_HEIGHT-DiagramView.PADDING_Y_BOTTOM){
+                this.mouseOverLine.setVisible(true);
+                this.mouseOverLine.setStartX(x);
+                this.mouseOverLine.setEndX(x);
+                this.findNearestValue((float)x);
+            }
+            else{
+                this.mouseOverLine.setVisible(false);
+            }
         }
-        
+        else{
+            this.mouseOverLine.setVisible(false);
+        }
+    }
+    
+    protected void findNearestValue(float x){
+        int diaWidth = DiagramView.PREF_WIDTH - 2*DiagramView.PADDING;
+        float newOriginX = x - DiagramView.PADDING;
+        float unitPerPixel = (xMax-xMin) / diaWidth;
+        float value = newOriginX * unitPerPixel;
+        for(OnSelectValue listener: onSelectValueListener){
+            listener.onSelectValue(value);
+        }
+    }
+    
+    public void addOnSelectValue(OnSelectValue onSelectValue){
+        this.onSelectValueListener.add(onSelectValue);
     }
     
     public static class DiagrammLine{
@@ -451,5 +481,8 @@ public class DiagramView extends Region{
         ParameterMode(byte value){
             this.value = value;
         }
+    }
+    public interface OnSelectValue{
+        public void onSelectValue(float value);
     }
 }

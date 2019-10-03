@@ -59,6 +59,7 @@ public class SettingsDialog extends DialogFx {
         VBox layout = new VBox();
         
         TabPane tabPane = new TabPane();
+        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
         Tab tabCommon = new Tab("Allgemein");
         //tabCommon.setC
         Tab tabF1 = new Tab("F1");

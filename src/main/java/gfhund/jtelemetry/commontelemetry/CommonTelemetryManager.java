@@ -84,6 +84,20 @@ public class CommonTelemetryManager {
         String sRpm = classObj.getChildPropertyValue("Rpm");
         String sSpeed = classObj.getChildPropertyValue("Speed");
         String sThrottle = classObj.getChildPropertyValue("Throttle");
+        String sErsDeployMode = classObj.getChildPropertyValue("ErsDeployMode");
+        String sErsDeployed = classObj.getChildPropertyValue("ErsDeployed");
+        String sErsMGUH = classObj.getChildPropertyValue("ErsMGUH");
+        String sErsMGUK = classObj.getChildPropertyValue("ErsMGUK");
+        String sErsStoreEngergy = classObj.getChildPropertyValue("ErsStoreEnergy");
+        String sTyreInnerTempFL = classObj.getChildPropertyValue("TyreInnerTempFL");
+        String sTyreInnerTempFR = classObj.getChildPropertyValue("TyreInnerTempFR");
+        String sTyreInnerTempRR = classObj.getChildPropertyValue("TyreInnerTempRR");
+        String sTyreInnerTempRL = classObj.getChildPropertyValue("TyreInnerTempRL");
+        String sTyreSurfaceTempFL = classObj.getChildPropertyValue("TyreSurfaceTempFL");
+        String sTyreSurfaceTempFR = classObj.getChildPropertyValue("TyreSurfaceTempFR");
+        String sTyreSurfaceTempRR = classObj.getChildPropertyValue("TyreSurfaceTempRR");
+        String sTyreSurfaceTempRL = classObj.getChildPropertyValue("TyreSurfaceTempRL");
+
         try{
             byte bBreak = Byte.parseByte(sBreak);
             data.setBrake(bBreak);
@@ -109,6 +123,33 @@ public class CommonTelemetryManager {
             data.setSpeed(speed);
             byte bThrottle = Byte.parseByte(sThrottle);
             data.setThrottle(bThrottle);
+            
+            byte bErsDeployMode = Byte.parseByte(sErsDeployMode);
+            float fErsMGUH = Float.parseFloat(sErsMGUH);
+            float fErsMGUK = Float.parseFloat(sErsMGUK);
+            float fErsStoreEnergy = Float.parseFloat(sErsStoreEngergy);
+            float fErsDeployed = Float.parseFloat(sErsDeployed);
+            short shTyreInnerTempFL = Short.parseShort(sTyreInnerTempFL);
+            short shTyreInnerTempFR = Short.parseShort(sTyreInnerTempFR);
+            short shTyreInnerTempRR = Short.parseShort(sTyreInnerTempRR);
+            short shTyreInnerTempRL = Short.parseShort(sTyreInnerTempRL);
+            short shTyreSurfaceTempFL = Short.parseShort(sTyreSurfaceTempFL);
+            short shTyreSurfaceTempFR = Short.parseShort(sTyreSurfaceTempFR);
+            short shTyreSurfaceTempRR = Short.parseShort(sTyreSurfaceTempRR);
+            short shTyreSurfaceTempRL = Short.parseShort(sTyreSurfaceTempRL);
+            data.setErsDeployMode(bErsDeployMode);
+            data.setErsHarvestMGUH(fErsMGUH);
+            data.setErsHarvestMGUK(fErsMGUK);
+            data.setErsStoreEngergy(fErsStoreEnergy);
+            data.setErsDeployed(fErsDeployed);
+            data.setTyreInnerTempFL(shTyreInnerTempFL);
+            data.setTyreInnerTempFR(shTyreInnerTempFR);
+            data.setTyreInnerTempRL(shTyreInnerTempRL);
+            data.setTyreInnerTempRR(shTyreInnerTempRR);
+            data.setTyreSurfaceTempFL(shTyreSurfaceTempFL);
+            data.setTyreSurfaceTempFR(shTyreSurfaceTempFR);
+            data.setTyreSurfaceTempRL(shTyreSurfaceTempRL);
+            data.setTyreSurfaceTempRR(shTyreSurfaceTempRR);
             
         }catch(NumberFormatException e){
             data = null;
