@@ -37,6 +37,20 @@ public class CommonTelemetryManager {
         }
     }
     
+    public CommonTelemetryData getDataFromDistance(float distance){
+        ArrayList<CommonTelemetryData> telemetryData = getLapData();
+        CommonTelemetryData ret = null;
+        float deltaDistance = Float.MAX_VALUE;
+        for(CommonTelemetryData value: telemetryData){
+            float currDeltaDistance = Math.abs(distance-value.getDistance());
+            if(currDeltaDistance < deltaDistance){
+                deltaDistance = currDeltaDistance;
+                ret = value;
+            }
+        }
+        return ret;
+    }
+    
     public ArrayList<CommonTelemetryData> getLapData(){
         if(lapData.size() <= 0){
             try{

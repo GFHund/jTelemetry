@@ -95,7 +95,7 @@ public class JavaFxMain extends Application{
         VBox layout = new VBox();
         createMenu(primaryStage,layout);
         
-        Scene scene = new Scene(layout,1024,1000);
+        Scene scene = new Scene(layout,1500,700);
         HBox content = new HBox();
         VBox firstColumn = new VBox();
         
@@ -136,6 +136,9 @@ public class JavaFxMain extends Application{
         firstColumn.getChildren().add(trackView);
         
         diaGroup = new DiagramViewGroup();
+        diaGroup.addOnSelectValueEvent((float value)->{
+            selectDataValue(value);
+        });
         content.getChildren().addAll(firstColumn,diaGroup);
         layout.getChildren().addAll(content);
 
@@ -316,10 +319,10 @@ public class JavaFxMain extends Application{
             trackRounds.clear();
             TrackView.TrackRound trackRound = new TrackView.TrackRound();
             for(CommonTelemetryData data: telemetryData){
-                TrackView.TrackPoint p = new TrackView.TrackPoint(data.getPos().getX(),data.getPos().getY());
-                System.out.println("X: "+data.getPos().getX());
-                System.out.println("Y: "+data.getPos().getY());
-                System.out.println("Z: "+data.getPos().getZ());
+                TrackView.TrackPoint p = new TrackView.TrackPoint(data.getPos().getX(),data.getPos().getZ());
+                //System.out.println("X: "+data.getPos().getX());
+                //System.out.println("Y: "+data.getPos().getY());
+                //System.out.println("Z: "+data.getPos().getZ());
                 trackRound.addTrackPoint(p);
             }
             trackRounds.add(trackRound);
@@ -387,39 +390,53 @@ public class JavaFxMain extends Application{
         }
         
         FileChooser fileDialog = new FileChooser();
-            fileDialog.setTitle("Save Data File");
-            fileDialog.getExtensionFilters().add(new FileChooser.ExtensionFilter("Zip File", "*.zip"));
-            File file = fileDialog.showSaveDialog(stage);
-            if(file != null){
-                try{
-                    TelemetryWriter tw = (TelemetryWriter)gfhund.jtelemetry.ClassManager.get(TelemetryWriter.class);
-                    LoadingBarDialog loadingBar = new LoadingBarDialog(stage);
-                    tw.addProgressListener(new ProgressEvent() {
-                        @Override
-                        public void onProgress(float progress) {
-                            loadingBar.setValue(progress);
-                        }
-                    });
-                    tw.addOnFinishListener(new FinishEvent() {
-                        @Override
-                        public void onFinish() {
-                            Platform.runLater(()->{
-                                loadingBar.close();
-                            });
-                            
-                        }
-                    });
-                    tw.closeTelemetry(file);
-                }catch(ClassManager.ClassManagerException e){
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Error to get Recording Model");
-                    alert.setHeaderText(null);
-                    alert.setContentText("If you see this this should be an bug in this program. Error: "+e.getMessage());
-                    alert.showAndWait();  
-                }
-                
-                
+        fileDialog.setTitle("Save Data File");
+        fileDialog.getExtensionFilters().add(new FileChooser.ExtensionFilter("Zip File", "*.zip"));
+        File file = fileDialog.showSaveDialog(stage);
+        if(file != null){
+            try{
+                TelemetryWriter tw = (TelemetryWriter)gfhund.jtelemetry.ClassManager.get(TelemetryWriter.class);
+                LoadingBarDialog loadingBar = new LoadingBarDialog(stage);
+                tw.addProgressListener(new ProgressEvent() {
+                    @Override
+                    public void onProgress(float progress) {
+                        loadingBar.setValue(progress);
+                    }
+                });
+                tw.addOnFinishListener(new FinishEvent() {
+                    @Override
+                    public void onFinish() {
+                        Platform.runLater(()->{
+                            loadingBar.close();
+                        });
+
+                    }
+                });
+                tw.closeTelemetry(file);
+            }catch(ClassManager.ClassManagerException e){
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Error to get Recording Model");
+                alert.setHeaderText(null);
+                alert.setContentText("If you see this this should be an bug in this program. Error: "+e.getMessage());
+                alert.showAndWait();  
             }
+        }
     }
     
+    public void selectDataValue(float value){
+        ObservableList<TimingFx> selectedRounds = table.getSelectionModel().getSelectedItems();
+        CommonLapManager lapManager;
+        try{
+            lapManager = (CommonLapManager)gfhund.jtelemetry.ClassManager.get(CommonLapManager.class);
+        }catch(ClassManager.ClassManagerException e){
+            return;
+        }
+        trackView.clearPoints();
+        for(TimingFx selectedRows: selectedRounds){
+            LapIdentificationObject id = selectedRows.getLapIdentificationObject();
+            CommonTelemetryData data = lapManager.getDataFromDistance(id, value);
+            TrackView.TrackPoint p = new TrackView.TrackPoint(data.getPos().getX(),data.getPos().getZ());
+            trackView.addPoint(p);
+        }
+    }
 }

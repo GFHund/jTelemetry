@@ -29,6 +29,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Line;
 import javafx.collections.ListChangeListener;
+import javafx.geometry.Insets;
 import javafx.scene.shape.ClosePath;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.MoveTo;
@@ -41,7 +42,7 @@ import javafx.scene.input.MouseEvent;
  * @author PhilippGL
  */
 public class DiagramView extends Region{
-    private ObservableList<DiagrammLine> m_data = null;
+    private ObservableList<DiagrammLine> m_data = FXCollections.observableArrayList();
     private Group drawArea = new Group();
     //private ScrollPane m_pane = new ScrollPane();
     private Pane m_pane = new Pane();
@@ -80,14 +81,16 @@ public class DiagramView extends Region{
     private float stepsX = 0;
     private ArrayList<OnSelectValue> onSelectValueListener = new ArrayList<>();
     
-    public DiagramView(){
+    public DiagramView(String title){
         setCache(false);
         setPrefWidth(DiagramView.PREF_WIDTH);
-        setPrefHeight(DiagramView.PREF_HEIGHT);
+        setPrefHeight(DiagramView.PREF_HEIGHT+10);
         
         parameterMode = ParameterMode.SPEED;
         
         VBox verticallyBox = new VBox();
+        
+        Text titleNode = new Text(0,0,title);
         
         //both y axis and the bottom x axis
         rightLine = new Line(DiagramView.PREF_WIDTH - DiagramView.PADDING, DiagramView.PADDING_Y_TOP, DiagramView.PREF_WIDTH - DiagramView.PADDING, DiagramView.PREF_HEIGHT-DiagramView.PADDING_Y_BOTTOM);
@@ -176,6 +179,7 @@ public class DiagramView extends Region{
         rect.setFill(Color.WHITE);
         
         drawArea.getChildren().add(rect);
+        drawArea.getChildren().add(titleNode);
         drawArea.getChildren().addAll(rightLine,leftLine,bottomLine);
         drawArea.getChildren().addAll(this.diagrammValueLines);
         drawArea.getChildren().add(mouseOverLine);
@@ -199,8 +203,15 @@ public class DiagramView extends Region{
         
         m_vBox.getChildren().add(drawArea);
         m_vBox.getChildren().add(bar);
+        //m_vBox.setPadding(new Insets(50));
         
         getChildren().add(m_vBox);
+        this.m_data.addListener(new ListChangeListener<DiagrammLine>() {
+            @Override
+            public void onChanged(ListChangeListener.Change<? extends DiagrammLine> arg0) {
+                redraw();
+            }
+        });
     }
     @Override
     public ObservableList<Node> getChildren(){
@@ -313,6 +324,7 @@ public class DiagramView extends Region{
         
     }
     
+    @Deprecated
     public void setData(ObservableList<DiagrammLine> data){
         m_data = data;
         data.addListener(new ListChangeListener<DiagrammLine>() {
@@ -321,6 +333,9 @@ public class DiagramView extends Region{
                 redraw();
             }
         });
+    }
+    public ObservableList<DiagrammLine> getData(){
+        return this.m_data;
     }
     public void setParameterMode(ParameterMode mode){
         parameterMode = mode;
@@ -481,8 +496,5 @@ public class DiagramView extends Region{
         ParameterMode(byte value){
             this.value = value;
         }
-    }
-    public interface OnSelectValue{
-        public void onSelectValue(float value);
     }
 }

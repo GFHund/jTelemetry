@@ -30,7 +30,9 @@ public class CommonLapManager {
     public ArrayList<CommonTelemetryData> getLapData(LapIdentificationObject id){
         return lapsData.get(id).getLapData();
     }
-    
+    public CommonTelemetryData getDataFromDistance(LapIdentificationObject id, float distance){
+        return lapsData.get(id).getDataFromDistance(distance);
+    }
     public void removeLap(LapIdentificationObject id){
         lapsData.get(id).unloadData();
         lapsData.remove(id);
