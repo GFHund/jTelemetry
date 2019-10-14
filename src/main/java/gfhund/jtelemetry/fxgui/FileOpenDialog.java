@@ -100,6 +100,23 @@ public class FileOpenDialog extends DialogFx {
         selectedRounds.getColumns().addAll(selectedRoundsPlayer,selectedRoundsLapNum,selectedRoundsTiming);
         selectedRoundsList = FXCollections.observableArrayList();
         selectedRounds.setItems(selectedRoundsList);
+        
+        CommonLapManager lapManager;
+        try{
+            lapManager = (CommonLapManager)gfhund.jtelemetry.ClassManager.get(CommonLapManager.class);
+            LapIdentificationObject[] lapIds = lapManager.getIds();
+            for(LapIdentificationObject lapId: lapIds){
+                RoundSelection newEntry = new RoundSelection();
+                newEntry.setDateDriven(lapId.getDateLapDriven());
+                newEntry.setLapNum(lapId.getLapNum());
+                newEntry.setPlayer(lapId.getPlayer());
+                newEntry.setTime(0);
+                newEntry.setZipFile(lapId.getZipFile());
+                selectedRoundsList.add(newEntry);
+            }        
+        }catch(ClassManager.ClassManagerException e){
+            //This Should Not happen
+        }
 
         HBox selectRound = new HBox(availableRounds,moveLeft,moveRight,selectedRounds);
 

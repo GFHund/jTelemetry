@@ -211,6 +211,7 @@ public class JavaFxMain extends Application{
             }catch(ClassManager.ClassManagerException e){
                 return;
             }
+            this.m_timings.clear();
             LapIdentificationObject[] keys = lapManager.getIds();
             for(LapIdentificationObject key: keys){
                 TimingFx obj = new TimingFx();
@@ -227,7 +228,6 @@ public class JavaFxMain extends Application{
     public void startLiveViewDialog(Stage stage){
         m_liveViewDialog = new LiveViewDialog(stage);
     }
-    
     
     public void selectSession(){
         this.m_timings.clear();
@@ -314,7 +314,7 @@ public class JavaFxMain extends Application{
         for(TimingFx selectedRows: selectedRounds){
             LapIdentificationObject id = selectedRows.getLapIdentificationObject();
             ArrayList<CommonTelemetryData> telemetryData = lapManager.getLapData(id);
-            this.diaGroup.addTelemetryData(telemetryData);
+            this.diaGroup.addTelemetryData(id);
             
             trackRounds.clear();
             TrackView.TrackRound trackRound = new TrackView.TrackRound();
@@ -327,7 +327,6 @@ public class JavaFxMain extends Application{
             }
             trackRounds.add(trackRound);
         }
-        
     }
 
     public void startRecord(){
@@ -380,6 +379,7 @@ public class JavaFxMain extends Application{
             recording.stopRecording();
             this.startRecordingMenuItem.setDisable(false);
             this.stopRecordingMenuItem.setDisable(true);
+            gfhund.jtelemetry.ClassManager.freeObject(F1Recording.class);
         }
         catch(ClassManager.ClassManagerException e){
             Alert alert = new Alert(Alert.AlertType.ERROR);

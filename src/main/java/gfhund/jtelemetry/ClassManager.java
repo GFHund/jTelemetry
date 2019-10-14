@@ -30,6 +30,10 @@ public class ClassManager {
         }
     }
     
+    public static void freeObject(Class className){
+        loadedClasses.put(className.getName(), null);
+    }
+    
     public static class ClassManagerException extends Exception{
         
     }

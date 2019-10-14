@@ -20,10 +20,12 @@ import com.sun.prism.paint.Color;
 import javafx.scene.shape.MoveTo;
 import javafx.scene.shape.LineTo;
 import javafx.scene.shape.Path;
+import javafx.scene.shape.Circle;
 //import com.sun.javafx.sg.PGNode;
 import javafx.animation.Transition;
 import javafx.util.Duration;
 import com.sun.javafx.scene.DirtyBits;
+import gfhund.jtelemetry.Vector3D;
 import java.util.ArrayList;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -46,8 +48,11 @@ public class TrackView extends Region {
     public static int WIDTH = 200;
     public static int HEIGHT = 200;
     
+    javafx.scene.paint.Color[] colors = {javafx.scene.paint.Color.BLACK,javafx.scene.paint.Color.ORANGERED,javafx.scene.paint.Color.GREEN,javafx.scene.paint.Color.ORANGE,javafx.scene.paint.Color.BROWN,javafx.scene.paint.Color.BLUEVIOLET,javafx.scene.paint.Color.CYAN,javafx.scene.paint.Color.DEEPPINK,javafx.scene.paint.Color.INDIGO,javafx.scene.paint.Color.CADETBLUE};
+    ArrayList<TrackPoint> points = new ArrayList<>(); 
     
     ObservableList<TrackRound> m_data;
+    Circle[] circles = new Circle[10];
     
     public TrackView(){
         setCache(false);
@@ -55,7 +60,14 @@ public class TrackView extends Region {
         setPrefHeight(200);
         Rectangle rect = new Rectangle(0, 0, WIDTH, HEIGHT);
         rect.setFill(javafx.scene.paint.Color.WHITE);
+        
+        for(int i = 0; i< circles.length;i++){
+            circles[i] = new Circle(0,0,4);
+            circles[i].setVisible(false);
+        }
+        
         drawArea.getChildren().addAll(rect,line);
+        drawArea.getChildren().addAll(circles);
         m_pane.getChildren().add(drawArea);
         getChildren().add(m_pane);
         
@@ -134,6 +146,15 @@ public class TrackView extends Region {
             pathElements.add(new ClosePath());
             line.getElements().addAll(pathElements);
         }
+        int i=0;
+        for(TrackPoint p:points){
+            float posX = (p.posX - xMin) * scalingX;
+            float posY = (p.posY - yMin) * scalingY;
+            circles[i].setCenterX(posX);
+            circles[i].setCenterY(posY);
+            circles[i].setVisible(true);
+            i++;
+        }
     }
     
     public void setData(ObservableList<TrackRound> data){
@@ -144,6 +165,15 @@ public class TrackView extends Region {
                 redraw();
             }
         });
+    }
+    
+    public void clearPoints(){
+        points.clear();
+        redraw();
+    }
+    public void addPoint(TrackPoint e){
+        points.add(e);
+        redraw();
     }
     /*
     public static TrackPoint createTrackPoint(float x,float y){

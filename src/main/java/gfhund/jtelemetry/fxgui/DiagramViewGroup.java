@@ -5,7 +5,11 @@
  */
 package gfhund.jtelemetry.fxgui;
 
+import gfhund.jtelemetry.ClassManager;
+import gfhund.jtelemetry.commontelemetry.CommonLapManager;
 import gfhund.jtelemetry.commontelemetry.CommonTelemetryData;
+import gfhund.jtelemetry.commontelemetry.CommonTelemetryData4Table;
+import gfhund.jtelemetry.commontelemetry.LapIdentificationObject;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import java.util.ArrayList;
@@ -15,7 +19,10 @@ import javafx.geometry.Insets;
 import javafx.geometry.Side;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TableColumn;
 import javafx.scene.layout.GridPane;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
 
 /**
  *
@@ -28,13 +35,16 @@ public class DiagramViewGroup extends Region{
     private ObservableList<DiagramView.DiagrammLine> data2 = FXCollections.observableArrayList();
     private ObservableList<DiagramView.DiagrammLine> data3 = FXCollections.observableArrayList();
     private ObservableList<DiagramView.DiagrammLine> data4 = FXCollections.observableArrayList();
+    private ObservableList<CommonTelemetryData4Table> m_data = FXCollections.observableArrayList();
     
     private DiagramView[] ersDiagrams = new DiagramView[5];
     private DiagramView[] tyreInnerDiagrams = new DiagramView[5];
     private DiagramView[] tyreSurfaceDiagrams = new DiagramView[5];
+    TableView<CommonTelemetryData4Table>[] ValueTables = new TableView[5];
     ArrayList<OnSelectValue> registeredOnSelectValueEvents = new ArrayList<>();
+    ArrayList<LapIdentificationObject> shownIds = new ArrayList<>();
     
-    private static double V_GAP = 20.0f;
+    private static double V_GAP = 10.0f;
 
     public DiagramViewGroup() {
         String[] diagramTitles = {"Geschwindigkeit","Gang","Drehzahl","Gas Pedal","Brems Pedal"};
@@ -66,6 +76,57 @@ public class DiagramViewGroup extends Region{
         diagrams[4].setParameterMode(DiagramView.ParameterMode.BREAK);
         diagrams[4].setData(data4);
         
+        for(int i=0;i<ValueTables.length;i++){
+            ValueTables[i] = new TableView<>();
+            ValueTables[i].setPrefHeight(200);
+            TableColumn playerName = new TableColumn<>("name");
+            playerName.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,String>("driverName"));
+            
+            TableColumn lapNum = new TableColumn<>("lap");
+            lapNum.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Integer>("lapNum"));
+            
+            TableColumn speed = new TableColumn<>("speed");
+            speed.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Integer>("speed"));
+            if(i==0){
+                TableColumn currentTime = new TableColumn<>("Zeit");
+                currentTime.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Integer>("currentTime"));
+                
+                TableColumn gear = new TableColumn<>("Gang");
+                gear.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Integer>("gear"));
+                
+                TableColumn rpm = new TableColumn<>("RPM");
+                rpm.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Integer>("rpm"));
+                
+                TableColumn throttle = new TableColumn<>("Gas");
+                throttle.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Integer>("throttle"));
+                
+                TableColumn brake = new TableColumn<>("bremse");
+                brake.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Integer>("brake"));
+                
+                ValueTables[i].getColumns().addAll(playerName,lapNum,currentTime,speed,gear,rpm,throttle,brake);
+                ValueTables[i].setItems(m_data);
+            } else if(i==1){
+                
+                TableColumn ersDeployMode = new TableColumn<>("Mode");
+                ersDeployMode.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Integer>("ersDeployMode"));
+                
+                TableColumn ersHarvestMGUK = new TableColumn<>("MGUK");
+                ersHarvestMGUK.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Integer>("ersHarvestMGUK"));
+                
+                TableColumn ersHarvestMGUH = new TableColumn<>("MGUH");
+                ersHarvestMGUH.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Integer>("ersHarvestMGUH"));
+                
+                TableColumn ersDeployed = new TableColumn<>("Verbraucht");
+                ersDeployed.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Integer>("ersDeployed"));
+                
+                TableColumn ersStoreEnergy = new TableColumn<>("Total");
+                ersStoreEnergy.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Integer>("ersStoreEnergy"));
+                
+                ValueTables[i].getColumns().addAll(playerName,lapNum,speed,ersDeployMode,ersHarvestMGUH,ersHarvestMGUK,ersDeployed,ersStoreEnergy);
+                ValueTables[i].setItems(m_data);
+            }
+        }
+        
         //VBox layout = new VBox();
         //layout.setSpacing(20);
         //layout.getChildren().addAll(diagrams);
@@ -76,6 +137,7 @@ public class DiagramViewGroup extends Region{
         grid.add(diagrams[2],0,1);
         grid.add(diagrams[3],1,1);
         grid.add(diagrams[4],0,2);
+        grid.add(ValueTables[0],1,2);
         grid.setVgap(V_GAP);
         //grid.setHgap(10);
         //grid.setPadding(arg0);
@@ -94,6 +156,7 @@ public class DiagramViewGroup extends Region{
         ersGrid.add(ersDiagrams[2], 0, 1);
         ersGrid.add(ersDiagrams[3], 1, 1);
         ersGrid.add(ersDiagrams[4], 0, 2);
+        ersGrid.add(ValueTables[1], 1, 2);
         ersGrid.setVgap(V_GAP);
         
         Tab ersData = new Tab("Ers");
@@ -132,15 +195,33 @@ public class DiagramViewGroup extends Region{
         this.data2.clear();
         this.data3.clear();
         this.data4.clear();
+        for(int i=0;i<this.ersDiagrams.length;i++){
+            this.ersDiagrams[i].getData().clear();
+        }
+        for(int i=0;i<this.tyreInnerDiagrams.length;i++){
+            this.tyreInnerDiagrams[i].getData().clear();
+        }
+        for(int i=0;i<this.tyreSurfaceDiagrams.length;i++){
+            this.tyreSurfaceDiagrams[i].getData().clear();
+        }
+        this.m_data.clear();
     }
     
-    public void addTelemetryData(ArrayList<CommonTelemetryData> data){
+    public void addTelemetryData(LapIdentificationObject data){
+        shownIds.add(data);
+        CommonLapManager lapManager;
+        try{
+            lapManager = (CommonLapManager)gfhund.jtelemetry.ClassManager.get(CommonLapManager.class);
+        }catch(ClassManager.ClassManagerException e){
+            return;
+        }
+        ArrayList<CommonTelemetryData> telemetryData = lapManager.getLapData(data);
         
         DiagramView.DiagrammLine[] lines = new DiagramView.DiagrammLine[20];
         for(int i=0;i<lines.length;i++){
             lines[i] = new DiagramView.DiagrammLine();
         }
-        for(CommonTelemetryData date:data){
+        for(CommonTelemetryData date:telemetryData){
             DiagramView.DiagrammPoint point0;
             DiagramView.DiagrammPoint point1;
             DiagramView.DiagrammPoint point2;
@@ -250,14 +331,22 @@ public class DiagramViewGroup extends Region{
         this.tyreSurfaceDiagrams[2].getData().add(lines[17]);
         this.tyreSurfaceDiagrams[3].getData().add(lines[18]);
         this.tyreSurfaceDiagrams[4].getData().add(lines[19]);
-        /*
-                for(DiagramView view:diagrams){
-            view.addData(data);
-        }
-*/
     }
     
+
+    
     private void findNearestTelemetry(float value){
+        CommonLapManager lapManager;
+        this.m_data.clear();
+        try{
+            lapManager = (CommonLapManager)gfhund.jtelemetry.ClassManager.get(CommonLapManager.class);
+            for(LapIdentificationObject id: this.shownIds){
+                CommonTelemetryData data = lapManager.getDataFromDistance(id, value);
+                m_data.add(new CommonTelemetryData4Table(data));
+            }
+        }catch(ClassManager.ClassManagerException e){
+            return;
+        }
         for(OnSelectValue event: this.registeredOnSelectValueEvents){
             event.onSelectValue(value);
         }
@@ -265,4 +354,6 @@ public class DiagramViewGroup extends Region{
     public void addOnSelectValueEvent(OnSelectValue event){
         this.registeredOnSelectValueEvents.add(event);
     }
+    
+    
 }

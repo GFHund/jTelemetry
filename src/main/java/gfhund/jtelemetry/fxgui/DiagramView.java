@@ -84,7 +84,7 @@ public class DiagramView extends Region{
     public DiagramView(String title){
         setCache(false);
         setPrefWidth(DiagramView.PREF_WIDTH);
-        setPrefHeight(DiagramView.PREF_HEIGHT+10);
+        setPrefHeight(DiagramView.PREF_HEIGHT+30);
         
         parameterMode = ParameterMode.SPEED;
         
