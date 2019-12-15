@@ -415,7 +415,9 @@ public class PacketBuilder{
             case 1:
             //return getSessionData(rawPacket, packetHeader);
                  PacketFields[] sessionFields = getFields(gfhund.jtelemetry.f1y19.PacketSessionData.class.getName());
-                return (gfhund.jtelemetry.f1y19.PacketSessionData) parseByteArray(gfhund.jtelemetry.f1y19.PacketSessionData.class.getName(),rawPacket,sessionFields);
+                 gfhund.jtelemetry.f1y19.PacketSessionData ret = 
+                 (gfhund.jtelemetry.f1y19.PacketSessionData) parseByteArray(gfhund.jtelemetry.f1y19.PacketSessionData.class.getName(),rawPacket,sessionFields);
+                 return ret;
             case 2:
             //return getLapData(rawPacket, packetHeader);
                 PacketFields[] lapDataFields = getFields(gfhund.jtelemetry.f1y19.PacketLapData.class.getName());

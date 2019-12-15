@@ -458,6 +458,11 @@ public class TelemetryWriter {
     private HashMap<String,CommonTelemetryData[]> commonTelemetryBuffer = new HashMap<>();//new CommonTelemetryData[1000];
     private HashMap<String, Integer> commonTelemetryBufferPointer = new HashMap<>();
     
+    //private float lastDistance = -1.0f;
+    //private float lastTime = 0.0f;
+    private HashMap<String,Float> lastTime = new HashMap<>();
+    private HashMap<String,Float> lastDistance = new HashMap<>();
+    
     public void processCommonTelemetryData(CommonTelemetryData data){
         String d = data.getDriverName();
         if(d == null || d.length() <= 0){
@@ -537,6 +542,7 @@ public class TelemetryWriter {
                 telemetryFile = lapFiles[lapFiles.length-1];
             }
             
+            
             if(lastLap == data.getLapNum()){
                 CommonTelemetryData[] buffer;
                 int pointer;
@@ -551,9 +557,10 @@ public class TelemetryWriter {
 
                 buffer[pointer] = data;
                 pointer++;
-
-                this.commonTelemetryBuffer.put(data.getDriverName(), buffer);
-                this.commonTelemetryBufferPointer.put(data.getDriverName(), pointer);
+                if(data.getDistance() > 0){
+                    this.commonTelemetryBuffer.put(data.getDriverName(), buffer);
+                    this.commonTelemetryBufferPointer.put(data.getDriverName(), pointer);
+                }
             }
             else {
                 try {

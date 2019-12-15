@@ -9,6 +9,7 @@ import gfhund.jtelemetry.ClassManager;
 import gfhund.jtelemetry.Vector3D;
 import gfhund.jtelemetry.commontelemetry.AbstractPacket;
 import gfhund.jtelemetry.commontelemetry.CommonTelemetryData;
+import gfhund.jtelemetry.commontelemetry.LapIdentificationObject;
 import gfhund.jtelemetry.data.Settings;
 
 import gfhund.jtelemetry.f1y19.F1Y2019ParseThread;
@@ -18,6 +19,8 @@ import gfhund.jtelemetry.network.ReceiveEvent;
 import gfhund.jtelemetry.f1common.F1ParseThread;
 
 import gfhund.jtelemetry.f1y18.F1Y2018ParseThread;
+import gfhund.jtelemetry.fxgui.TelemetryWriter;
+import gfhund.jtelemetry.stfFormat.StfFormatWriter;
 import io.reactivex.BackpressureStrategy;
 
 import java.util.concurrent.locks.ReentrantLock;
@@ -31,8 +34,12 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jdk.internal.org.jline.utils.InfoCmp;
 
 /**
  *
@@ -42,14 +49,28 @@ public class F1Recording {
     private Thread m_f1Thread;
     private GameNetworkConnection m_networkThread;
     private CommonTelemetryData[] currentData = new CommonTelemetryData[20];
+    private int[] lastLapNum = new int[20];
+    private LapIdentificationObject[] lidData = new LapIdentificationObject[20];
     private boolean recordingStarted = false;
     private int playerCarIndex;
+    private byte sessionType;
     private static final Logger logging = Logger.getLogger(F1Recording.class.getName());
+    StfFormatWriter metawriter;
     
     public F1Recording(){
         for(int i=0;i<currentData.length;i++){
             currentData[i] = new CommonTelemetryData();
         }
+        for(int i =0;i<lidData.length;i++){
+            lidData[i] = new LapIdentificationObject();
+        }
+           
+        try{
+             metawriter= new StfFormatWriter("./temp/metadata.stf","LapIdentification");
+        }
+        catch(IOException e){
+            
+        }    
     }
     
     //private Queue<AbstractPacket> m_packetQueue = new Queue<AbstractPacket>();
@@ -93,21 +114,9 @@ public class F1Recording {
                 if(m_f1Thread == null){
                     m_f1Thread = new Thread(parseThread);
                 }
-                /*
-                if(m_f1Thread.isAlive()){
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Thread not started");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Thread not started because it is already started");
-                    alert.showAndWait();
-                    return;
-                }
-                */
                 parseThread.addParseResultEvent(new F1ParseResultEvent() {
                     @Override
                     public void resultEvent(AbstractPacket packet) {
-                        //parsePackager(packet);
-                        
                         if(processPacket(packet)){
                             Settings set = null;
                             try{
@@ -126,11 +135,24 @@ public class F1Recording {
                             if(bRecoringType){
                                 fe.onNext(currentData[playerCarIndex]);
                                 CommonTelemetryData temp = currentData[playerCarIndex];
+                                try{
+                                    currentData[playerCarIndex] = (CommonTelemetryData)temp.clone();
+                                }catch(CloneNotSupportedException e){
+                                    logging.log(Level.WARNING, e.getMessage(), e);
+                                }
+                                if(lidData[playerCarIndex].getLapNum() != lastLapNum[playerCarIndex]){
+                                    HashMap<String, String> map = new HashMap();
+                                    map.put("lapNum",""+lidData[playerCarIndex].getLapNum());
+                                    map.put("lapTime",""+lidData[playerCarIndex].getLapTime());
+                                    map.put("playerName", ""+lidData[playerCarIndex].getPlayer());
+                                    Date now = new Date();
+                                    map.put("date",getDateFromDatObj(now));
                                     try{
-                                        currentData[playerCarIndex] = (CommonTelemetryData)temp.clone();
-                                    }catch(CloneNotSupportedException e){
+                                        metawriter.writePropertyClass("lapId", map);
+                                    }catch(IOException e){
                                         logging.log(Level.WARNING, e.getMessage(), e);
                                     }
+                                }
                             }
                             else{
                                 for(int i=0;i < currentData.length;i++){
@@ -142,19 +164,26 @@ public class F1Recording {
                                     }catch(CloneNotSupportedException e){
                                         logging.log(Level.WARNING, e.getMessage(), e);
                                     }
-
                                 }
+                                for(int i = 0;i < lidData.length;i++){
+                                    if(lidData[i].getLapNum() != lastLapNum[i]){
+                                        HashMap<String,String> map = new HashMap();
+                                        map.put("lapNum",""+lidData[i].getLapNum());
+                                        map.put("lapTime", ""+lidData[i].getLapTime());
+                                        map.put("playerName", ""+lidData[i].getPlayer());
+                                        Date now = new Date();
+                                        map.put("date",getDateFromDatObj(now));
+                                        try{
+                                            metawriter.writePropertyClass("lapId", map);
+                                        }catch(IOException e){
+                                            logging.log(Level.WARNING, e.getMessage(), e);
+                                        }
+
+                                    }
+                                } 
                             }
-                            
-                            /*
-                            for(CommonTelemetryData data: currentData){
-                                //System.out.println("Distance: "+data.getDistance());
-                                fe.onNext(data);
-                            }
-                            */
                             
                         }
-                        
                     }
                 });
                 
@@ -184,9 +213,15 @@ public class F1Recording {
         }
         m_networkThread.interrupt();
         m_f1Thread.interrupt();
+        try{
+            metawriter.closeFile();
+        }
+        catch(IOException e){}
+        
     }
     
     protected boolean processPacket(AbstractPacket packet){
+        //System.out.println("Class: "+packet.getClass().getName());
         if(packet instanceof gfhund.jtelemetry.f1y18.PacketMotionData){
             gfhund.jtelemetry.f1y18.PacketMotionData motionDataPacket = 
                     (gfhund.jtelemetry.f1y18.PacketMotionData) packet;
@@ -201,15 +236,21 @@ public class F1Recording {
             return false;
             
         } else if(packet instanceof gfhund.jtelemetry.f1y18.PacketSessionData){
-            //
+            gfhund.jtelemetry.f1y18.PacketSessionData sessionPacket =
+                    (gfhund.jtelemetry.f1y18.PacketSessionData) packet;
+            this.sessionType = sessionPacket.getSessionType();
+            //System.out.println("2018: Session Type: "+this.sessionType);
         } else if(packet instanceof gfhund.jtelemetry.f1y18.PacketLapData){
             gfhund.jtelemetry.f1y18.PacketLapData lapDataPacket = 
                     (gfhund.jtelemetry.f1y18.PacketLapData) packet;
             playerCarIndex = lapDataPacket.getHeader().getPlayerCarIndex();
             boolean isAllReady = true;
+            
             for(int i=0;i<currentData.length;i++){
                 currentData[i].setDistance(lapDataPacket.getLapData(i).getLapDistance());
                 currentData[i].setLapNum(lapDataPacket.getLapData(i).getCurrentLapNum());
+                this.lastLapNum[i] = this.lidData[i].getLapNum();
+                this.lidData[i].setLapNum(lapDataPacket.getLapData(i).getCurrentLapNum());
                 currentData[i].setCurrentTime(lapDataPacket.getLapData(i).getCurrentLapTime());
                 currentData[i].setCarIndex((short)i);
                 isAllReady = isAllReady && currentData[i].isReadyToSave();
@@ -258,7 +299,10 @@ public class F1Recording {
             }
             return isAllReady;
         } else if(packet instanceof gfhund.jtelemetry.f1y19.PacketSessionData) {
-            //
+            gfhund.jtelemetry.f1y19.PacketSessionData sessionPacket =
+                    (gfhund.jtelemetry.f1y19.PacketSessionData) packet;
+            this.sessionType = sessionPacket.getSessionType();
+            System.out.println("Session Type: "+this.sessionType);
         } else if(packet instanceof gfhund.jtelemetry.f1y19.PacketLapData) {
             gfhund.jtelemetry.f1y19.PacketLapData lapDataPacket = 
                     (gfhund.jtelemetry.f1y19.PacketLapData) packet;
@@ -267,8 +311,30 @@ public class F1Recording {
             //System.out.println("LapDistance: "+lapDataPacket.getLapData(0).getLapDistance());
             for(int i=0;i<currentData.length;i++){
                 currentData[i].setDistance(lapDataPacket.getLapData(i).getLapDistance());
-                currentData[i].setLapNum(lapDataPacket.getLapData(i).getCurrentLapNum());
-                currentData[i].setCurrentTime(lapDataPacket.getLapData(i).getCurrentLapTime());
+                this.lastLapNum[i] = this.lidData[i].getLapNum();
+                if(sessionType == 12 && i != lapDataPacket.getHeader().getPlayerCarIndex()){
+                    int playerIndex = lapDataPacket.getHeader().getPlayerCarIndex();
+                    currentData[i].setLapNum(
+                            lapDataPacket.getLapData(playerIndex)
+                                    .getCurrentLapNum()
+                    );
+                    currentData[i].setCurrentTime(
+                            lapDataPacket.getLapData(playerIndex)
+                                    .getCurrentLapTime()
+                    );
+                    lidData[i].setLapNum(lapDataPacket.getLapData(playerIndex)
+                                    .getCurrentLapNum());
+                    lidData[i].setLapTime(lapDataPacket.getLapData(playerIndex)
+                            .getLastLapTime());
+                }
+                else{
+                    currentData[i].setLapNum(lapDataPacket.getLapData(i).getCurrentLapNum());
+                    lidData[i].setLapNum(lapDataPacket.getLapData(i).getCurrentLapNum());
+                    lidData[i].setLapTime(lapDataPacket.getLapData(i).getLastLapTime());
+                    currentData[i].setCurrentTime(lapDataPacket.getLapData(i).getCurrentLapTime());
+                }
+                
+                
                 currentData[i].setCarIndex((short)i);
                 isAllReady = isAllReady && currentData[i].isReadyToSave();
             }
@@ -281,6 +347,7 @@ public class F1Recording {
             playerCarIndex = participantsDataPacket.getHeader19().getPlayerCarIndex();
             for(int i=0;i<currentData.length;i++){
                 currentData[i].setDriverName(participantsDataPacket.getParticipant(i).getName());
+                lidData[i].setPlayer(participantsDataPacket.getParticipant(i).getName());
                 currentData[i].setCarIndex((short)i);
             }
             return false;
@@ -335,6 +402,36 @@ public class F1Recording {
             }
         }
         return false;
+    }
+    
+    private String getDateFromDatObj(Date date) {
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTime(date);
+        
+        int month = cal.get(GregorianCalendar.MONTH);
+        String sMonth = "" + month;
+        if(month < 10) sMonth = "0"+month;
+        
+        int dayOfMonth = cal.get(GregorianCalendar.DAY_OF_MONTH);
+        String sDayOfMonth = "" + dayOfMonth;
+        if(dayOfMonth < 10) sDayOfMonth = "0" + sDayOfMonth;
+        
+        int hour = cal.get(GregorianCalendar.HOUR_OF_DAY);
+        String sHour = ""+ hour;
+        if(hour < 10) sHour = "0"+hour;
+        
+        int minute = cal.get(GregorianCalendar.MINUTE);
+        String sMinute = "" + minute;
+        if(minute < 10) sMinute = "0" + minute;
+        
+        String ret = 
+                "" + 
+                cal.get(GregorianCalendar.YEAR) +
+                sMonth + 
+                sDayOfMonth+
+                sHour+
+                sMinute;
+        return ret;
     }
     
     public static enum F1Games{

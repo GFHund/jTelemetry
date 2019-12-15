@@ -17,6 +17,7 @@ public class LapIdentificationObject {
     private Date dateLapDriven;
     private String player;
     private String zipFile;
+    private float lapTime;
 
     public int getLapNum() {
         return lapNum;
@@ -48,6 +49,13 @@ public class LapIdentificationObject {
 
     public void setZipFile(String zipFile) {
         this.zipFile = zipFile;
+    }
+    
+    public void setLapTime(float lapTime){
+        this.lapTime = lapTime;
+    }
+    public float getLapTime(){
+        return this.lapTime;
     }
     
     public String getFilenameDate() {

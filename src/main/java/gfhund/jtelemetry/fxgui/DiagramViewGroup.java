@@ -111,16 +111,16 @@ public class DiagramViewGroup extends Region{
                 ersDeployMode.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Integer>("ersDeployMode"));
                 
                 TableColumn ersHarvestMGUK = new TableColumn<>("MGUK");
-                ersHarvestMGUK.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Integer>("ersHarvestMGUK"));
+                ersHarvestMGUK.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Float>("ersHarvestMGUK"));
                 
                 TableColumn ersHarvestMGUH = new TableColumn<>("MGUH");
-                ersHarvestMGUH.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Integer>("ersHarvestMGUH"));
+                ersHarvestMGUH.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Float>("ersHarvestMGUH"));
                 
                 TableColumn ersDeployed = new TableColumn<>("Verbraucht");
-                ersDeployed.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Integer>("ersDeployed"));
+                ersDeployed.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Float>("ersDeployed"));
                 
                 TableColumn ersStoreEnergy = new TableColumn<>("Total");
-                ersStoreEnergy.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Integer>("ersStoreEnergy"));
+                ersStoreEnergy.setCellValueFactory(new PropertyValueFactory<CommonTelemetryData4Table,Float>("ersStoreEnergy"));
                 
                 ValueTables[i].getColumns().addAll(playerName,lapNum,speed,ersDeployMode,ersHarvestMGUH,ersHarvestMGUK,ersDeployed,ersStoreEnergy);
                 ValueTables[i].setItems(m_data);
