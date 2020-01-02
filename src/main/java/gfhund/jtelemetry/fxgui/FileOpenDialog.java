@@ -157,6 +157,7 @@ public class FileOpenDialog extends DialogFx {
                 for(Date roundDate: roundDates){
                     int[] lapNums = tr.getPlayerLaps(file,name,roundDate);
                     for(int lapNum:lapNums){
+                        
                         RoundSelection data = new RoundSelection();
                         data.setPlayer(name);
                         data.setLapNum(lapNum);

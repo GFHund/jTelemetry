@@ -8,6 +8,7 @@ package gfhund.jtelemetry.fxgui;
 import gfhund.jtelemetry.stfFormat.StfDocument;
 import gfhund.jtelemetry.stfFormat.StfFormatReader;
 import gfhund.jtelemetry.stfFormat.AbstractStfObject;
+import gfhund.jtelemetry.stfFormat.StfClass;
        
 import java.io.File;
 import java.io.IOException;
@@ -125,6 +126,32 @@ public class TelemetryReader {
         }
         return dateRet;
         //return (Date[]) ret.toArray();
+    }
+    
+    public float getPlayerRoundTime(File file,String playername,Date date){
+        float ret = 0.0f;
+        try{
+            ZipFile zipFile = new ZipFile(file);
+            for(ZipEntry entry: Collections.list(zipFile.entries())){
+                String name = entry.getName();
+                if(name.startsWith("metadata.stf")){
+                    StfFormatReader reader = new StfFormatReader();
+                    InputStream stream = zipFile.getInputStream(entry);
+                    StfDocument doc = reader.read(stream,entry.getSize());
+                    StfClass rootClass = (StfClass) doc.getChild(0);
+                    AbstractStfObject[] children = rootClass.getChildren();
+                    for(AbstractStfObject lid: children){
+                        if(lid instanceof StfClass){
+                            StfClass lidClass = (StfClass) lid;
+                            String time = lidClass.getChildPropertyValue("");
+                        }
+                    }
+                }
+            }
+        }catch(IOException e){
+            
+        }
+        return ret;
     }
     
     /**
