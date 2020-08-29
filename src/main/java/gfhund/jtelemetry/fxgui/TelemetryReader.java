@@ -128,7 +128,7 @@ public class TelemetryReader {
         //return (Date[]) ret.toArray();
     }
     
-    public float getPlayerRoundTime(File file,String playername,Date date){
+    public float getPlayerRoundTime(File file,String playername,Date date,int round){
         float ret = 0.0f;
         try{
             ZipFile zipFile = new ZipFile(file);
@@ -143,7 +143,24 @@ public class TelemetryReader {
                     for(AbstractStfObject lid: children){
                         if(lid instanceof StfClass){
                             StfClass lidClass = (StfClass) lid;
-                            String time = lidClass.getChildPropertyValue("");
+                            String lapTime = lidClass.getChildPropertyValue("lapTime");
+                            String lidDate = lidClass.getChildPropertyValue("date");
+                            String lidPlayerName = lidClass.getChildPropertyValue("playerName");
+                            String sLidLapNum = lidClass.getChildPropertyValue("lapNum");
+                            try {
+                                int iLidLapNum = Integer.parseInt(sLidLapNum);
+                                long lLidDate = Long.parseLong(lidDate);
+                                float fLapTime = Float.parseFloat(lapTime);
+                                
+                                if(playername.equals(lidPlayerName) && 
+                                    iLidLapNum == round &&
+                                        date.getTime() == lLidDate){
+                                    return fLapTime;
+                                }
+                            }catch(NumberFormatException e){
+                                //Should never happen
+                            }
+                            
                         }
                     }
                 }

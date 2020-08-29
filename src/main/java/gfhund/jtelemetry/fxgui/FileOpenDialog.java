@@ -164,6 +164,8 @@ public class FileOpenDialog extends DialogFx {
                         data.setTime(0.0f);
                         data.setZipFile(this.pathField.getText());
                         data.setDateDriven(roundDate);
+                        float lapTime = tr.getPlayerRoundTime(file, name, roundDate, lapNum);
+                        data.setLapTime(lapTime);
                         availableRoundsList.add(data);
                     }
                 }
@@ -197,6 +199,7 @@ public class FileOpenDialog extends DialogFx {
             id.setLapNum(rounds.getLapNum());
             id.setPlayer(rounds.getPlayer());
             id.setDateLapDriven(rounds.getDateDriven());
+            id.setLapTime(rounds.getLapTime());
             if(lapManager != null){
                 lapManager.addLap(id);
             }
@@ -221,6 +224,7 @@ public class FileOpenDialog extends DialogFx {
             id.setLapNum(rounds.getLapNum());
             id.setPlayer(rounds.getPlayer());
             id.setDateLapDriven(rounds.getDateDriven());
+            id.setLapTime(rounds.getLapTime());
             if(lapManager != null){
                 lapManager.removeLap(id);
             }
@@ -247,6 +251,7 @@ public class FileOpenDialog extends DialogFx {
         private final SimpleFloatProperty time;
         private final SimpleStringProperty zipFile;
         private Date dateDriven;
+        private float lapTime;
         
         public RoundSelection(){
             player = new SimpleStringProperty("");
@@ -266,6 +271,9 @@ public class FileOpenDialog extends DialogFx {
         }
         public String getZipFile(){
             return this.zipFile.get();
+        }
+        public float getLapTime(){
+            return this.lapTime;
         }
         
         
@@ -288,6 +296,10 @@ public class FileOpenDialog extends DialogFx {
 
         public void setDateDriven(Date dateDriven) {
             this.dateDriven = dateDriven;
+        }
+        
+        public void setLapTime(float lapTime){
+            this.lapTime = lapTime;
         }
 
         @Override
